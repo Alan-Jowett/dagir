@@ -1,0 +1,84 @@
+# SPDX-License-Identifier: MIT
+# © DagIR Contributors. All rights reserved.
+#
+# GitHub Actions workflow: Cross-platform CI for DagIR
+# - Builds the header-only library via CMake configure (sanity)
+# - Optionally builds & runs Catch2 unit tests (DAGIR_BUILD_TESTS=ON)
+# - Runs on Windows, Linux, and macOS
+
+name: ci
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }} • ${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        build_type: [ Release ]
+
+    env:
+      BUILD_DIR: build
+      CMAKE_BUILD_TYPE: ${{ matrix.build_type }}
+      # Toggle unit tests here; set to OFF to skip fetching Catch2/tests
+      DAGIR_BUILD_TESTS: ON
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC developer command prompt
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '>=3.20.0'
+
+      # Configure
+      - name: Configure (single-config generators)
+        if: runner.os != 'Windows'
+        run: |
+          cmake -S . -B "${BUILD_DIR}" \
+            -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
+            -DDAGIR_BUILD_TESTS=${{ env.DAGIR_BUILD_TESTS }}
+
+      # FIX: put all args on one line in PowerShell (no caret continuation)
+      - name: Configure (multi-config generators / MSVC)
+        if: runner.os == 'Windows'
+        run: cmake -S . -B "${env:BUILD_DIR}" -DDAGIR_BUILD_TESTS=${{ env.DAGIR_BUILD_TESTS }}
+
+      # Build
+      - name: Build (single-config)
+        if: runner.os != 'Windows'
+        run: cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" --parallel
+
+      - name: Build (multi-config / MSVC)
+        if: runner.os == 'Windows'
+        run: cmake --build "${env:BUILD_DIR}" --config "${env:CMAKE_BUILD_TYPE}" --parallel
+
+      # Test (if enabled)
+      - name: Run tests (single-config)
+        if: runner.os != 'Windows' && env.DAGIR_BUILD_TESTS == 'ON'
+        run: ctest --test-dir "${BUILD_DIR}" -C "${CMAKE_BUILD_TYPE}" --output-on-failure
+
+      - name: Run tests (multi-config / MSVC)
+        if: runner.os == 'Windows' && env.DAGIR_BUILD_TESTS == 'ON'
+        run: ctest --test-dir "${env:BUILD_DIR}" -C "${env:CMAKE_BUILD_TYPE}" --output-on-failure
+
+      - name: Verify headers installed in tree
+        run: |
+          echo "Project headers:"
+          ls -R include || dir include
