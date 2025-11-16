@@ -10,7 +10,7 @@ name: ci
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
     branches: [ "**" ]
   workflow_dispatch:
@@ -36,15 +36,12 @@ jobs:
 
     steps:
       - name: Checkout
-      # Ensure submodules if you later add any, safe default is recursive=false
         uses: actions/checkout@v4
 
-      # (Optional) Set up MSVC environment with latest toolset (Windows only).
       - name: Setup MSVC developer command prompt
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-      # Ensure CMake is present (all runners include CMake; step retained for clarity/upgrades).
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
         with:
@@ -58,11 +55,10 @@ jobs:
             -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
             -DDAGIR_BUILD_TESTS=${{ env.DAGIR_BUILD_TESTS }}
 
+      # FIX: put all args on one line in PowerShell (no caret continuation)
       - name: Configure (multi-config generators / MSVC)
         if: runner.os == 'Windows'
-        run: |
-          cmake -S . -B "${env:BUILD_DIR}" ^
-            -DDAGIR_BUILD_TESTS=${{ env.DAGIR_BUILD_TESTS }}
+        run: cmake -S . -B "${env:BUILD_DIR}" -DDAGIR_BUILD_TESTS=${{ env.DAGIR_BUILD_TESTS }}
 
       # Build
       - name: Build (single-config)
@@ -82,7 +78,6 @@ jobs:
         if: runner.os == 'Windows' && env.DAGIR_BUILD_TESTS == 'ON'
         run: ctest --test-dir "${env:BUILD_DIR}" -C "${env:CMAKE_BUILD_TYPE}" --output-on-failure
 
-      # Basic header presence check to help diagnose include paths quickly
       - name: Verify headers installed in tree
         run: |
           echo "Project headers:"
