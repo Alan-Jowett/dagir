@@ -3,10 +3,10 @@
  * @brief Unit tests for DagIR ReadOnlyDagView concept and related utilities.
  *
  * @details
- * This test verifies that:
+ * This test verifies:
  *  - A mock adapter correctly models ::dagir::ReadOnlyDagView.
- *  - The helper function ::dagir::models_read_only_view() returns true for valid views.
- *  - BasicEdge and NodeHandle concept checks compile and behave as expected.
+ *  - Bounds checking prevents out-of-range access for children() and roots().
+ *  - Concepts and helper utilities behave as expected.
  *
  * @copyright
  * © DagIR Contributors. All rights reserved.
@@ -21,9 +21,6 @@
 
 /**
  * @brief Mock handle type for testing NodeHandle concept.
- *
- * @details
- * Provides stable identity and debug address as required by ::dagir::NodeHandle.
  */
 struct MockHandle {
     std::uint64_t id{};
@@ -35,9 +32,6 @@ struct MockHandle {
 
 /**
  * @brief Mock edge type for testing EdgeRef concept.
- *
- * @details
- * Wraps a child handle and exposes target().
  */
 struct MockEdge {
     MockHandle child{};
@@ -47,9 +41,7 @@ struct MockEdge {
 /**
  * @brief Mock DAG view that satisfies ReadOnlyDagView.
  *
- * @details
- * - children() returns a range of MockEdge.
- * - roots() returns a range of MockHandle.
+ * Adds bounds checking for children() and roots().
  */
 class MockDagView {
 public:
@@ -59,7 +51,22 @@ public:
                          std::vector<std::vector<handle>> adjacency)
         : roots_(std::move(roots)), adj_(std::move(adjacency)) {}
 
+    /// @brief Returns range of children for a given handle, empty if out-of-bounds.
     auto children(handle h) const {
+        const size_t idx = static_cast<size_t>(h.id);
+        if (idx >= adj_.size()) {
+            struct EmptyRange {
+                struct It {
+                    bool operator==(const It&) const { return true; }
+                    MockEdge operator*() const { return {}; }
+                    It& operator++() { return *this; }
+                };
+                It begin() const { return {}; }
+                It end() const { return {}; }
+            };
+            return EmptyRange{};
+        }
+
         struct Range {
             const std::vector<handle>* vec{};
             struct It {
@@ -72,10 +79,27 @@ public:
             It begin() const { return { vec->data(), vec->data() + vec->size() }; }
             It end() const { return { vec->data() + vec->size(), vec->data() + vec->size() }; }
         };
-        return Range{ &adj_[static_cast<size_t>(h.id)] };
+        return Range{ &adj_[idx] };
     }
 
+    /// @brief Returns range of roots, empty if roots_ is empty.
     auto roots() const {
+        if (roots_.empty()) {
+            struct EmptyRange {
+                struct It {
+                    bool operator==(const It&) const { return true; }
+                    const handle& operator*() const {
+                        static handle dummy{};
+                        return dummy;
+                    }
+                    It& operator++() { return *this; }
+                };
+                It begin() const { return {}; }
+                It end() const { return {}; }
+            };
+            return EmptyRange{};
+        }
+
         struct Range {
             const std::vector<handle>* vec{};
             struct It {
@@ -100,9 +124,6 @@ private:
 // Tests
 // -----------------------------
 
-/**
- * @test Verify NodeHandle concept compliance.
- */
 TEST_CASE("MockHandle satisfies NodeHandle concept", "[concepts]") {
     STATIC_REQUIRE(dagir::NodeHandle<MockHandle>);
     MockHandle h{42};
@@ -110,9 +131,6 @@ TEST_CASE("MockHandle satisfies NodeHandle concept", "[concepts]") {
     REQUIRE(h.debug_address() == &h);
 }
 
-/**
- * @test Verify EdgeRef concept compliance.
- */
 TEST_CASE("MockEdge satisfies EdgeRef concept", "[concepts]") {
     STATIC_REQUIRE(dagir::EdgeRef<MockEdge, MockHandle>);
     MockHandle h{7};
@@ -120,29 +138,31 @@ TEST_CASE("MockEdge satisfies EdgeRef concept", "[concepts]") {
     REQUIRE(e.target().stable_key() == 7);
 }
 
-/**
- * @test Verify ReadOnlyDagView concept compliance and helper.
- */
 TEST_CASE("MockDagView satisfies ReadOnlyDagView concept", "[concepts]") {
     STATIC_REQUIRE(dagir::ReadOnlyDagView<MockDagView>);
     STATIC_REQUIRE(dagir::models_read_only_view<MockDagView>());
 
-    // Build a tiny DAG: root -> child
     MockHandle root{0}, child{1};
     MockDagView view({root}, {{child}, {}});
 
-    // roots() should yield root
     auto roots = view.roots();
     REQUIRE((*roots.begin()).stable_key() == 0);
 
-    // children(root) should yield child
     auto children = view.children(root);
     REQUIRE((*children.begin()).target().stable_key() == 1);
+
+    // Bounds check: invalid handle should yield empty range
+    MockHandle invalid{99};
+    auto emptyChildren = view.children(invalid);
+    REQUIRE(emptyChildren.begin() == emptyChildren.end());
 }
 
-/**
- * @test Verify BasicEdge utility works with NodeHandle.
- */
+TEST_CASE("Empty roots returns empty range", "[bounds]") {
+    MockDagView emptyView({}, {});
+    auto emptyRoots = emptyView.roots();
+    REQUIRE(emptyRoots.begin() == emptyRoots.end());
+}
+
 TEST_CASE("BasicEdge wrapper returns correct target", "[utility]") {
     dagir::BasicEdge<MockHandle> edge{ MockHandle{99} };
     REQUIRE(edge.target().stable_key() == 99);
