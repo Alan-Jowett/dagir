@@ -45,9 +45,9 @@ With these in place you can use DagIR traversal algorithms and `build_ir` to
 emit an `ir_graph` for rendering or analysis.
 
 
-### `NodeHandle` requirements
+### `node_handle` requirements
 
-A `NodeHandle` must be `std::copyable` and provide:
+A `node_handle` must be `std::copyable` and provide:
 
 - `stable_key()` -> convertible to `std::uint64_t` (a stable identifier suitable for memoization)
 - `debug_address()` -> convertible to `const void*` (optional diagnostic pointer)
@@ -57,7 +57,7 @@ A `NodeHandle` must be `std::copyable` and provide:
 
 ## Implementing the minimal adapter: example
 
-This example implements a tiny in-memory DAG view suitable for tests and demos. It uses integer node ids and a simple `BasicEdge` adapter.
+This example implements a tiny in-memory DAG view suitable for tests and demos. It uses integer node ids and a simple `basic_edge` adapter.
 
 ```cpp
 #include <cstdint>
@@ -96,10 +96,10 @@ Notes on the example:
   satisfies `dagir::ChildrenRange`.
 - `roots()` returns a lazy range of handles using `std::views`.
 
-## Implementing an `EdgeRef`
+## Implementing an `edge_ref`
 
 If your backend needs edges that carry labels or other metadata, implement an
-`EdgeRef` type exposing `target()`:
+`edge_ref` type exposing `target()`:
 
 ```cpp
 struct EdgeRefImpl {
@@ -144,12 +144,12 @@ for examples that use `dagir::ir_attrs` keys.
 
 - If `build_ir` fails to compile, check that your `children()` return type satisfies `dagir::ChildrenRange` — it must be an input-range whose value_type or reference_type provides `target()` (or is convertible to `handle`).
 - Ensure `stable_key()` returns a stable, unique id for each logical node. Collisions will break memoization.
-- Use `dagir::NoopGuard` when you don't need special guarding semantics.
+-- Use `dagir::noop_guard` when you don't need special guarding semantics.
 
 ## Summary
 
-Implementing a `ReadOnlyDagView` is intentionally lightweight:
-- Provide `using handle = ...` where `handle` models `NodeHandle`.
+Implementing a `read_only_dag_view` is intentionally lightweight:
+- Provide `using handle = ...` where `handle` models `node_handle`.
 - Provide `children(handle)` and `roots()` ranges.
 - Optionally provide `start_guard(handle)` if needed.
 
