@@ -65,7 +65,7 @@ static H build_ir_extract_child(const E& e) {
  *  - Calls `view.start_guard(handle)` if provided by the adapter.
  *  - Memoizes nodes by `stable_key()` to avoid duplicates.
  */
-template <read_only_dag_view View, class node_labeler, class edge_attributor>
+template <dagir::concepts::read_only_dag_view View, class node_labeler, class edge_attributor>
 ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&& edge_attr) {
   using H = typename View::handle;
   using key_t = std::uint64_t;
@@ -156,7 +156,7 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
  * Default node label: `std::to_string(handle.stable_key())`.
  * Default edge attributes: empty vector.
  */
-template <read_only_dag_view View>
+template <dagir::concepts::read_only_dag_view View>
 ir_graph build_ir(const View& view) {
   auto node_label = [](auto const& h) -> std::string { return std::to_string(h.stable_key()); };
   auto edge_attr = [](auto..., auto...) -> std::vector<ir_attr> { return {}; };

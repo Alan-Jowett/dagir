@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace dagir {
+namespace dagir::concepts {
 
 /**
  * @brief Concept for an edge attribute policy callable.
@@ -29,4 +29,4 @@ concept edge_attributor = requires(const F& f, const View& v, const typename Vie
   { f(v, p, c) };
 };
 
-}  // namespace dagir
+}  // namespace dagir::concepts

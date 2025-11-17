@@ -11,7 +11,7 @@ DagIR separates traversal from rendering via small policy objects:
 - `node_labeler` — callable used to produce a `std::string` label for a node.
 - `edge_attributor` — callable used to produce attributes for an edge (return type interpreted by the IR builder as a `std::vector<dagir::ir_attr>`).
 
-Both concepts are defined against a `dagir::read_only_dag_view` (see `include/dagir/concepts/read_only_dag_view.hpp`). Using policy objects keeps adapters and renderers decoupled.
+Both concepts are defined against a `dagir::concepts::read_only_dag_view` (see `include/dagir/concepts/read_only_dag_view.hpp`). Using policy objects keeps adapters and renderers decoupled.
 
 ## Common IR attribute keys
 

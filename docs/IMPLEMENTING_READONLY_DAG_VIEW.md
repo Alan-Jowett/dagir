@@ -12,9 +12,9 @@ document provides a practical summary and examples.
 
 ## Requirements (concept summary)
 
-A type models `dagir::read_only_dag_view` when it satisfies the following:
+A type models `dagir::concepts::read_only_dag_view` when it satisfies the following:
 
-- Defines `using handle = ...;` and that `handle` models `dagir::node_handle`.
+- Defines `using handle = ...;` and that `handle` models `dagir::concepts::node_handle`.
 - Provides `children(handle)` returning an input-range of child "edge-like"
   elements; each element is either a child handle or an `edge_ref` type that
   exposes `target() -> handle`.

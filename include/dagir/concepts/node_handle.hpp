@@ -6,7 +6,7 @@
 #include <concepts>
 #include <cstdint>
 
-namespace dagir {
+namespace dagir::concepts {
 
 /**
  * @brief Opaque, cheap handle to a node in a foreign DAG.
@@ -25,4 +25,4 @@ concept node_handle = std::copyable<H> && requires(const H& h) {
   { h != h } -> std::same_as<bool>;
 };
 
-}  // namespace dagir
+}  // namespace dagir::concepts

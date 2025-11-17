@@ -8,7 +8,7 @@
 #include <functional>
 #include <string>
 
-namespace dagir {
+namespace dagir::concepts {
 
 /**
  * @brief Concept for a node labeling policy callable.
@@ -26,4 +26,5 @@ template <class F, class View>
 concept node_labeler = requires(const F& f, const View& v, const typename View::handle& h) {
   { f(v, h) } -> std::convertible_to<std::string>;
 };
-}  // namespace dagir
+
+}  // namespace dagir::concepts

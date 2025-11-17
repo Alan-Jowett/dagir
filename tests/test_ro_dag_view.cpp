@@ -26,7 +26,7 @@
  * @test Verify `node_handle` concept compliance.
  */
 TEST_CASE("MockHandle satisfies node_handle concept", "[concepts]") {
-  STATIC_REQUIRE(dagir::node_handle<MockHandle>);
+  STATIC_REQUIRE(dagir::concepts::node_handle<MockHandle>);
   MockHandle h{42};
   REQUIRE(h.stable_key() == 42);
   REQUIRE(h.debug_address() == &h);
@@ -36,7 +36,7 @@ TEST_CASE("MockHandle satisfies node_handle concept", "[concepts]") {
  * @test Verify `edge_ref` concept compliance.
  */
 TEST_CASE("MockEdge satisfies edge_ref concept", "[concepts]") {
-  STATIC_REQUIRE(dagir::edge_ref<MockEdge, MockHandle>);
+  STATIC_REQUIRE(dagir::concepts::edge_ref<MockEdge, MockHandle>);
   MockHandle h{7};
   MockEdge e{h};
   REQUIRE(e.target().stable_key() == 7);
@@ -46,7 +46,7 @@ TEST_CASE("MockEdge satisfies edge_ref concept", "[concepts]") {
  * @test Verify `read_only_dag_view` concept compliance and helper.
  */
 TEST_CASE("MockDagView satisfies read_only_dag_view concept", "[concepts]") {
-  STATIC_REQUIRE(dagir::read_only_dag_view<MockDagView>);
+  STATIC_REQUIRE(dagir::concepts::read_only_dag_view<MockDagView>);
   STATIC_REQUIRE(dagir::models_read_only_view<MockDagView>());
 
   MockHandle root{0}, child{1};

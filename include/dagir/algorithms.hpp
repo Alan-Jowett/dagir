@@ -33,7 +33,7 @@ namespace dagir {
  *  - Nodes are identified by their `stable_key()` for hash maps, and the returned
  *    handles preserve the adapter's handle values.
  */
-template <read_only_dag_view View>
+template <dagir::concepts::read_only_dag_view View>
 std::vector<typename View::handle> kahn_topological_order(const View& view) {
   using H = typename View::handle;
   using key_t = std::uint64_t;
@@ -130,7 +130,7 @@ std::vector<typename View::handle> kahn_topological_order(const View& view) {
  * Implementation note: we reuse Kahn's algorithm to obtain a topological order,
  * then process nodes in reverse topological order so children are computed first.
  */
-template <read_only_dag_view View, class R, class Combiner>
+template <dagir::concepts::read_only_dag_view View, class R, class Combiner>
 auto postorder_fold(const View& view, Combiner combiner) -> std::unordered_map<std::uint64_t, R> {
   using H = typename View::handle;
   using key_t = std::uint64_t;
