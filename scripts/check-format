@@ -11,6 +11,12 @@ set -euo pipefail
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT=$(cd "$HERE/.." && pwd)
 
+# Source canonical extensions list if present
+if [ -f "$HERE/extensions.sh" ]; then
+  # shellcheck disable=SC1090
+  . "$HERE/extensions.sh"
+fi
+
 FIX=0
 if [ "${1:-}" = "--fix" ]; then
   FIX=1
@@ -18,7 +24,12 @@ fi
 
 cd "$ROOT"
 
-FILES=$(git ls-files -- "*.cpp" "*.c" "*.h" "*.hpp" || true)
+# Build a git pathspec list from SRC_EXTENSIONS
+FILES=""
+for ext in $SRC_EXTENSIONS; do
+  FILES="$FILES -- '*.$ext'"
+done
+FILES=$(eval git ls-files $FILES || true)
 if [ -z "$FILES" ]; then
   echo "No C/C++ files tracked."
   exit 0

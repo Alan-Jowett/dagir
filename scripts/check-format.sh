@@ -20,12 +20,27 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT=$(cd "$HERE/.." && pwd)
 cd "$ROOT"
 
+# Source canonical extensions list if present
+if [ -f "$HERE/extensions.sh" ]; then
+  # shellcheck disable=SC1090
+  . "$HERE/extensions.sh"
+fi
+
 
 # File categories:
 # - SRC_FILES: C/C++ sources/headers (clang-format + cppcheck)
 # - SPDX_CANDIDATES: files that should contain an SPDX header (includes SRC_FILES)
-SRC_PATTERN='\.(cpp|c|cc|cxx|h|hpp|hh|hxx)$'
-SPDX_PATTERN='\.(cpp|c|cc|cxx|h|hpp|hh|hxx|cmake|ya?ml|md|ps1|sh|clang-format|txt)$'
+if [ -n "${SRC_EXTENSIONS:-}" ]; then
+  SRC_PATTERN=$(printf '\\.(%s)$$' "$(echo $SRC_EXTENSIONS | sed 's/ /|/g')")
+else
+  SRC_PATTERN='\\.(cpp|c|cc|cxx|h|hpp|hh|hxx)$'
+fi
+
+if [ -n "${SPDX_EXTENSIONS:-}" ]; then
+  SPDX_PATTERN=$(printf '\\.(%s)$$' "$(echo $SPDX_EXTENSIONS | sed 's/ /|/g')")
+else
+  SPDX_PATTERN='\\.(cpp|c|cc|cxx|h|hpp|hh|hxx|cmake|ya?ml|md|ps1|sh|clang-format|txt)$'
+fi
 
 if [ "$ALL" -eq 1 ]; then
   SPDX_FILES=$(git -c core.safecrlf=false ls-files | grep -E "$SPDX_PATTERN" || true)

@@ -10,7 +10,20 @@
 echo "Running pre-commit format checks"
 
 # Get staged C/C++ files. If none, skip.
-STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(cpp|hpp|h|c|cc|cxx)$" || true)
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+# Source canonical extensions list if present
+if [ -f "$HERE/extensions.sh" ]; then
+  # shellcheck disable=SC1090
+  . "$HERE/extensions.sh"
+fi
+
+if [ -n "${SRC_EXTENSIONS:-}" ]; then
+  PATTERN="\\.($(echo $SRC_EXTENSIONS | sed 's/ /|/g'))$"
+  STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E "$PATTERN" || true)
+else
+  STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(cpp|hpp|h|c|cc|cxx)$" || true)
+fi
 if [ -z "$STAGED" ]; then
   echo "No C/C++ files staged. Skipping."
   exit 0
