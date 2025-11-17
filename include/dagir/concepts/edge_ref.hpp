@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Core concept: EdgeRef
+// Core concept: edge_ref
 
 #pragma once
 

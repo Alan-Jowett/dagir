@@ -31,13 +31,13 @@ fi
 # - SRC_FILES: C/C++ sources/headers (clang-format + cppcheck)
 # - SPDX_CANDIDATES: files that should contain an SPDX header (includes SRC_FILES)
 if [ -n "${SRC_EXTENSIONS:-}" ]; then
-  SRC_PATTERN=$(printf '\\.(%s)$$' "$(echo $SRC_EXTENSIONS | sed 's/ /|/g')")
+  SRC_PATTERN=$(printf '\\.(%s)$$' "$(echo "$SRC_EXTENSIONS" | sed 's/ /|/g')")
 else
   SRC_PATTERN='\\.(cpp|c|cc|cxx|h|hpp|hh|hxx)$'
 fi
 
 if [ -n "${SPDX_EXTENSIONS:-}" ]; then
-  SPDX_PATTERN=$(printf '\\.(%s)$$' "$(echo $SPDX_EXTENSIONS | sed 's/ /|/g')")
+  SPDX_PATTERN=$(printf '\\.(%s)$$' "$(echo "$SPDX_EXTENSIONS" | sed 's/ /|/g')")
 else
   SPDX_PATTERN='\\.(cpp|c|cc|cxx|h|hpp|hh|hxx|cmake|ya?ml|md|ps1|sh|clang-format|txt)$'
 fi
@@ -101,11 +101,11 @@ if [ -n "$SRC_FILES" ]; then
     fi
   else
     if [ -n "$SRC_FILES" ]; then
-      printf '%s\n' "$SRC_FILES" | xargs clang-format --dry-run --Werror
-    fi || {
-      echo "Formatting issues found. Re-run with --fix to apply clang-format." >&2
-      exit 2
-    }
+      printf '%s\n' "$SRC_FILES" | xargs clang-format --dry-run --Werror || {
+        echo "Formatting issues found. Re-run with --fix to apply clang-format." >&2
+        exit 2
+      }
+    fi
   fi
 else
   echo "No C/C++ source files selected for formatting/static analysis."
@@ -116,11 +116,11 @@ if [ -n "$SRC_FILES" ]; then
   if command -v cppcheck >/dev/null 2>&1; then
     echo "Running cppcheck..."
     if [ -n "$SRC_FILES" ]; then
-      printf '%s\n' "$SRC_FILES" | xargs cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet
-    fi || {
-      echo "cppcheck found issues." >&2
-      exit 3
-    }
+      printf '%s\n' "$SRC_FILES" | xargs cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet || {
+        echo "cppcheck found issues." >&2
+        exit 3
+      }
+    fi
   else
     echo "cppcheck not found; skipping static analysis."
   fi

@@ -20,9 +20,11 @@ if REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null); then
   : # use REPO_ROOT from git
 else
   # Fallback: assume hook lives in .git/hooks or script lives in scripts/
-  if [ -d "$HERE/../.." ]; then
+  # If the hook lives in .git/hooks, the repo root is two levels up.
+  if [ -d "$HERE/../.git" ]; then
     REPO_ROOT=$(cd "$HERE/../.." && pwd)
   else
+    # Otherwise assume we're in the scripts/ directory and repo root is one level up
     REPO_ROOT=$(cd "$HERE/.." && pwd)
   fi
 fi
@@ -34,7 +36,7 @@ if [ -f "$REPO_ROOT/scripts/extensions.sh" ]; then
 fi
 
 if [ -n "${SRC_EXTENSIONS:-}" ]; then
-  PATTERN="\\.($(echo $SRC_EXTENSIONS | sed 's/ /|/g'))$"
+  PATTERN="\\.($(echo "$SRC_EXTENSIONS" | sed 's/ /|/g'))$"
   STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E "$PATTERN" || true)
 else
   STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(cpp|hpp|h|c|cc|cxx)$" || true)
@@ -74,6 +76,11 @@ else
 fi
 
 # If the check script modified files (when --fix used), re-stage them
-git add $STAGED || true
+if [ -n "$STAGED" ]; then
+  # Re-add staged files that may have been modified by --fix (handle spaces)
+  while IFS= read -r f; do
+    git add -- "$f" || true
+  done <<< "$STAGED"
+fi
 
 exit $CHECK_EXIT

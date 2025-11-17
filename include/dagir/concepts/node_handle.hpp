@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Core concept: NodeHandle
+// Core concept: node_handle
 
 #pragma once
 
@@ -11,7 +11,7 @@ namespace dagir::concepts {
 /**
  * @brief Opaque, cheap handle to a node in a foreign DAG.
  *
- * A type models ::dagir::NodeHandle when:
+ * A type models ::dagir::node_handle when:
  *  - It is std::copyable
  *  - It exposes stable_key() returning a std::uint64_t suitable for memoization
  *  - It exposes debug_address() returning a const void* (may be nullptr)

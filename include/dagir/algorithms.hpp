@@ -2,7 +2,7 @@
 // © DagIR Contributors. All rights reserved.
 //
 // File: algorithms.hpp
-// Description: Algorithms for working with DAGs modeled by ReadOnlyDagView.
+// Description: Algorithms for working with DAGs modeled by read_only_dag_view.
 
 #pragma once
 

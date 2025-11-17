@@ -34,15 +34,18 @@ Existing graph libraries assume you own the graph. DagIR is different:
 
 ## 🚀 Quick Start
 ```cpp
-#include <dagir/dag_ir.hpp>
-#include <dagir/topo_order.hpp>
-#include <dagir/render_dot.hpp>
+#include <dagir/ir.hpp>
+#include <dagir/algorithms.hpp>
+#include <dagir/build_ir.hpp>
 
 using View = TeddyView<MyTeddyTraits>;
 View G{ &mgr, { View::handle{root_node} } };
 
-auto ir = build_ir(G, DotPolicy{&G, &ctx});
-render_dot(ir, std::cout);
+// Build the intermediate representation using policies, then render.
+auto ir = dagir::build_ir(G, DotPolicy{&G, &ctx});
+// Rendering helpers are in the renderers directory; if you have a DOT
+// renderer available it will take an `ir_graph` and produce DOT output.
+// render_dot(ir, std::cout);
 ```
 
 ---

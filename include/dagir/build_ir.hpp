@@ -27,7 +27,7 @@ namespace dagir {
  *
  * @tparam H Target handle type.
  * @tparam E Element type returned from View::children(handle).
- * @param e Edge-like element (either a handle or an EdgeRef with target()).
+ * @param e Edge-like element (either a handle or an edge_ref with target()).
  * @return H The extracted child handle.
  *
  * @note This helper supports adapters that either yield child handles
@@ -45,10 +45,10 @@ static H build_ir_extract_child(const E& e) {
 /**
  * @brief Construct an `ir_graph` from a read-only DAG view.
  *
- * @tparam View A type modeling ::dagir::ReadOnlyDagView
- * @tparam NodeLabeler Callable used to produce node labels. Supported
+ * @tparam View A type modeling ::dagir::read_only_dag_view
+ * @tparam node_labeler Callable used to produce node labels. Supported
  *         signatures: `node_label(view, handle)` or `node_label(handle)`.
- * @tparam EdgeAttributor Callable used to produce per-edge attributes.
+ * @tparam edge_attributor Callable used to produce per-edge attributes.
  *         Supported signatures include:
  *           - `edge_attr(view, parent, edge_like)`
  *           - `edge_attr(view, parent, child_handle)`
@@ -78,12 +78,6 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
 
   graph.nodes.reserve(topo.size());
 
-  // Map stable_key -> node index in graph.nodes
-  std::unordered_map<key_t, std::size_t> node_index;
-  // Reserve more than topo.size() to account for hash map load factor
-  // and reduce rehashing overhead on common workloads.
-  node_index.reserve(topo.size() * 2);
-
   // First, create nodes (memoized) using label policy
   for (const H& h : topo) {
     key_t k = h.stable_key();
@@ -105,7 +99,6 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
       n.label = std::to_string(k);
     }
 
-    node_index.emplace(k, graph.nodes.size());
     graph.nodes.push_back(std::move(n));
   }
 
