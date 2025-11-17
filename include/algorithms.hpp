@@ -63,7 +63,6 @@ std::vector<typename View::handle> kahn_topological_order(const View& view) {
 
 	for (std::size_t i = 0; i < work.size(); ++i) {
 		H cur = work[i];
-		key_t curk = cur.stable_key();
 		for (auto const &edge_like : view.children(cur)) {
 			H child = extract_child(edge_like);
 			key_t ck = child.stable_key();
