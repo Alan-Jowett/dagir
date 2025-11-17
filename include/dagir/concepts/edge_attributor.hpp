@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
-// Concept: EdgeAttributor
-// Defines the `dagir::concepts::EdgeAttributor` concept used by policy implementers.
+// Concept: edge_attributor
+// Defines the `dagir::concepts::edge_attributor` concept used by policy implementers.
 
 #pragma once
 
@@ -13,27 +13,20 @@ namespace dagir {
 /**
  * @brief Concept for an edge attribute policy callable.
  *
- * A type `F` models `edge_attributor<F, View>` when it is invocable in at least
- * one of the supported forms. The return type is unconstrained here to keep
- * the concept flexible; the `build_ir` algorithm converts the result to
- * `std::vector<dagir::ir_attr>` where appropriate.
+ * @tparam F Callable type.
+ * @tparam View A type that models ::dagir::read_only_dag_view.
  *
- * Supported forms include but are not limited to:
- *  - `f(view, parent_handle, edge_like)`
- *  - `f(view, parent_handle, child_handle)`
- *  - `f(parent_handle, edge_like)`
- *  - `f(parent_handle, child_handle)`
+ * @details
+ * A type models ::dagir::edge_attributor when an lvalue of @c F is invocable as:
+ *  - @c f(view, parent_handle, child_handle)
+ *
+ * The return type is unconstrained (string, struct, map, etc.) and is left to the
+ * renderer/IR builder to interpret. Edge attribution is optional.
  */
 template <class F, class View>
 concept edge_attributor = requires(const F& f, const View& v, const typename View::handle& p,
-                                   const typename View::handle& c, const typename View::handle& e) {
-  { std::invoke(f, v, p, e) } -> std::same_as<void>;
-} || requires(const F& f, const View& v, const typename View::handle& p) {
-  { std::invoke(f, v, p, c) } -> std::same_as<void>;
-} || requires(const F& f, const typename View::handle& p, const typename View::handle& e) {
-  { std::invoke(f, p, e) } -> std::same_as<void>;
-} || requires(const F& f, const typename View::handle& p) {
-  { std::invoke(f, p, c) } -> std::same_as<void>;
+                                   const typename View::handle& c) {
+  { f(v, p, c) };
 };
 
 }  // namespace dagir

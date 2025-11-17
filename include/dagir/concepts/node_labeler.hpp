@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
-// Concept: NodeLabeler
-// Defines the `dagir::concepts::NodeLabeler` concept used by policy implementers.
+// Concept: node_labeler
+// Defines the `dagir::concepts::node_labeler` concept used by policy implementers.
 
 #pragma once
 
@@ -13,20 +13,17 @@ namespace dagir {
 /**
  * @brief Concept for a node labeling policy callable.
  *
- * A type `F` models `NodeLabeler<F, View>` when it is invocable in one of the
- * supported forms and the result is convertible to `std::string`:
- *  - `f(view, handle)`
- *  - `f(handle)`
+ * @tparam F Callable type.
+ * @tparam View A type that models ::dagir::read_only_dag_view.
  *
- * The `View` parameter is expected to be a type that models a DagIR view
- * (provides `using handle = ...`). This concept is intentionally permissive
- * to match the overloads supported by the IR builder.
+ * @details
+ * A type models ::dagir::node_labeler when an lvalue of @c F is invocable as:
+ *  - @c f(view, handle) and returns a @c std::string
+ *
+ * This lets renderers/IR-builders fetch labels without coupling to adapter internals.
  */
 template <class F, class View>
-concept node_labeler = (requires(const F& f, const View& v, const typename View::handle& h) {
-                         { std::invoke(f, v, h) } -> std::convertible_to<std::string>;
-                       }) || (requires(const F& f, const typename View::handle& h) {
-                         { std::invoke(f, h) } -> std::convertible_to<std::string>;
-                       });
-
+concept node_labeler = requires(const F& f, const View& v, const typename View::handle& h) {
+  { f(v, h) } -> std::convertible_to<std::string>;
+};
 }  // namespace dagir

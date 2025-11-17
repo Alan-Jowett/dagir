@@ -1,13 +1,13 @@
 SPDX-License-Identifier: MIT
 
-# Implementing `ReadOnlyDagView`
+# Implementing `read_only_dag_view`
 
-This document explains how to implement a `ReadOnlyDagView` adapter for DagIR. A
-`ReadOnlyDagView` is a lightweight, non-owning view over an existing DAG and
+This document explains how to implement a `read_only_dag_view` adapter for DagIR. A
+`read_only_dag_view` is a lightweight, non-owning view over an existing DAG and
 exposes a minimal API that the DagIR algorithms and `build_ir` use to traverse
 nodes and edges without copying the underlying graph.
 
-See `include/dagir/ro_dag_view.hpp` for the formal concept definitions; this
+See `include/dagir/concepts/read_only_dag_view.hpp` for the formal concept definitions; this
 document provides a practical summary and examples.
 
 ## Requirements (concept summary)
@@ -28,7 +28,7 @@ Optional:
 ## Example minimal adapter
 
 ```cpp
-#include <dagir/ro_dag_view.hpp>
+#include <dagir/concepts/read_only_dag_view.hpp>
 
 struct MyHandle { uint64_t key; uint64_t stable_key() const noexcept { return key; } };
 
@@ -61,7 +61,7 @@ This example implements a tiny in-memory DAG view suitable for tests and demos. 
 
 ```cpp
 #include <cstdint>
-#include <dagir/ro_dag_view.hpp>
+#include <dagir/concepts/read_only_dag_view.hpp>
 #include <string>
 #include <vector>
 

@@ -15,7 +15,7 @@ Existing graph libraries assume you own the graph. DagIR is different:
 ---
 
 ## ✅ Features
-- **Concepts**: `ExternalDagView`, `NodeHandle`, `EdgeRef`.
+- **Concepts**: `external_dag_view`, `node_handle`, `edge_ref`.
 - **Algorithms**:
   - `topo_order(view, roots)` – Kahn’s algorithm.
   - `postorder_fold(view, root, combine)` – N-ary fold with memoization.

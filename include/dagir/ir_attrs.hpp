@@ -26,24 +26,24 @@ namespace ir_attrs {
  *   order concerns and to keep header-light.
  */
 
-inline constexpr std::string_view kLabel{"label"};
-inline constexpr std::string_view kTooltip{"tooltip"};
-inline constexpr std::string_view kColor{"color"};
-inline constexpr std::string_view kFillColor{"fillcolor"};
-inline constexpr std::string_view kStyle{"style"};
-inline constexpr std::string_view kShape{"shape"};
-inline constexpr std::string_view kPenWidth{"penwidth"};
-inline constexpr std::string_view kFontName{"fontname"};
-inline constexpr std::string_view kFontSize{"fontsize"};
-inline constexpr std::string_view kWeight{"weight"};
-inline constexpr std::string_view kDir{"dir"};
-inline constexpr std::string_view kId{"id"};
-inline constexpr std::string_view kWidth{"width"};
-inline constexpr std::string_view kHeight{"height"};
-inline constexpr std::string_view kGroup{"group"};
+inline constexpr std::string_view k_label{"label"};
+inline constexpr std::string_view k_tooltip{"tooltip"};
+inline constexpr std::string_view k_color{"color"};
+inline constexpr std::string_view k_fill_color{"fillcolor"};
+inline constexpr std::string_view k_style{"style"};
+inline constexpr std::string_view k_shape{"shape"};
+inline constexpr std::string_view k_pen_width{"penwidth"};
+inline constexpr std::string_view k_font_name{"fontname"};
+inline constexpr std::string_view k_font_size{"fontsize"};
+inline constexpr std::string_view k_weight{"weight"};
+inline constexpr std::string_view k_dir{"dir"};
+inline constexpr std::string_view k_id{"id"};
+inline constexpr std::string_view k_width{"width"};
+inline constexpr std::string_view k_height{"height"};
+inline constexpr std::string_view k_group{"group"};
 
 // Graph-level keys
-inline constexpr std::string_view kGraphLabel{"graph.label"};
+inline constexpr std::string_view k_graph_label{"graph.label"};
 
 }  // namespace ir_attrs
 }  // namespace dagir

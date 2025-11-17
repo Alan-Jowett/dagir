@@ -15,7 +15,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "dagir/ro_dag_view.hpp"
+#include "dagir/concepts/read_only_dag_view.hpp"
 
 namespace dagir {
 

@@ -2,15 +2,15 @@
 // Copyright (c) DagIR Contributors
 //
 // File: build_ir.hpp
-// Brief: Build a renderer-neutral IR (nodes/edges/attributes) from a ReadOnlyDagView.
+// Brief: Build a renderer-neutral IR (nodes/edges/attributes) from a read_only_dag_view.
 // Note : Header-only, C++20. Depends on dagir/algorithms.hpp for traversal order.
 
 #pragma once
 
 #include <cstdint>
 #include <dagir/algorithms.hpp>  // topo_order / topo_order_strict and RoDagViewLike
+#include <dagir/concepts/read_only_dag_view.hpp>  // read_only_dag_view
 #include <dagir/ir.hpp>
-#include <dagir/ro_dag_view.hpp>  // read_only_dag_view
 #include <numeric>
 #include <ranges>
 #include <string>
@@ -97,9 +97,9 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
     ir_node n;
     n.id = k;
 
-    if constexpr (std::invocable<NodeLabeler, const View&, const H&>) {
+    if constexpr (std::invocable<node_labeler, const View&, const H&>) {
       n.label = std::invoke(node_label, view, h);
-    } else if constexpr (std::invocable<NodeLabeler, const H&>) {
+    } else if constexpr (std::invocable<node_labeler, const H&>) {
       n.label = std::invoke(node_label, h);
     } else {
       n.label = std::to_string(k);
