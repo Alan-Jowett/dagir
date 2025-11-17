@@ -54,18 +54,26 @@ TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
 	// edges: two outgoing from 0
 	std::vector<std::pair<uint64_t,uint64_t>> edges;
 	for (auto const &e : ir.edges) edges.emplace_back(e.source, e.target);
-	REQUIRE(std::find(edges.begin(), edges.end(), std::make_pair<uint64_t,uint64_t>(0,1)) != edges.end());
-	REQUIRE(std::find(edges.begin(), edges.end(), std::make_pair<uint64_t,uint64_t>(0,2)) != edges.end());
+	REQUIRE(std::find(edges.begin(), edges.end(), std::make_pair(0u, 1u)) != edges.end());
+	REQUIRE(std::find(edges.begin(), edges.end(), std::make_pair(0u, 2u)) != edges.end());
 
-	// attributes present
-	bool found = false;
+	// attributes present for both outgoing edges 0->1 and 0->2
+	bool found01 = false;
+	bool found02 = false;
 	for (auto const &e : ir.edges) {
 		if (e.source == 0 && e.target == 1) {
 			REQUIRE(!e.attributes.empty());
 			REQUIRE(e.attributes[0].key == "rel");
 			REQUIRE(e.attributes[0].value == "0->1");
-			found = true;
+			found01 = true;
+		}
+		if (e.source == 0 && e.target == 2) {
+			REQUIRE(!e.attributes.empty());
+			REQUIRE(e.attributes[0].key == "rel");
+			REQUIRE(e.attributes[0].value == "0->2");
+			found02 = true;
 		}
 	}
-	REQUIRE(found);
+	REQUIRE(found01);
+	REQUIRE(found02);
 }

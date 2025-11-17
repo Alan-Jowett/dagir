@@ -1,6 +1,10 @@
-#pragma once
 // SPDX-License-Identifier: MIT
 // © DagIR Contributors. All rights reserved.
+//
+// File: algorithms.hpp
+// Description: Algorithms for working with DAGs modeled by ReadOnlyDagView.
+
+#pragma once
 
 #include <functional>
 #include <queue>

@@ -1,10 +1,11 @@
-#pragma once
 // SPDX-License-Identifier: MIT
 //
 // DagIR - Read-only external DAG view concepts and helpers
 // A lightweight interface for traversing foreign DAGs without copying.
 //
 // © DagIR Contributors. All rights reserved.
+
+#pragma once
 
 #include <concepts>
 #include <cstdint>

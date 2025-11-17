@@ -81,6 +81,8 @@ IRGraph build_ir(const View& view, NodeLabeler&& node_label, EdgeAttributor&& ed
 
 	// Map stable_key -> node index in graph.nodes
 	std::unordered_map<key_t, std::size_t> node_index;
+	// Reserve more than topo.size() to account for hash map load factor
+	// and reduce rehashing overhead on common workloads.
 	node_index.reserve(topo.size() * 2);
 
 	// First, create nodes (memoized) using label policy
@@ -111,10 +113,9 @@ IRGraph build_ir(const View& view, NodeLabeler&& node_label, EdgeAttributor&& ed
 	// Now collect edges; reserve approximate size by summing child counts
 	std::size_t est_edges = 0;
 	for (const H& h : topo) {
-		for (auto const &e : view.children(h)) {
-            ++est_edges;
-            (e);
-        }
+		for ([[maybe_unused]] auto const &e : view.children(h)) {
+			++est_edges;
+		}
 	}
 	graph.edges.reserve(est_edges);
 
