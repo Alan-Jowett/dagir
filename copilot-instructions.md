@@ -8,6 +8,7 @@ Guidance for contributors:
 - Keep responses concise and focused on code changes.
 - Do not commit generated large transformations without a human review.
 - When asked to modify repository files, ensure tests still pass locally.
+ - Prefer small, targeted fixes: keep each change focused and minimal to address a single concern.
  
 Additional requirements for automated agents (Copilot/coding agents):
 - All commits produced or suggested by automated agents must include a Signed-off-by line (`-s`/`Signed-off-by:`) in the commit message. Do not create commits without this sign-off.
