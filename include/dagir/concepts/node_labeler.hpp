@@ -10,6 +10,17 @@
 
 namespace dagir::concepts {
 
+template <class F, class View>
+concept node_labeler_with_view =
+    requires(const F& f, const View& v, const typename View::handle& h) {
+      { f(v, h) } -> std::convertible_to<std::string>;
+    };
+
+template <class F, class View>
+concept node_labeler_with_handle = requires(const F& f, const typename View::handle& h) {
+  { f(h) } -> std::convertible_to<std::string>;
+};
+
 /**
  * @brief Concept for a node labeling policy callable.
  *
@@ -26,14 +37,6 @@ namespace dagir::concepts {
  * This lets renderers/IR-builders fetch labels without coupling to adapter internals.
  */
 template <class F, class View>
-concept node_labeler =
-    // f(view, handle)
-    requires(const F& f, const View& v, const typename View::handle& h) {
-      { f(v, h) } -> std::convertible_to<std::string>;
-    } ||
-    // or f(handle)
-    requires(const F& f, const View& /*v*/, const typename View::handle& h) {
-      { f(h) } -> std::convertible_to<std::string>;
-    };
+concept node_labeler = node_labeler_with_view<F, View> || node_labeler_with_handle<F, View>;
 
 }  // namespace dagir::concepts

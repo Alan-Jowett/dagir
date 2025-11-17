@@ -12,10 +12,9 @@
  */
 
 #include <catch2/catch_test_macros.hpp>
-
 #include <dagir/build_ir.hpp>
-#include <dagir/concepts/node_handle.hpp>
 #include <dagir/concepts/edge_ref.hpp>
+#include <dagir/concepts/node_handle.hpp>
 
 #include "mock_dag.hpp"
 

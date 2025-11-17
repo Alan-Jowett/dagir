@@ -1,6 +1,6 @@
 /**
  * @file test_ro_dag_view.cpp
- * @brief Unit tests for DagIR read_only_dag_view concept and related utilities.
+ * @brief Unit tests for DagIR read_only_dag_view concepts and related utilities.
  *
  * @details
  * This test suite validates:
