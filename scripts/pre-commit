@@ -12,10 +12,25 @@ echo "Running pre-commit format checks"
 # Get staged C/C++ files. If none, skip.
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-# Source canonical extensions list if present
-if [ -f "$HERE/extensions.sh" ]; then
+# Determine repository root. Prefer git to locate the top-level directory
+# so this hook works both when invoked from the installed .git/hooks path
+# and when run from the `scripts/` source file during development.
+REPO_ROOT=""
+if REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null); then
+  : # use REPO_ROOT from git
+else
+  # Fallback: assume hook lives in .git/hooks or script lives in scripts/
+  if [ -d "$HERE/../.." ]; then
+    REPO_ROOT=$(cd "$HERE/../.." && pwd)
+  else
+    REPO_ROOT=$(cd "$HERE/.." && pwd)
+  fi
+fi
+
+# Source canonical extensions list if present in the repository
+if [ -f "$REPO_ROOT/scripts/extensions.sh" ]; then
   # shellcheck disable=SC1090
-  . "$HERE/extensions.sh"
+  . "$REPO_ROOT/scripts/extensions.sh"
 fi
 
 if [ -n "${SRC_EXTENSIONS:-}" ]; then
@@ -35,7 +50,7 @@ if [ "${PRE_COMMIT_FIX:-0}" = "1" ]; then
   FIX_ARG="--fix"
 fi
 
-ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+ROOT_DIR="$REPO_ROOT"
 
 CHECK_EXIT=0
 if command -v pwsh >/dev/null 2>&1 || command -v powershell >/dev/null 2>&1; then
@@ -48,11 +63,11 @@ if command -v pwsh >/dev/null 2>&1 || command -v powershell >/dev/null 2>&1; the
       powershell -NoProfile -NonInteractive -File "$ROOT_DIR/scripts/check-format.ps1" $FIX_ARG
       CHECK_EXIT=$?
     fi
-  else
-    echo "PowerShell script not found; falling back to bash script"
-    bash "$ROOT_DIR/scripts/check-format.sh" $FIX_ARG
-    CHECK_EXIT=$?
-  fi
+    else
+      echo "PowerShell script not found; falling back to bash script"
+      bash "$ROOT_DIR/scripts/check-format.sh" $FIX_ARG
+      CHECK_EXIT=$?
+    fi
 else
   bash "$ROOT_DIR/scripts/check-format.sh" $FIX_ARG
   CHECK_EXIT=$?
