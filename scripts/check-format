@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 DagIR contributors
+#
+# Core formatting/check logic (POSIX). This file is the single source of truth
+# for formatting/cppcheck behavior. Wrapper scripts call this when `sh`/`bash`
+# is available; PowerShell wrapper falls back when `sh` is missing.
+
+set -euo pipefail
+
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+ROOT=$(cd "$HERE/.." && pwd)
+
+FIX=0
+if [ "${1:-}" = "--fix" ]; then
+  FIX=1
+fi
+
+cd "$ROOT"
+
+FILES=$(git ls-files -- "*.cpp" "*.c" "*.h" "*.hpp" || true)
+if [ -z "$FILES" ]; then
+  echo "No C/C++ files tracked."
+  exit 0
+fi
+
+echo "[check-format] Checking formatting for tracked C/C++ files..."
+if [ "$FIX" -eq 1 ]; then
+  echo "[check-format] Applying clang-format to files..."
+  echo "$FILES" | xargs -r clang-format -i
+else
+  # dry-run check
+  echo "$FILES" | xargs -r clang-format --dry-run --Werror || {
+    echo "[check-format] Formatting issues found. Re-run with --fix to apply clang-format." >&2
+    exit 2
+  }
+fi
+
+if command -v cppcheck >/dev/null 2>&1; then
+  echo "[check-format] Running cppcheck..."
+  echo "$FILES" | xargs -r cppcheck --enable=warning,style --inconclusive --std=c++20 || {
+    echo "[check-format] cppcheck found issues." >&2
+    exit 3
+  }
+else
+  echo "[check-format] cppcheck not found; skipping static analysis."
+fi
+
+echo "[check-format] Format check complete."
+exit 0

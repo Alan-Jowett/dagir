@@ -40,6 +40,9 @@ endif()
 # -----------------------------
 option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" OFF)
 
+# Install developer convenience scripts (pre-commit hook) when present
+include(cmake/format.cmake OPTIONAL)
+
 # -----------------------------
 # Library (header-only)
 # -----------------------------

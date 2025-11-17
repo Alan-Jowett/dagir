@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 DagIR contributors
+
+# Pre-commit hook: run the repository formatting/check helper. This hook is
+# intentionally lightweight: it calls `scripts/check-format.sh` (on POSIX) or
+# `scripts/check-format.ps1` (on Windows/PowerShell) to perform checks and
+# optionally apply fixes.
+
+echo "Running pre-commit format checks"
+
+# Get staged C/C++ files. If none, skip.
+STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(cpp|hpp|h|c|cc|cxx)$" || true)
+if [ -z "$STAGED" ]; then
+  echo "No C/C++ files staged. Skipping."
+  exit 0
+fi
+
+# If the developer has set an environment variable PRE_COMMIT_FIX=1, run with --fix
+FIX_ARG=""
+if [ "${PRE_COMMIT_FIX:-0}" = "1" ]; then
+  FIX_ARG="--fix"
+fi
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+
+if command -v pwsh >/dev/null 2>&1 || command -v powershell >/dev/null 2>&1; then
+  # Prefer PowerShell on Windows
+  if [ -f "$ROOT_DIR/scripts/check-format.ps1" ]; then
+    if command -v pwsh >/dev/null 2>&1; then
+      pwsh -NoProfile -NonInteractive -File "$ROOT_DIR/scripts/check-format.ps1" @( $FIX_ARG )
+    else
+      powershell -NoProfile -NonInteractive -File "$ROOT_DIR/scripts/check-format.ps1" @( $FIX_ARG )
+    fi
+  else
+    echo "PowerShell script not found; falling back to bash script"
+    bash "$ROOT_DIR/scripts/check-format.sh" $FIX_ARG
+  fi
+else
+  bash "$ROOT_DIR/scripts/check-format.sh" $FIX_ARG
+fi
+
+# If the check script modified files (when --fix used), re-stage them
+git add $STAGED || true
+
+exit 0
