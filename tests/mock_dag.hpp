@@ -11,9 +11,9 @@
  */
 #pragma once
 
-#include <cstdint>
-#include <dagir/ro_dag_view.hpp>
 #include <algorithm>
+#include <cstdint>
+#include <dagir/concepts/read_only_dag_view.hpp>
 #include <iterator>
 #include <vector>
 
@@ -49,7 +49,7 @@ struct MockEdge {
 
 /**
  * @class MockDagView
- * @brief Mock adapter modeling ReadOnlyDagView for tests.
+ * @brief Mock adapter modeling read_only_dag_view for tests.
  *
  * @details
  * Provides:

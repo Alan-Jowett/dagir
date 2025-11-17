@@ -26,8 +26,8 @@ if ($All) {
   $all_files = ($staged + $modified) | Where-Object { $_ -ne '' } | Sort-Object -Unique
 }
 
-if (-not $all_files -or $all_files.Count -eq 0) {
-  if ($All) { Write-Output "No files found in repository." } else { Write-Output "No changes to check — OK" }
+if (-not $all_files -or (@($all_files)).Count -eq 0) {
+  if ($All) { Write-Output "No files found in repository." } else { Write-Output "No changes to check - OK" }
   exit 0
 }
 
@@ -45,7 +45,7 @@ $spdxExt = @('c','cpp','cc','cxx','h','hpp','hh','hxx','cmake','sh','ps1','md','
 $SRC_FILES = $all_files | Where-Object { $e = ($_ -split '\.')[-1].ToLower(); $srcExt -contains $e }
 $SPDX_CANDIDATES = $all_files | Where-Object { $e = ($_ -split '\.')[-1].ToLower(); $spdxExt -contains $e }
 
-if ($SPDX_CANDIDATES.Count -gt 0) {
+if ((@($SPDX_CANDIDATES)).Count -gt 0) {
   if ($All -or $Fix -or $VerboseMode) { Write-Output "Checking SPDX headers for these files:"; $SPDX_CANDIDATES | ForEach-Object { Write-Output "  $_" } }
   $missing = @()
   foreach ($f in $SPDX_CANDIDATES) {
@@ -55,7 +55,7 @@ if ($SPDX_CANDIDATES.Count -gt 0) {
       $missing += $f
     }
   }
-  if ($missing.Count -gt 0) {
+  if ((@($missing)).Count -gt 0) {
     Write-Error "The following files are missing an SPDX-License-Identifier in the first 20 lines:"
     $missing | ForEach-Object { Write-Error "  $_" }
     exit 4
@@ -65,7 +65,7 @@ if ($SPDX_CANDIDATES.Count -gt 0) {
 }
 
 # Run clang-format only on C/C++ files
-if ($SRC_FILES.Count -gt 0) {
+if ((@($SRC_FILES)).Count -gt 0) {
     Write-Output "Running clang-format on C/C++ files..."
   foreach ($f in $SRC_FILES) {
     if ($Fix) { & clang-format -style=file -i $f } else { & clang-format -style=file -n --Werror $f }
@@ -79,10 +79,10 @@ if ($SRC_FILES.Count -gt 0) {
 }
 
 # Run cppcheck on C/C++ files only if present
-if ($SRC_FILES.Count -gt 0) {
+if ((@($SRC_FILES)).Count -gt 0) {
   if (Get-Command cppcheck -ErrorAction SilentlyContinue) {
     Write-Output "Running cppcheck on C/C++ files..."
-    $paths = $SRC_FILES | ForEach-Object { $_ }
+    $paths = @($SRC_FILES)
     & cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet $paths
     if ($LASTEXITCODE -ne 0) {
       Write-Error "cppcheck found issues."

@@ -20,23 +20,38 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT=$(cd "$HERE/.." && pwd)
 cd "$ROOT"
 
+# Source canonical extensions list if present
+if [ -f "$HERE/extensions.sh" ]; then
+  # shellcheck disable=SC1090
+  . "$HERE/extensions.sh"
+fi
+
 
 # File categories:
 # - SRC_FILES: C/C++ sources/headers (clang-format + cppcheck)
 # - SPDX_CANDIDATES: files that should contain an SPDX header (includes SRC_FILES)
-SRC_PATTERN='\.(cpp|c|cc|cxx|h|hpp|hh|hxx)$'
-SPDX_PATTERN='\.(cpp|c|cc|cxx|h|hpp|hh|hxx|cmake|ya?ml|md|ps1|sh|clang-format|txt)$'
+if [ -n "${SRC_EXTENSIONS:-}" ]; then
+  SRC_PATTERN=$(printf '\\.(%s)$$' "$(echo "$SRC_EXTENSIONS" | sed 's/ /|/g')")
+else
+  SRC_PATTERN='\\.(cpp|c|cc|cxx|h|hpp|hh|hxx)$'
+fi
+
+if [ -n "${SPDX_EXTENSIONS:-}" ]; then
+  SPDX_PATTERN=$(printf '\\.(%s)$$' "$(echo "$SPDX_EXTENSIONS" | sed 's/ /|/g')")
+else
+  SPDX_PATTERN='\\.(cpp|c|cc|cxx|h|hpp|hh|hxx|cmake|ya?ml|md|ps1|sh|clang-format|txt)$'
+fi
 
 if [ "$ALL" -eq 1 ]; then
-  SPDX_FILES=$(git ls-files 2>/dev/null | grep -E "$SPDX_PATTERN" || true)
-  SRC_FILES=$(git ls-files 2>/dev/null | grep -E "$SRC_PATTERN" || true)
+  SPDX_FILES=$(git -c core.safecrlf=false ls-files | grep -E "$SPDX_PATTERN" || true)
+  SRC_FILES=$(git -c core.safecrlf=false ls-files | grep -E "$SRC_PATTERN" || true)
 else
-  STAGED_SP=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null | grep -E "$SPDX_PATTERN" || true)
-  MOD_SP=$(git diff --name-only --diff-filter=ACM 2>/dev/null | grep -E "$SPDX_PATTERN" || true)
+  STAGED_SP=$(git -c core.safecrlf=false diff --cached --name-only --diff-filter=ACM | grep -E "$SPDX_PATTERN" || true)
+  MOD_SP=$(git -c core.safecrlf=false diff --name-only --diff-filter=ACM | grep -E "$SPDX_PATTERN" || true)
   SPDX_FILES=$(printf '%s\n%s' "$STAGED_SP" "$MOD_SP" | sed '/^$/d' | sort -u || true)
 
-  STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null | grep -E "$SRC_PATTERN" || true)
-  MOD_SRC=$(git diff --name-only --diff-filter=ACM 2>/dev/null | grep -E "$SRC_PATTERN" || true)
+  STAGED_SRC=$(git -c core.safecrlf=false diff --cached --name-only --diff-filter=ACM | grep -E "$SRC_PATTERN" || true)
+  MOD_SRC=$(git -c core.safecrlf=false diff --name-only --diff-filter=ACM | grep -E "$SRC_PATTERN" || true)
   SRC_FILES=$(printf '%s\n%s' "$STAGED_SRC" "$MOD_SRC" | sed '/^$/d' | sort -u || true)
 fi
 
@@ -53,11 +68,11 @@ fi
 
 if [ "$ALL" -eq 1 ] || [ "$FIX" -eq 1 ] || [ "$VERBOSE" -eq 1 ]; then
   echo "SPDX-eligible files to check:"
-  printf '%s\n' $SPDX_FILES
+  printf '%s\n' "$SPDX_FILES"
   echo
   if [ -n "$SRC_FILES" ]; then
     echo "C/C++ source files to check formatting/static analysis:";
-    printf '%s\n' $SRC_FILES
+    printf '%s\n' "$SRC_FILES"
   fi
 fi
 
@@ -81,12 +96,16 @@ fi
 if [ -n "$SRC_FILES" ]; then
   if [ "$FIX" -eq 1 ]; then
     echo "Applying clang-format to source files..."
-    printf '%s\n' $SRC_FILES | xargs -r clang-format -i
+    if [ -n "$SRC_FILES" ]; then
+      printf '%s\n' "$SRC_FILES" | xargs clang-format -i
+    fi
   else
-    printf '%s\n' $SRC_FILES | xargs -r clang-format --dry-run --Werror || {
-      echo "Formatting issues found. Re-run with --fix to apply clang-format." >&2
-      exit 2
-    }
+    if [ -n "$SRC_FILES" ]; then
+      printf '%s\n' "$SRC_FILES" | xargs clang-format --dry-run --Werror || {
+        echo "Formatting issues found. Re-run with --fix to apply clang-format." >&2
+        exit 2
+      }
+    fi
   fi
 else
   echo "No C/C++ source files selected for formatting/static analysis."
@@ -96,10 +115,12 @@ fi
 if [ -n "$SRC_FILES" ]; then
   if command -v cppcheck >/dev/null 2>&1; then
     echo "Running cppcheck..."
-    printf '%s\n' $SRC_FILES | xargs -r cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet || {
-      echo "cppcheck found issues." >&2
-      exit 3
-    }
+    if [ -n "$SRC_FILES" ]; then
+      printf '%s\n' "$SRC_FILES" | xargs cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet || {
+        echo "cppcheck found issues." >&2
+        exit 3
+      }
+    fi
   else
     echo "cppcheck not found; skipping static analysis."
   fi
