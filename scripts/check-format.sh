@@ -116,7 +116,7 @@ if [ -n "$SRC_FILES" ]; then
   if command -v cppcheck >/dev/null 2>&1; then
     echo "Running cppcheck..."
     if [ -n "$SRC_FILES" ]; then
-      printf '%s\n' "$SRC_FILES" | xargs cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet || {
+      printf '%s\n' "$SRC_FILES" | xargs cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet --check-level=exhaustive || {
         echo "cppcheck found issues." >&2
         exit 3
       }

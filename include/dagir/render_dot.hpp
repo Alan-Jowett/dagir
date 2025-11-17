@@ -1,0 +1,147 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) DagIR Contributors
+//
+// Header-only DOT renderer for `dagir::ir_graph`.
+// Produces GraphViz-compatible output and maps common `dagir::ir_attrs`
+// to GraphViz attributes where applicable.
+
+#pragma once
+
+#include <algorithm>
+#include <dagir/ir.hpp>
+#include <dagir/ir_attrs.hpp>
+#include <iomanip>
+#include <ostream>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
+namespace dagir {
+
+namespace detail {
+
+inline std::string escape_dot(const std::string& s) {
+  std::string out;
+  out.reserve(s.size() + 8);
+  for (char c : s) {
+    switch (c) {
+      case '\\':
+        out += "\\\\";
+        break;
+      case '"':
+        out += "\\\"";
+        break;
+      case '\n':
+        out += "\\n";
+        break;
+      case '\r':
+        break;
+      default:
+        out += c;
+        break;
+    }
+  }
+  return out;
+}
+
+inline void write_attrs(std::ostream& os, const std::vector<ir_attr>& attrs) {
+  bool first = true;
+  for (const auto& a : attrs) {
+    if (!first) os << ", ";
+    first = false;
+    // Emit key="escaped value"
+    os << a.key << "=\"" << escape_dot(a.value) << "\"";
+  }
+}
+
+inline std::unordered_map<std::string, std::string> attrs_to_map(
+    const std::vector<ir_attr>& attrs) {
+  std::unordered_map<std::string, std::string> m;
+  for (const auto& a : attrs) m.emplace(a.key, a.value);
+  return m;
+}
+
+}  // namespace detail
+
+// Writes a GraphViz DOT representation of `g` to `os`.
+// `graph_name` is used as the DOT graph identifier.
+inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view graph_name = "G") {
+  os << "digraph " << graph_name << " {\n";
+  os << "  rankdir=TB;\n";  // default top-to-bottom layout
+
+  // First, emit global graph attributes (map known keys)
+  for (const auto& a : g.global_attrs) {
+    if (a.key == std::string(ir_attrs::k_graph_label)) {
+      os << "  label=\"" << detail::escape_dot(a.value) << "\";\n";
+    } else {
+      os << "  " << a.key << "=\"" << detail::escape_dot(a.value) << "\";\n";
+    }
+  }
+
+  // Emit nodes
+  for (const auto& n : g.nodes) {
+    const std::string node_name = "n" + std::to_string(n.id);
+
+    // Build attribute map from node.attrs and label fields
+    auto amap = detail::attrs_to_map(n.attributes);
+
+    // Ensure label: prefer k_label, then node.label, then id
+    std::string label;
+    if (amap.count(std::string(ir_attrs::k_label)))
+      label = amap[std::string(ir_attrs::k_label)];
+    else if (!n.label.empty())
+      label = n.label;
+    else
+      label = std::to_string(n.id);
+
+    // If fill color present, advise style=filled unless style set
+    if (amap.count(std::string(ir_attrs::k_fill_color)) &&
+        !amap.count(std::string(ir_attrs::k_style))) {
+      amap[std::string(ir_attrs::k_style)] = "filled";
+    }
+
+    os << "  " << node_name << " [";
+    // Emit label first
+    os << "label=\"" << detail::escape_dot(label) << "\"";
+
+    // Emit other attributes, but skip keys we've handled
+    for (const auto& kv : amap) {
+      if (kv.first == std::string(ir_attrs::k_label)) continue;
+      os << ", " << kv.first << "=\"" << detail::escape_dot(kv.second) << "\"";
+    }
+
+    os << "];\n";
+  }
+
+  // Emit edges
+  for (const auto& e : g.edges) {
+    const std::string src = "n" + std::to_string(e.source);
+    const std::string dst = "n" + std::to_string(e.target);
+
+    auto amap = detail::attrs_to_map(e.attributes);
+
+    os << "  " << src << " -> " << dst;
+    if (!amap.empty()) {
+      os << " [";
+      bool first = true;
+      // Prefer label from k_label
+      if (amap.count(std::string(ir_attrs::k_label))) {
+        os << "label=\"" << detail::escape_dot(amap[std::string(ir_attrs::k_label)]) << "\"";
+        first = false;
+      }
+      for (const auto& kv : amap) {
+        if (kv.first == std::string(ir_attrs::k_label)) continue;
+        if (!first) os << ", ";
+        first = false;
+        os << kv.first << "=\"" << detail::escape_dot(kv.second) << "\"";
+      }
+      os << "]";
+    }
+    os << ";\n";
+  }
+
+  os << "}\n";
+}
+
+}  // namespace dagir
