@@ -27,69 +27,12 @@ namespace dagir {
  */
 
 //-----------------------------
-// 1) Core element concepts
+// 1) Core element concepts (split into one header per concept)
 //-----------------------------
 
-/**
- * @brief Opaque, cheap handle to a node in a foreign DAG.
- *
- * @tparam H Handle type provided by an adapter.
- *
- * @details
- * A type models ::dagir::NodeHandle when:
- *  - It is @c std::copyable
- *  - It exposes @c stable_key() returning a @c std::uint64_t suitable for memoization
- *  - It exposes @c debug_address() returning a @c const void* (may be @c nullptr)
- *  - It supports equality/inequality with identity semantics
- *
- * @note
- *  - If a backend has complemented edges or phases (e.g., CUDD), incorporate those
- *    semantics into the handle identity (and therefore its @c stable_key()).
- */
-template <class H>
-concept NodeHandle = std::copyable<H> && requires(const H& h) {
-  { h.stable_key() } -> std::convertible_to<std::uint64_t>;
-  { h.debug_address() } -> std::convertible_to<const void*>;
-  { h == h } -> std::same_as<bool>;
-  { h != h } -> std::same_as<bool>;
-};
-
-/**
- * @brief Lightweight, read-only edge reference that yields a child handle.
- *
- * @tparam E Edge reference type provided by an adapter.
- * @tparam H The adapter's node handle type.
- *
- * @details
- * A type models ::dagir::EdgeRef when it provides:
- *  - @c target() -> @c H
- *
- * Optional:
- *  - @c label() returning any type (weight, annotation, etc.). Not required
- *    by the concept; algorithms/policies can SFINAE on availability.
- */
-template <class E, class H>
-concept EdgeRef = requires(const E& e) {
-  { e.target() } -> std::convertible_to<H>;
-  // Optional:
-  // { e.label() } -> /* any type */;
-};
-
-/**
- * @brief Range of child edges for a node.
- *
- * @tparam R Range type returned by @c children(handle).
- * @tparam H Adapter's node handle type.
- *
- * @details
- * Models ::dagir::ChildrenRange if @c R is an @c input_range whose
- * value_type *or* reference_type satisfies ::dagir::EdgeRef.
- * This permits views that yield either edge values or edge references.
- */
-template <class R, class H>
-concept ChildrenRange = std::ranges::input_range<R> &&
-                        (EdgeRef<std::ranges::range_value_t<R>, H> ||
-                         EdgeRef<std::remove_cvref_t<std::ranges::range_reference_t<R>>, H>);
+#include <dagir/concepts/children_range.hpp>
+#include <dagir/concepts/edge_ref.hpp>
+#include <dagir/concepts/node_handle.hpp>
 
 //-----------------------------------------------
 // 2) Read-only External DAG View concept
