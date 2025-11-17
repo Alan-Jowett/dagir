@@ -20,7 +20,7 @@ namespace ir_attrs {
  * - These keys are intentionally generic. Backends (JSON, Mermaid,
  *   GraphViz, etc.) should map these keys to renderer-specific
  *   names/semantics as required.
- * - Policy objects that produce `dagir::IRAttr` should use these
+ * - Policy objects that produce `dagir::ir_attr` should use these
  *   constants to avoid typos and make intent explicit.
  * - We prefer `std::string_view` here to avoid static allocation
  *   order concerns and to keep header-light.

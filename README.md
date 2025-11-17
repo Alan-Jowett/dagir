@@ -20,7 +20,7 @@ Existing graph libraries assume you own the graph. DagIR is different:
   - `topo_order(view, roots)` – Kahn’s algorithm.
   - `postorder_fold(view, root, combine)` – N-ary fold with memoization.
 - **IR Layer**:
-  - `IRGraph` with nodes, edges, attributes.
+  - `ir_graph` with nodes, edges, attributes.
 - **Renderers**:
   - DOT (Graphviz)
   - Mermaid

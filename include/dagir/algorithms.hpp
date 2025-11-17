@@ -23,7 +23,7 @@ namespace dagir {
  * @brief Compute a topological ordering of nodes reachable from `view.roots()`
  *        using Kahn's algorithm.
  *
- * @tparam View A type modeling ::dagir::ReadOnlyDagView
+ * @tparam View A type modeling ::dagir::read_only_dag_view
  * @param view The read-only DAG view
  * @return std::vector<typename View::handle> A topological ordering of handles.
  * @throws std::runtime_error if a cycle is detected in the reachable subgraph.
@@ -33,7 +33,7 @@ namespace dagir {
  *  - Nodes are identified by their `stable_key()` for hash maps, and the returned
  *    handles preserve the adapter's handle values.
  */
-template <ReadOnlyDagView View>
+template <read_only_dag_view View>
 std::vector<typename View::handle> kahn_topological_order(const View& view) {
   using H = typename View::handle;
   using key_t = std::uint64_t;
@@ -120,7 +120,7 @@ std::vector<typename View::handle> kahn_topological_order(const View& view) {
  *
  *   R combiner(const View& view, typename View::handle node, std::span<const R> child_results)
  *
- * @tparam View A type modeling ::dagir::ReadOnlyDagView
+ * @tparam View A type modeling ::dagir::read_only_dag_view
  * @tparam R Result type
  * @tparam Combiner Callable type as described above
  * @param view The read-only DAG view
@@ -130,7 +130,7 @@ std::vector<typename View::handle> kahn_topological_order(const View& view) {
  * Implementation note: we reuse Kahn's algorithm to obtain a topological order,
  * then process nodes in reverse topological order so children are computed first.
  */
-template <ReadOnlyDagView View, class R, class Combiner>
+template <read_only_dag_view View, class R, class Combiner>
 auto postorder_fold(const View& view, Combiner combiner) -> std::unordered_map<std::uint64_t, R> {
   using H = typename View::handle;
   using key_t = std::uint64_t;

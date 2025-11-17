@@ -44,7 +44,7 @@ TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
   auto edge_attr = [](auto const& parent, auto const& edge_like) {
     // edge_like is expected to provide target()
     auto child = edge_like.target();
-    return std::vector<dagir::IRAttr>{
+    return std::vector<dagir::ir_attr>{
         {"rel", std::to_string(parent.stable_key()) + "->" + std::to_string(child.stable_key())}};
   };
 

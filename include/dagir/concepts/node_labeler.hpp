@@ -8,7 +8,7 @@
 #include <functional>
 #include <string>
 
-namespace dagir::concepts {
+namespace dagir {
 
 /**
  * @brief Concept for a node labeling policy callable.
@@ -23,10 +23,10 @@ namespace dagir::concepts {
  * to match the overloads supported by the IR builder.
  */
 template <class F, class View>
-concept NodeLabeler = (requires(const F& f, const View& v, const typename View::handle& h) {
-                        { std::invoke(f, v, h) } -> std::convertible_to<std::string>;
-                      }) || (requires(const F& f, const typename View::handle& h) {
-                        { std::invoke(f, h) } -> std::convertible_to<std::string>;
-                      });
+concept node_labeler = (requires(const F& f, const View& v, const typename View::handle& h) {
+                         { std::invoke(f, v, h) } -> std::convertible_to<std::string>;
+                       }) || (requires(const F& f, const typename View::handle& h) {
+                         { std::invoke(f, h) } -> std::convertible_to<std::string>;
+                       });
 
-}  // namespace dagir::concepts
+}  // namespace dagir

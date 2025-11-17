@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <dagir/algorithms.hpp>  // topo_order / topo_order_strict and RoDagViewLike
 #include <dagir/ir.hpp>
-#include <dagir/ro_dag_view.hpp>  // ReadOnlyDagView
+#include <dagir/ro_dag_view.hpp>  // read_only_dag_view
 #include <numeric>
 #include <ranges>
 #include <string>
@@ -43,7 +43,7 @@ static H build_ir_extract_child(const E& e) {
 }
 
 /**
- * @brief Construct an IRGraph from a read-only DAG view.
+ * @brief Construct an `ir_graph` from a read-only DAG view.
  *
  * @tparam View A type modeling ::dagir::ReadOnlyDagView
  * @tparam NodeLabeler Callable used to produce node labels. Supported
@@ -58,19 +58,19 @@ static H build_ir_extract_child(const E& e) {
  * @param view Read-only DAG view to traverse.
  * @param node_label Node label policy.
  * @param edge_attr Edge attribute policy.
- * @return IRGraph The constructed intermediate representation.
+ * @return ir_graph The constructed intermediate representation.
  *
  * Behavior:
  *  - Traverses the DAG in topological order (using `kahn_topological_order`).
  *  - Calls `view.start_guard(handle)` if provided by the adapter.
  *  - Memoizes nodes by `stable_key()` to avoid duplicates.
  */
-template <ReadOnlyDagView View, class NodeLabeler, class EdgeAttributor>
-IRGraph build_ir(const View& view, NodeLabeler&& node_label, EdgeAttributor&& edge_attr) {
+template <read_only_dag_view View, class node_labeler, class edge_attributor>
+ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&& edge_attr) {
   using H = typename View::handle;
   using key_t = std::uint64_t;
 
-  IRGraph graph;
+  ir_graph graph;
 
   // Get a deterministic traversal order (topological for DAGs). We traverse
   // nodes in topological order and generate edges as we go.
@@ -94,7 +94,7 @@ IRGraph build_ir(const View& view, NodeLabeler&& node_label, EdgeAttributor&& ed
       (void)guard;
     }
 
-    IRNode n;
+    ir_node n;
     n.id = k;
 
     if constexpr (std::invocable<NodeLabeler, const View&, const H&>) {
@@ -125,19 +125,19 @@ IRGraph build_ir(const View& view, NodeLabeler&& node_label, EdgeAttributor&& ed
       H child = build_ir_extract_child<H>(edge_like);
       key_t ck = child.stable_key();
 
-      IREdge ie;
+      ir_edge ie;
       ie.source = pk;
       ie.target = ck;
 
       // Determine attributes via flexible invocation forms
-      if constexpr (std::invocable<EdgeAttributor, const View&, const H&,
+      if constexpr (std::invocable<edge_attributor, const View&, const H&,
                                    const decltype(edge_like)&>) {
         ie.attributes = std::invoke(edge_attr, view, parent, edge_like);
-      } else if constexpr (std::invocable<EdgeAttributor, const View&, const H&, const H&>) {
+      } else if constexpr (std::invocable<edge_attributor, const View&, const H&, const H&>) {
         ie.attributes = std::invoke(edge_attr, view, parent, child);
-      } else if constexpr (std::invocable<EdgeAttributor, const H&, const decltype(edge_like)&>) {
+      } else if constexpr (std::invocable<edge_attributor, const H&, const decltype(edge_like)&>) {
         ie.attributes = std::invoke(edge_attr, parent, edge_like);
-      } else if constexpr (std::invocable<EdgeAttributor, const H&, const H&>) {
+      } else if constexpr (std::invocable<edge_attributor, const H&, const H&>) {
         ie.attributes = std::invoke(edge_attr, parent, child);
       } else {
         ie.attributes = {};
@@ -151,15 +151,15 @@ IRGraph build_ir(const View& view, NodeLabeler&& node_label, EdgeAttributor&& ed
 }
 
 /**
- * @brief Convenience overload that builds an IRGraph using default policies.
+ * @brief Convenience overload that builds an `ir_graph` using default policies.
  *
  * Default node label: `std::to_string(handle.stable_key())`.
  * Default edge attributes: empty vector.
  */
-template <ReadOnlyDagView View>
-IRGraph build_ir(const View& view) {
+template <read_only_dag_view View>
+ir_graph build_ir(const View& view) {
   auto node_label = [](auto const& h) -> std::string { return std::to_string(h.stable_key()); };
-  auto edge_attr = [](auto..., auto...) -> std::vector<IRAttr> { return {}; };
+  auto edge_attr = [](auto..., auto...) -> std::vector<ir_attr> { return {}; };
   return build_ir(view, node_label, edge_attr);
 }
 
