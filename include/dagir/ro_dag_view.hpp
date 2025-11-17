@@ -178,44 +178,9 @@ struct BasicEdge {
   constexpr const H& target() const noexcept { return to; }
 };
 
-//-----------------------------------------------
-// 5) Example: policy hooks (labels, attributes)
-//-----------------------------------------------
-
-/**
- * @brief Concept for a node labeling policy callable.
- *
- * @tparam F Callable type.
- * @tparam View A type that models ::dagir::ReadOnlyDagView.
- *
- * @details
- * A type models ::dagir::NodeLabeler when an lvalue of @c F is invocable as:
- *  - @c f(view, handle) and returns a @c std::string
- *
- * This lets renderers/IR-builders fetch labels without coupling to adapter internals.
- */
-template <class F, class View>
-concept NodeLabeler = requires(const F& f, const View& v, const typename View::handle& h) {
-  { f(v, h) } -> std::convertible_to<std::string>;
-};
-
-/**
- * @brief Concept for an edge attribute policy callable.
- *
- * @tparam F Callable type.
- * @tparam View A type that models ::dagir::ReadOnlyDagView.
- *
- * @details
- * A type models ::dagir::EdgeAttributor when an lvalue of @c F is invocable as:
- *  - @c f(view, parent_handle, child_handle)
- *
- * The return type is unconstrained (string, struct, map, etc.) and is left to the
- * renderer/IR builder to interpret. Edge attribution is optional.
- */
-template <class F, class View>
-concept EdgeAttributor = requires(const F& f, const View& v, const typename View::handle& p,
-                                  const typename View::handle& c) {
-  { f(v, p, c) };
-};
+// Policy concept helpers live in their own header so implementations can
+// check conformance without pulling in the entire build_ir algorithm.
+#include <dagir/concepts/edge_attributor.hpp>
+#include <dagir/concepts/node_labeler.hpp>
 
 }  // namespace dagir
