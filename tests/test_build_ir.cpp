@@ -60,8 +60,9 @@ TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
   edges.reserve(ir.edges.size());
   std::transform(ir.edges.begin(), ir.edges.end(), std::back_inserter(edges),
                  [](auto const& e) { return std::make_pair(e.source, e.target); });
-  REQUIRE(std::find(edges.begin(), edges.end(), std::make_pair(0u, 1u)) != edges.end());
-  REQUIRE(std::find(edges.begin(), edges.end(), std::make_pair(0u, 2u)) != edges.end());
+  using edge_pair_t = decltype(edges)::value_type;
+  REQUIRE(std::find(edges.begin(), edges.end(), edge_pair_t{0, 1}) != edges.end());
+  REQUIRE(std::find(edges.begin(), edges.end(), edge_pair_t{0, 2}) != edges.end());
 
   // attributes present for both outgoing edges 0->1 and 0->2
   bool found01 = false;
