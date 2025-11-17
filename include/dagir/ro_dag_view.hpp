@@ -46,14 +46,12 @@ namespace dagir {
  *    semantics into the handle identity (and therefore its @c stable_key()).
  */
 template <class H>
-concept NodeHandle =
-    std::copyable<H> &&
-    requires (const H& h) {
-        { h.stable_key() }    -> std::convertible_to<std::uint64_t>;
-        { h.debug_address() } -> std::convertible_to<const void*>;
-        { h == h }            -> std::same_as<bool>;
-        { h != h }            -> std::same_as<bool>;
-    };
+concept NodeHandle = std::copyable<H> && requires(const H& h) {
+  { h.stable_key() } -> std::convertible_to<std::uint64_t>;
+  { h.debug_address() } -> std::convertible_to<const void*>;
+  { h == h } -> std::same_as<bool>;
+  { h != h } -> std::same_as<bool>;
+};
 
 /**
  * @brief Lightweight, read-only edge reference that yields a child handle.
@@ -70,12 +68,11 @@ concept NodeHandle =
  *    by the concept; algorithms/policies can SFINAE on availability.
  */
 template <class E, class H>
-concept EdgeRef =
-    requires (const E& e) {
-        { e.target() } -> std::convertible_to<H>;
-        // Optional:
-        // { e.label() } -> /* any type */;
-    };
+concept EdgeRef = requires(const E& e) {
+  { e.target() } -> std::convertible_to<H>;
+  // Optional:
+  // { e.label() } -> /* any type */;
+};
 
 /**
  * @brief Range of child edges for a node.
@@ -89,10 +86,9 @@ concept EdgeRef =
  * This permits views that yield either edge values or edge references.
  */
 template <class R, class H>
-concept ChildrenRange =
-    std::ranges::input_range<R> &&
-    ( EdgeRef<std::ranges::range_value_t<R>, H> ||
-      EdgeRef<std::remove_cvref_t<std::ranges::range_reference_t<R>>, H> );
+concept ChildrenRange = std::ranges::input_range<R> &&
+                        (EdgeRef<std::ranges::range_value_t<R>, H> ||
+                         EdgeRef<std::remove_cvref_t<std::ranges::range_reference_t<R>>, H>);
 
 //-----------------------------------------------
 // 2) Read-only External DAG View concept
@@ -115,13 +111,13 @@ concept ChildrenRange =
  *    do not require any guarding may return ::dagir::NoopGuard.
  */
 template <class G>
-concept ReadOnlyDagView =
-    requires (const G& g, typename G::handle h) {
-        typename G::handle; requires NodeHandle<typename G::handle>;
-        { g.children(h) } -> ChildrenRange<typename G::handle>;
-        { g.roots() }     -> std::ranges::input_range;
-        // Optional: g.start_guard(h)
-    };
+concept ReadOnlyDagView = requires(const G& g, typename G::handle h) {
+  typename G::handle;
+  requires NodeHandle<typename G::handle>;
+  { g.children(h) } -> ChildrenRange<typename G::handle>;
+  { g.roots() } -> std::ranges::input_range;
+  // Optional: g.start_guard(h)
+};
 
 //-----------------------------------------------
 // 3) Lightweight adapter utilities (optional)
@@ -135,12 +131,12 @@ concept ReadOnlyDagView =
  * @c start_guard(handle) returning a @c NoopGuard to satisfy uniform call sites.
  */
 struct NoopGuard {
-    NoopGuard() = default;
-    ~NoopGuard() = default;
-    NoopGuard(const NoopGuard&) = delete;
-    NoopGuard& operator=(const NoopGuard&) = delete;
-    NoopGuard(NoopGuard&&) = default;
-    NoopGuard& operator=(NoopGuard&&) = default;
+  NoopGuard() = default;
+  ~NoopGuard() = default;
+  NoopGuard(const NoopGuard&) = delete;
+  NoopGuard& operator=(const NoopGuard&) = delete;
+  NoopGuard(NoopGuard&&) = default;
+  NoopGuard& operator=(NoopGuard&&) = default;
 };
 
 /**
@@ -156,8 +152,10 @@ struct NoopGuard {
  */
 template <class V>
 consteval bool models_read_only_view() {
-    if constexpr (ReadOnlyDagView<V>) return true;
-    else return false;
+  if constexpr (ReadOnlyDagView<V>)
+    return true;
+  else
+    return false;
 }
 
 //-----------------------------------------------
@@ -174,9 +172,9 @@ consteval bool models_read_only_view() {
  */
 template <NodeHandle H>
 struct BasicEdge {
-    H to;                                      ///< Child handle
-    /// @brief Returns the child handle.
-    constexpr const H& target() const noexcept { return to; }
+  H to;  ///< Child handle
+  /// @brief Returns the child handle.
+  constexpr const H& target() const noexcept { return to; }
 };
 
 //-----------------------------------------------
@@ -196,10 +194,9 @@ struct BasicEdge {
  * This lets renderers/IR-builders fetch labels without coupling to adapter internals.
  */
 template <class F, class View>
-concept NodeLabeler =
-    requires (const F& f, const View& v, const typename View::handle& h) {
-        { f(v, h) } -> std::convertible_to<std::string>;
-    };
+concept NodeLabeler = requires(const F& f, const View& v, const typename View::handle& h) {
+  { f(v, h) } -> std::convertible_to<std::string>;
+};
 
 /**
  * @brief Concept for an edge attribute policy callable.
@@ -215,11 +212,9 @@ concept NodeLabeler =
  * renderer/IR builder to interpret. Edge attribution is optional.
  */
 template <class F, class View>
-concept EdgeAttributor =
-    requires (const F& f, const View& v,
-              const typename View::handle& p,
-              const typename View::handle& c) {
-        { f(v, p, c) };
-    };
+concept EdgeAttributor = requires(const F& f, const View& v, const typename View::handle& p,
+                                  const typename View::handle& c) {
+  { f(v, p, c) };
+};
 
-} // namespace dagir
+}  // namespace dagir

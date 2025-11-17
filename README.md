@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: MIT
+  Copyright (c) 2025 DagIR contributors -->
 # DagIR
 **A header-only C++20 library for external DAG traversal, IR generation, and multi-backend rendering.**
 

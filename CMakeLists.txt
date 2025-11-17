@@ -40,6 +40,9 @@ endif()
 # -----------------------------
 option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" OFF)
 
+# Install developer convenience scripts (pre-commit hook) when present
+include(cmake/format.cmake OPTIONAL)
+
 # -----------------------------
 # Library (header-only)
 # -----------------------------
@@ -131,6 +134,10 @@ if(DAGIR_BUILD_TESTS)
     # Register tests using Catch2's discovery
     include(Catch)
     catch_discover_tests(dagir_tests)
+
+    # Ensure there is always at least one CTest entry for the test executable
+    # (some CMake/Catch2 setups may not create entries in certain environments).
+    add_test(NAME dagir_tests COMMAND dagir_tests)
   else()
     message(WARNING "DAGIR_BUILD_TESTS=ON but no test sources were found under tests/")
   endif()
