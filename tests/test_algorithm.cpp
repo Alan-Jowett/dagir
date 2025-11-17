@@ -18,6 +18,7 @@
 #include <dagir/algorithms.hpp>
 
 #include "mock_dag.hpp"
+#include <numeric>
 
 // -----------------------------
 using dagir::kahn_topological_order;
