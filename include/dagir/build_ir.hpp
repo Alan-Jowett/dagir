@@ -8,7 +8,7 @@
 #pragma once
 
 #include <cstdint>
-#include <dagir/algorithms.hpp>  // topo_order / topo_order_strict and RoDagViewLike
+#include <dagir/algorithms.hpp>  // kahn_topological_order
 #include <dagir/concepts/read_only_dag_view.hpp>  // read_only_dag_view
 #include <dagir/ir.hpp>
 #include <numeric>
