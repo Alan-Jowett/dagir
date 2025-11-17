@@ -15,12 +15,10 @@ Existing graph libraries assume you own the graph. DagIR is different:
 ---
 
 ## ✅ Features
-- **Concepts**: `external_dag_view`, `node_handle`, `edge_ref`.
-- **Algorithms**:
-  - `topo_order(view, roots)` – Kahn’s algorithm.
+ **Concepts**: `external_dag_view`, `node_handle`, `edge_ref`.
+   - `kahn_topological_order(view)` – Kahn’s algorithm.
   - `postorder_fold(view, root, combine)` – N-ary fold with memoization.
-- **IR Layer**:
-  - `ir_graph` with nodes, edges, attributes.
+   - `ir_graph` with nodes, edges, attributes.
 - **Renderers**:
   - DOT (Graphviz)
   - Mermaid

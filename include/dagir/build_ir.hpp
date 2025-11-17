@@ -145,11 +145,9 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
 
 /**
  * @brief Convenience overload that builds an `ir_graph` using default policies.
- *
- * Default node label: `std::to_string(handle.stable_key())`.
- * Default edge attributes: empty vector.
- */
-template <dagir::concepts::read_only_dag_view View>
+    // Note: we memoize nodes by stable_key() via graph.nodes order. No
+    // additional index map is required here; edges store stable_key values
+    // directly which keeps the IR renderer-neutral and avoids an unused map.
 ir_graph build_ir(const View& view) {
   auto node_label = [](auto const& h) -> std::string { return std::to_string(h.stable_key()); };
   auto edge_attr = [](auto..., auto...) -> std::vector<ir_attr> { return {}; };
