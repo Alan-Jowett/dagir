@@ -104,7 +104,6 @@ if(DAGIR_BUILD_TESTS)
   # Gather test sources (portable glob; users can add more files).
   file(GLOB DAGIR_TEST_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/tests/*_test.cpp"
   )
 
   if(DAGIR_TEST_SOURCES)
