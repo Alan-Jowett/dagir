@@ -13,8 +13,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <dagir/ro_dag_view.hpp>
 #include <vector>
 #include <cstdint>
@@ -74,32 +73,12 @@ public:
      */
     auto children(handle h) const {
         const size_t idx = static_cast<size_t>(h.id);
-        if (idx >= adj_.size()) {
-            struct EmptyRange {
-                struct It {
-                    bool operator==(const It&) const { return true; }
-                    MockEdge operator*() const { return {}; }
-                    It& operator++() { return *this; }
-                };
-                It begin() const { return {}; }
-                It end() const { return {}; }
-            };
-            return EmptyRange{};
+        std::vector<MockEdge> out;
+        if (idx < adj_.size()) {
+            out.reserve(adj_[idx].size());
+            for (auto const &hh : adj_[idx]) out.push_back(MockEdge{hh});
         }
-
-        struct Range {
-            const std::vector<handle>* vec{};
-            struct It {
-                const handle* p{};
-                const handle* e{};
-                MockEdge operator*() const { return MockEdge{ *p }; }
-                It& operator++() { ++p; return *this; }
-                bool operator==(const It& o) const { return p == o.p; }
-            };
-            It begin() const { return { vec->data(), vec->data() + vec->size() }; }
-            It end() const { return { vec->data() + vec->size(), vec->data() + vec->size() }; }
-        };
-        return Range{ &adj_[idx] };
+        return out;
     }
 
     /**
@@ -107,35 +86,9 @@ public:
      * @return Range of handles or empty range if roots_ is empty.
      */
     auto roots() const {
-        if (roots_.empty()) {
-            struct EmptyRange {
-                struct It {
-                    bool operator==(const It&) const { return true; }
-                    const handle& operator*() const {
-                        static handle dummy{};
-                        return dummy;
-                    }
-                    It& operator++() { return *this; }
-                };
-                It begin() const { return {}; }
-                It end() const { return {}; }
-            };
-            return EmptyRange{};
-        }
-
-        struct Range {
-            const std::vector<handle>* vec{};
-            struct It {
-                const handle* p{};
-                const handle* e{};
-                const handle& operator*() const { return *p; }
-                It& operator++() { ++p; return *this; }
-                bool operator==(const It& o) const { return p == o.p; }
-            };
-            It begin() const { return { vec->data(), vec->data() + vec->size() }; }
-            It end() const { return { vec->data() + vec->size(), vec->data() + vec->size() }; }
-        };
-        return Range{ &roots_ };
+        // Return a small vector copy of roots to satisfy range concepts easily.
+        std::vector<handle> out = roots_;
+        return out;
     }
 
 private:
