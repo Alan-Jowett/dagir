@@ -11,9 +11,9 @@
  */
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <dagir/ro_dag_view.hpp>
-#include <algorithm>
 #include <iterator>
 #include <vector>
 

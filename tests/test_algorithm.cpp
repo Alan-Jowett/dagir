@@ -16,9 +16,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <dagir/algorithms.hpp>
+#include <numeric>
 
 #include "mock_dag.hpp"
-#include <numeric>
 
 // -----------------------------
 using dagir::kahn_topological_order;
