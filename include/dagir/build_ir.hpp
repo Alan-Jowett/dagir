@@ -78,12 +78,6 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
 
   graph.nodes.reserve(topo.size());
 
-  // Map stable_key -> node index in graph.nodes
-  std::unordered_map<key_t, std::size_t> node_index;
-  // Reserve more than topo.size() to account for hash map load factor
-  // and reduce rehashing overhead on common workloads.
-  node_index.reserve(topo.size() * 2);
-
   // First, create nodes (memoized) using label policy
   for (const H& h : topo) {
     key_t k = h.stable_key();
@@ -105,7 +99,6 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
       n.label = std::to_string(k);
     }
 
-    node_index.emplace(k, graph.nodes.size());
     graph.nodes.push_back(std::move(n));
   }
 

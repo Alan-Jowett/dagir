@@ -90,18 +90,19 @@ struct IntDagView {
 };
 ```
 
-    Notes on the example : - `children` returns a range whose value_type is the `handle` type;
-that satisfies `dagir::ChildrenRange`.- `roots()` returns a range of
-                                        handles(we used `std::views` to create it lazily)
-                                            .
+Notes on the example:
 
-                                        ##Implementing an `EdgeRef`
+- `children` returns a range whose `value_type` is the `handle` type; that
+  satisfies `dagir::ChildrenRange`.
+- `roots()` returns a lazy range of handles using `std::views`.
 
-                                        If your backend needs edges that carry labels
-    or other metadata,
-    implement an `EdgeRef` type exposing `target()`.
+## Implementing an `EdgeRef`
 
-```cpp struct EdgeRefImpl {
+If your backend needs edges that carry labels or other metadata, implement an
+`EdgeRef` type exposing `target()`:
+
+```cpp
+struct EdgeRefImpl {
   IntHandle to;
   std::string label;
   constexpr const IntHandle& target() const noexcept { return to; }
@@ -109,19 +110,18 @@ that satisfies `dagir::ChildrenRange`.- `roots()` returns a range of
 };
 ```
 
-    Then make `children(handle)` return a range of `EdgeRefImpl` objects.
+Then make `children(handle)` return a range of `EdgeRefImpl` objects.
 
-    ##Optional : `start_guard`
+## Optional: `start_guard`
 
-    If your backend
-      requires pinning or a
-    scoped lock during traversal,
-    provide `start_guard(handle)` returning an RAII guard type
-        .The `build_ir` implementation will call it when present.
+If your backend requires a scoped lock or pinning during traversal, provide
+`start_guard(handle)` returning an RAII guard type. The `build_ir` helper will
+call it when present.
 
-    Example :
+Example:
 
-```cpp struct PinGuard {
+```cpp
+struct PinGuard {
   PinGuard(const IntHandle&) { /* pin node */ }
   ~PinGuard() { /* unpin node */ }
 };
@@ -132,13 +132,13 @@ struct SomeView {
 };
 ```
 
-`build_ir` will call `view.start_guard(h)` when the expression is well
-    - formed.
+`build_ir` will call `view.start_guard(h)` when the expression is well-formed.
 
-      ##Policy examples
+## Policy examples
 
-      Once you have a `ReadOnlyDagView`,
-    you can write policy objects(labelers, attributors) that accept the view and handles. See `docs/IMPLEMENTING_POLICY.md` for examples that use `dagir::ir_attrs` keys.
+Once you have a `read_only_dag_view`, you can write policy objects (labelers,
+attributors) that accept the view and handles. See `docs/IMPLEMENTING_POLICY.md`
+for examples that use `dagir::ir_attrs` keys.
 
 ## Debugging tips
 

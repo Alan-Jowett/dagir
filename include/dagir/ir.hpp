@@ -60,7 +60,10 @@ struct ir_graph {
 // Touch pointer-to-members for fields that may be unused in some TUs.
 // This provides a compile-time usage pattern that satisfies static
 // analyzers without impacting runtime behaviour.
-inline void __dagir_touch_ir_members() {
+// Touch pointer-to-members for fields that may be unused in some TUs.
+// This provides a compile-time usage pattern that satisfies static
+// analyzers without impacting runtime behaviour.
+inline void touch_ir_members_for_static_analysis() {
   (void)&ir_attr::key;
   (void)&ir_attr::value;
   (void)&ir_node::label;
