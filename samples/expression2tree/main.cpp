@@ -15,7 +15,7 @@
 #include <dagir/utility/expression_policy.hpp>
 #include <dagir/utility/expression_read_only_dag_view.hpp>
 #include <exception>
-#include <ostream>
+#include <iostream>
 #include <string>
 #include <string_view>
 
