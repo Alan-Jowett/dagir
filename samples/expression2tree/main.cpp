@@ -50,7 +50,10 @@ int main(int argc, char** argv) {
     } else if (backend == "json") {
       dagir::render_json(os, ir);
     } else if (backend == "mermaid") {
+      // Wrap the mermaid rendering call in a md file.
+      os << "```mermaid\n";
       dagir::render_mermaid(os, ir, "expression");
+      os << "```\n";
     } else {
       std::cerr << "Unknown backend: " << backend << "\n";
       std::cerr << "Supported backends: dot, json, mermaid\n";

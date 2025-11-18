@@ -95,7 +95,6 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
   if (it != g.global_attrs.end()) rankdir = it->value;
 
   // Mermaid requires `graph <dir>` where <dir> is TB, LR, etc.
-  os << "%% Mermaid diagram for: " << graph_name << "\n";
   os << "graph " << rankdir << "\n";
 
   // Emit title if provided
