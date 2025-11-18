@@ -18,8 +18,9 @@
 #include <dagir/concepts/node_labeler.hpp>
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
-#include <dagir/utility/expression_ast.hpp>
-#include <dagir/utility/expression_read_only_dag_view.hpp>
+
+#include "expression_ast.hpp"
+#include "expression_read_only_dag_view.hpp"
 
 namespace dagir {
 namespace utility {
