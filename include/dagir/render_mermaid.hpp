@@ -101,14 +101,10 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
   for (const auto& n : g.nodes) {
     const auto& amap = n.attributes;
 
-    // Determine label: prefer k_label, then node.label, then id
-    std::string label;
-    if (amap.count(std::string(ir_attrs::k_label)))
-      label = amap.at(std::string(ir_attrs::k_label));
-    else if (!n.label.empty())
-      label = n.label;
-    else
-      label = std::format("{}", n.id);
+    // Determine label: prefer k_label, then id
+    std::string label = amap.count(std::string(ir_attrs::k_label))
+                            ? amap.at(std::string(ir_attrs::k_label))
+                            : std::format("{}", n.id);
 
     // Determine shape: map some known shapes to Mermaid bracket syntax
     std::string opening = "[";
@@ -127,8 +123,8 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
       }
     }
 
-    // Prefer `ir_node::name` for the identifier used in edges and styles.
-    std::string node_name = n.name.empty() ? std::format("n{}", n.id) : n.name;
+    // Prefer attribute "name" for the identifier used in edges and styles.
+    std::string node_name = amap.count("name") ? amap.at("name") : std::format("n{}", n.id);
     os << "  " << node_name << opening << '"' << render_mermaid_detail::escape_mermaid(label) << '"'
        << closing << "\n";
 
@@ -160,7 +156,11 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
     auto find_node_name = [&](std::uint64_t nid) -> std::string {
       auto it = std::find_if(g.nodes.begin(), g.nodes.end(),
                              [&](const ir_node& nn) { return nn.id == nid; });
-      if (it != g.nodes.end()) return it->name.empty() ? std::format("n{}", it->id) : it->name;
+      if (it != g.nodes.end()) {
+        const auto& a = it->attributes;
+        if (a.count("name")) return a.at("name");
+        return std::format("n{}", it->id);
+      }
       return std::format("n{}", nid);
     };
 

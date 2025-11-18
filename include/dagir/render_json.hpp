@@ -143,17 +143,16 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     if (!first_node) os << ", ";
     first_node = false;
     os << "{";
-    // Prefer `ir_node::name` as the node identifier; fall back to numeric id.
-    if (!n.name.empty())
-      os << "\"id\": \"" << render_json_detail::escape_json_string(n.name) << "\"";
+    // Prefer attribute "name" as the node identifier; fall back to numeric id.
+    const auto& amap = n.attributes;
+    if (amap.count("name"))
+      os << "\"id\": \"" << render_json_detail::escape_json_string(amap.at("name")) << "\"";
     else
       os << "\"id\": \"" << render_json_detail::escape_json_string(std::to_string(n.id)) << "\"";
-    if (!n.label.empty()) {
-      os << ", \"label\": \"" << render_json_detail::escape_json_string(n.label) << "\"";
-    } else if (!n.name.empty()) {
-      // Emit label from ir_node::name when label is empty; this helps
-      // consumers that expect a human-readable label field.
-      os << ", \"label\": \"" << render_json_detail::escape_json_string(n.name) << "\"";
+    // Emit label from attributes if present
+    if (amap.count(std::string(ir_attrs::k_label))) {
+      os << ", \"label\": \""
+         << render_json_detail::escape_json_string(amap.at(std::string(ir_attrs::k_label))) << "\"";
     }
     if (!n.attributes.empty()) {
       os << ", \"attributes\": {";
@@ -186,7 +185,11 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     auto find_node_name = [&](std::uint64_t nid) -> std::string {
       auto it = std::find_if(g.nodes.begin(), g.nodes.end(),
                              [&](const ir_node& nn) { return nn.id == nid; });
-      if (it != g.nodes.end()) return it->name.empty() ? std::to_string(it->id) : it->name;
+      if (it != g.nodes.end()) {
+        const auto& aam = it->attributes;
+        if (aam.count("name")) return aam.at("name");
+        return std::to_string(it->id);
+      }
       return std::to_string(nid);
     };
 

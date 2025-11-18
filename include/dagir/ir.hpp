@@ -23,10 +23,6 @@ using ir_attr_map = std::unordered_map<std::string, std::string>;
 struct ir_node {
   std::uint64_t id;
   // cppcheck-suppress unusedStructMember
-  [[maybe_unused]] std::string name;  ///< Always contains the nodes unique name.
-  // cppcheck-suppress unusedStructMember
-  [[maybe_unused]] std::string label;  ///< Human-readable label for the node.
-  // cppcheck-suppress unusedStructMember
   [[maybe_unused]] ir_attr_map attributes;  ///< Node-specific attributes.
 };
 
@@ -60,8 +56,6 @@ struct ir_graph {
 // analyzers without impacting runtime behaviour.
 inline void touch_ir_members_for_static_analysis() {
   (void)sizeof(ir_attr_map);
-  (void)&ir_node::label;
-  (void)&ir_node::name;
   (void)&ir_node::attributes;
   (void)&ir_edge::attributes;
   (void)&ir_graph::nodes;

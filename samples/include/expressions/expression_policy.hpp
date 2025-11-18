@@ -34,26 +34,27 @@ namespace utility {
 struct expression_node_labeler {
   using view_t = expression_read_only_dag_view;  // forward declaration use-case
 
-  std::string operator()(const typename expression_read_only_dag_view::handle& h) const {
-    if (!h.ptr) return std::string{};
+  dagir::ir_attr_map operator()(const typename expression_read_only_dag_view::handle& h) const {
+    dagir::ir_attr_map out;
+    if (!h.ptr) return out;
 
     if (auto v = std::get_if<my_variable>(h.ptr)) {
-      return v->variable_name;
+      out.emplace(std::string{dagir::ir_attrs::k_label}, v->variable_name);
     } else if (std::get_if<my_and>(h.ptr)) {
-      return std::string{"AND"};
+      out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"AND"});
     } else if (std::get_if<my_or>(h.ptr)) {
-      return std::string{"OR"};
+      out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"OR"});
     } else if (std::get_if<my_xor>(h.ptr)) {
-      return std::string{"XOR"};
+      out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"XOR"});
     } else if (std::get_if<my_not>(h.ptr)) {
-      return std::string{"NOT"};
+      out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"NOT"});
     }
 
-    return std::string{};
+    return out;
   }
 
-  std::string operator()(const expression_read_only_dag_view& /*view*/,
-                         const typename expression_read_only_dag_view::handle& h) const {
+  dagir::ir_attr_map operator()(const expression_read_only_dag_view& /*view*/,
+                                const typename expression_read_only_dag_view::handle& h) const {
     return operator()(h);
   }
 };

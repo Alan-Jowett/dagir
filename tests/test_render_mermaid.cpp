@@ -17,10 +17,10 @@ TEST_CASE("render_mermaid outputs nodes, edges, title, and respects rankdir", "[
   // Add two nodes
   dagir::ir_node n1;
   n1.id = 1;
-  n1.label = "Alpha";
+  n1.attributes.emplace(std::string(dagir::ir_attrs::k_label), "Alpha");
   dagir::ir_node n2;
   n2.id = 2;
-  n2.label = "Beta";
+  n2.attributes.emplace(std::string(dagir::ir_attrs::k_label), "Beta");
   g.nodes.push_back(n1);
   g.nodes.push_back(n2);
 

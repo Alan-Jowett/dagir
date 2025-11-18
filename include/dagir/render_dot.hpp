@@ -129,23 +129,18 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
 
   // Emit nodes
   for (const auto& n : g.nodes) {
-    const std::string node_name = !n.name.empty() ? n.name : std::format("n{}", n.id);
-
-    name_map[n.id] = node_name;
-
-    // Attribute map from node (now stored directly in `ir_node::attributes`)
+    // Attribute map from node
     const auto& amap = n.attributes;
 
-    // Ensure label: prefer k_label, then node.label, then ir_node::name, then id
-    std::string label;
-    if (amap.count(std::string(ir_attrs::k_label)))
-      label = amap.at(std::string(ir_attrs::k_label));
-    else if (!n.label.empty())
-      label = n.label;
-    else if (!n.name.empty())
-      label = n.name;
-    else
-      label = std::format("{}", n.id);
+    // Determine the node identifier: prefer attribute "name", then fall back
+    // to a generated id. We also populate a printable label via k_label.
+    const std::string node_name = amap.count("name") ? amap.at("name") : std::format("n{}", n.id);
+    name_map[n.id] = node_name;
+
+    // Ensure label: prefer k_label, then generated id
+    std::string label = amap.count(std::string(ir_attrs::k_label))
+                            ? amap.at(std::string(ir_attrs::k_label))
+                            : std::format("{}", n.id);
 
     // Work from a local mutable copy when applying defaults so we don't mutate the
     // const attribute map stored on the node.

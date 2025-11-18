@@ -20,12 +20,12 @@ TEST_CASE("render_dot outputs nodes and edges with attributes", "[render_dot]") 
   // Create two nodes (avoid designated initializers for MSVC compatibility)
   dagir::ir_node a;
   a.id = 1;
-  a.label = "Alpha";
+  a.attributes.emplace(std::string(dagir::ir_attrs::k_label), "Alpha");
   a.attributes.emplace(std::string(dagir::ir_attrs::k_fill_color), "#ff0000");
 
   dagir::ir_node b;
   b.id = 2;
-  b.label = "Beta";
+  b.attributes.emplace(std::string(dagir::ir_attrs::k_label), "Beta");
   b.attributes.emplace(std::string(dagir::ir_attrs::k_shape), "box");
 
   g.nodes.push_back(a);
