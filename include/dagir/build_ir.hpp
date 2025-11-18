@@ -34,17 +34,13 @@
 
 namespace dagir {
 
-// Detection idiom helpers for legacy node labeler return shapes
+// Detection idiom helpers
 //
-// NOTE: We intentionally use the older "detection idiom" / SFINAE-style
-// trait checks here rather than writing the checks inline with C++20
-// `requires(...)` expressions that reference member names. Some static
-// analysis tools (notably cppcheck) do not understand the newer pattern
-// and will report false-positive "redundant code" or "unused member"
-// warnings when the `requires` block mentions members without actually
-// using them at runtime. Using dedicated detection traits avoids those
-// false positives while preserving compile-time detection of supported
-// return shapes (pair-like or name/label-like types).
+// NOTE: These lightweight detection traits are retained for historical
+// reasons and for use by static analysis tools. `build_ir` requires
+// node attributors that model `dagir::concepts::node_attributor`. Attributors
+// are expected to produce attribute representations (the canonical type is
+// `dagir::ir_attr_map`).
 namespace build_ir_detail {
 template <class, class = void>
 struct has_first_second : std::false_type {};
@@ -87,11 +83,11 @@ static H build_ir_extract_child(const E& e) {
  * @brief Construct an `ir_graph` from a read-only DAG view.
  *
  * @tparam View A type modeling ::dagir::read_only_dag_view
- * @tparam node_labeler_or_attributor Callable used to produce node labels or
- *         node attributes. Supported attributor signatures (produce
- *         `dagir::ir_attr_map`): `node_attr(view, handle)` or `node_attr(handle)`.
- *         For backward compatibility this template also accepts labeler
- *         callables that return string-like or pair/name-label shapes.
+ * @tparam NodePolicy Callable used to produce node attributes. Supported
+ *         attributor signatures (produce `dagir::ir_attr_map`):
+ *         `node_attr(view, handle)` or `node_attr(handle)`.
+ *         `build_ir` requires a `dagir::concepts::node_attributor` — a
+ *         callable that returns a `dagir::ir_attr_map` for a given node.
  * @tparam edge_attributor Callable used to produce per-edge attributes.
  *         Supported signatures include:
  *           - `edge_attr(view, parent, edge_like)`
@@ -100,7 +96,7 @@ static H build_ir_extract_child(const E& e) {
  *           - `edge_attr(parent, child_handle)`
  *
  * @param view Read-only DAG view to traverse.
- * @param node_label Node label policy.
+ * @param node_policy Node attributor policy (callable returning attributes).
  * @param edge_attr Edge attribute policy.
  * @return ir_graph The constructed intermediate representation.
  *

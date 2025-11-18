@@ -137,9 +137,24 @@ struct SomeView {
 
 ## Policy examples
 
-Once you have a `read_only_dag_view`, you can write policy objects (labelers,
-attributors) that accept the view and handles. See `docs/IMPLEMENTING_POLICY.md`
-for examples that use `dagir::ir_attrs` keys.
+Once you have a `read_only_dag_view`, write policy objects called node
+attributors that accept the view and a node handle and return a
+`dagir::ir_attr_map` (an attribute map). The required concept is
+`dagir::concepts::node_attributor` and attribute keys are defined in
+`dagir::ir_attrs`.
+
+See `docs/IMPLEMENTING_POLICY.md` for examples and best practices. A minimal
+example node attributor:
+
+```cpp
+#include <dagir/ir.hpp> // for dagir::ir_attr_map and dagir::ir_attrs
+
+dagir::ir_attr_map my_node_attributor(const MyView& view, MyView::handle h) {
+  return {
+    { dagir::ir_attrs::k_label, std::to_string(h.stable_key()) }
+  };
+}
+```
 
 ## Debugging tips
 

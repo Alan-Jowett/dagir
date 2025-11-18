@@ -40,11 +40,11 @@ TEST_CASE("build_ir - default policies produce stringified ids", "[build_ir]") {
   REQUIRE(labels[2] == "2");
 }
 
-TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
+TEST_CASE("build_ir - custom node attributor and edge attributes", "[build_ir]") {
   // graph: 0->1, 0->2
   MockDagView g({MockHandle{0}}, {{MockHandle{1}, MockHandle{2}}, {}, {}});
 
-  auto node_label = [](auto const& /*view*/, auto const& h) -> dagir::ir_attr_map {
+  auto node_attrib = [](auto const& /*view*/, auto const& h) -> dagir::ir_attr_map {
     dagir::ir_attr_map m;
     m.emplace(std::string(dagir::ir_attrs::k_label), std::format("N_{}", h.stable_key()));
     return m;
@@ -57,9 +57,9 @@ TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
     return m;
   };
 
-  auto ir = dagir::build_ir(g, node_label, edge_attr);
+  auto ir = dagir::build_ir(g, node_attrib, edge_attr);
   REQUIRE(ir.nodes.size() == 3);
-  // node labels applied
+  // node labels applied by the attributor
   std::unordered_map<uint64_t, std::string> labels;
   for (auto const& n : ir.nodes) {
     const auto& a = n.attributes;

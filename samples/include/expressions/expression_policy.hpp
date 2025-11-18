@@ -25,13 +25,14 @@
 namespace dagir {
 namespace utility {
 /**
- * @brief Node label policy for expression AST nodes.
+ * @brief Node attributor for expression AST nodes.
  *
- * This functor models `dagir::concepts::node_attributor`. It supports both
- * `label(handle)` and `label(view, handle)` invocation forms by forwarding
- * the two-argument call to the single-argument implementation.
+ * This functor models `dagir::concepts::node_attributor`. It returns a
+ * `dagir::ir_attr_map` and supports both `(handle)` and `(view, handle)`
+ * invocation forms by forwarding the two-argument call to the single-argument
+ * implementation.
  */
-struct expression_node_labeler {
+struct expression_node_attributor {
   using view_t = expression_read_only_dag_view;  // forward declaration use-case
 
   dagir::ir_attr_map operator()(const typename expression_read_only_dag_view::handle& h) const {
@@ -63,8 +64,9 @@ struct expression_node_labeler {
  * @brief Edge attribute policy for expression AST edges.
  *
  * This functor models `dagir::concepts::edge_attributor` and returns a
- * small vector of `dagir::ir_attr` entries. Attributes encode a simple
- * color/style scheme derived from the parent node's operator type.
+ * `dagir::ir_attr_map` containing attribute key/value pairs. Attributes
+ * encode a simple color/style scheme derived from the parent node's
+ * operator type.
  */
 struct expression_edge_attributor {
   using handle = typename expression_read_only_dag_view::handle;
