@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
+#include <format>
 #include <iomanip>
 #include <ostream>
 #include <string>
@@ -76,9 +77,7 @@ inline std::string escape_dot(const std::string& s) {
         if (c < 0x20) {
           // Non-printable control characters: emit hex escape to avoid
           // introducing invalid bytes in DOT source.
-          char buf[5];
-          std::snprintf(buf, sizeof(buf), "\\x%02x", c);
-          out += buf;
+          out += std::format("\\x{:02x}", static_cast<unsigned>(c));
         } else {
           out += static_cast<char>(c);
         }
@@ -148,7 +147,7 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
 
   // Emit nodes
   for (const auto& n : g.nodes) {
-    const std::string node_name = "n" + std::to_string(n.id);
+    const std::string node_name = std::format("n{}", n.id);
 
     // Build attribute map from node.attrs and label fields
     auto amap = detail::attrs_to_map(n.attributes);
@@ -160,7 +159,7 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     else if (!n.label.empty())
       label = n.label;
     else
-      label = std::to_string(n.id);
+      label = std::format("{}", n.id);
 
     // If fill color present, advise style=filled unless style set
     if (amap.count(std::string(ir_attrs::k_fill_color)) &&
@@ -183,8 +182,8 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
 
   // Emit edges
   for (const auto& e : g.edges) {
-    const std::string src = "n" + std::to_string(e.source);
-    const std::string dst = "n" + std::to_string(e.target);
+    const std::string src = std::format("n{}", e.source);
+    const std::string dst = std::format("n{}", e.target);
 
     auto amap = detail::attrs_to_map(e.attributes);
 

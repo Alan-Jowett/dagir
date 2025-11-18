@@ -11,6 +11,7 @@
 #include <dagir/algorithms.hpp>                   // kahn_topological_order
 #include <dagir/concepts/read_only_dag_view.hpp>  // read_only_dag_view
 #include <dagir/ir.hpp>
+#include <format>
 #include <functional>
 #include <numeric>
 #include <ranges>
@@ -152,7 +153,7 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
  */
 template <dagir::concepts::read_only_dag_view View>
 ir_graph build_ir(const View& view) {
-  auto node_label = [](auto const& h) -> std::string { return std::to_string(h.stable_key()); };
+  auto node_label = [](auto const& h) -> std::string { return std::format("{}", h.stable_key()); };
   auto edge_attr = [](auto&&...) -> std::vector<ir_attr> { return {}; };
   return build_ir(view, node_label, edge_attr);
 }
