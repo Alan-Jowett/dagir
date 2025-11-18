@@ -5,9 +5,10 @@
 
 These notes capture details learned while working on the DOT renderer and tests.
 
+
 Build & tests
 - To build tests you must enable the CMake option `DAGIR_BUILD_TESTS=ON` when configuring.
-	- Example (from repo root on Windows):
+  - Example (from repo root on Windows):
 
 ```powershell
 cmake -S . -B build -DDAGIR_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo
@@ -31,7 +32,7 @@ Renderer implementation notes (`include/dagir/render_dot.hpp`)
 - Behavior and mapping decisions:
 	- Always emits a `digraph` named by the `graph_name` parameter.
 	- Nodes are emitted with identifiers `n{id}` where `id` is `ir_node::id`.
-	- Node label selection order: `ir_attr` with key `k_label` &rarr; `ir_node::label` &rarr; numeric id.
+	- Node label selection order: `ir_attr` with key `k_label` → `ir_node::label` → numeric id.
 	- Edge labels are taken from `k_label` if present.
 	- If a node has `k_fill_color` and no explicit `k_style`, `style=filled` is emitted.
 	- Attribute keys are emitted as provided (the renderer relies on keys in `include/dagir/ir_attrs.hpp` to be GraphViz-appropriate names like `fillcolor`, `penwidth`, `fontsize`, etc.).

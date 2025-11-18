@@ -24,10 +24,15 @@ namespace detail {
 inline std::string escape_dot(const std::string& s) {
   std::string out;
   out.reserve(s.size() + 8);
-  for (char c : s) {
+  for (size_t i = 0; i < s.size(); ++i) {
+    unsigned char c = static_cast<unsigned char>(s[i]);
     switch (c) {
       case '\\':
+        // Always escape backslash
         out += "\\\\";
+        // If this backslash is followed by an escString letter, preserve the
+        // literal by leaving the following character as-is (we've already
+        // escaped the backslash itself).
         break;
       case '"':
         out += "\\\"";
@@ -36,9 +41,27 @@ inline std::string escape_dot(const std::string& s) {
         out += "\\n";
         break;
       case '\r':
+        out += "\\r";
+        break;
+      case '\t':
+        out += "\\t";
+        break;
+      case '\f':
+        out += "\\f";
+        break;
+      case '\v':
+        out += "\\v";
         break;
       default:
-        out += c;
+        if (c < 0x20) {
+          // Non-printable control characters: emit hex escape to avoid
+          // introducing invalid bytes in DOT source.
+          char buf[5];
+          std::snprintf(buf, sizeof(buf), "\\x%02x", c);
+          out += buf;
+        } else {
+          out += static_cast<char>(c);
+        }
         break;
     }
   }
