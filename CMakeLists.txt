@@ -162,6 +162,7 @@ if(DAGIR_SAMPLES)
     add_executable(${_target_name} ${CMAKE_CURRENT_SOURCE_DIR}/${_main})
     target_compile_features(${_target_name} PRIVATE cxx_std_20)
     target_link_libraries(${_target_name} PRIVATE dagir::dagir)
+    target_include_directories(${_target_name} PRIVATE samples/include)
 
     if(MSVC)
       target_compile_options(${_target_name} PRIVATE /W4 /wd4996 /permissive-)

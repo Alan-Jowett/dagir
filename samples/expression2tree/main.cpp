@@ -11,10 +11,10 @@
 #include <dagir/render_dot.hpp>
 #include <dagir/render_json.hpp>
 #include <dagir/render_mermaid.hpp>
-#include <dagir/utility/expression_parser.hpp>
-#include <dagir/utility/expression_policy.hpp>
-#include <dagir/utility/expression_read_only_dag_view.hpp>
 #include <exception>
+#include <expressions/expression_parser.hpp>
+#include <expressions/expression_policy.hpp>
+#include <expressions/expression_read_only_dag_view.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
