@@ -22,10 +22,11 @@ namespace dagir::concepts {
  * @brief Concept for a node attribute policy callable.
  *
  * @tparam F Callable type.
- * @tparam View A type that models ::dagir::read_only_dag_view.
+ * @tparam View A type that models `dagir::concepts::read_only_dag_view`.
  *
  * @details
- * A type models ::dagir::node_attributor when an lvalue of @c F is invocable as:
+ * A type models `dagir::concepts::node_attributor` when an lvalue of @c F is
+ * invocable as:
  *  - @c f(view, node_handle)
  *
  * The return type is unconstrained and left to the renderer/IR builder to interpret.

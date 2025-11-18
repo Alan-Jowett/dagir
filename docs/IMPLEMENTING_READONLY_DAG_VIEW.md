@@ -147,9 +147,10 @@ See `docs/IMPLEMENTING_POLICY.md` for examples and best practices. A minimal
 example node attributor:
 
 ```cpp
-#include <dagir/ir.hpp> // for dagir::ir_attr_map and dagir::ir_attrs
+#include <dagir/ir.hpp>       // for dagir::ir_attr_map
+#include <dagir/ir_attrs.hpp> // for dagir::ir_attrs
 
-dagir::ir_attr_map my_node_attributor(const MyView& view, MyView::handle h) {
+dagir::ir_attr_map my_node_attributor(const MyView& /*view*/, const MyView::handle& h) {
   return {
     { dagir::ir_attrs::k_label, std::to_string(h.stable_key()) }
   };

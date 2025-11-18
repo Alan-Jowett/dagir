@@ -134,7 +134,16 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
 
     // Determine the node identifier: prefer attribute "name", then fall back
     // to a generated id. We also populate a printable label via k_label.
-    const std::string node_name = amap.count("name") ? amap.at("name") : std::format("n{}", n.id);
+    const bool has_explicit_name = amap.count("name");
+    const std::string raw_node_name =
+        has_explicit_name ? amap.at("name") : std::format("n{}", n.id);
+    // If the node name was provided by a policy, escape and quote it so
+    // arbitrary strings remain valid DOT identifiers. If the renderer
+    // generated the name (n{id}), keep it unquoted to preserve the
+    // historical emission format (tests and tools often expect unquoted ids).
+    const std::string node_name =
+        has_explicit_name ? std::format("\"{}\"", render_dot_detail::escape_dot(raw_node_name))
+                          : raw_node_name;
     name_map[n.id] = node_name;
 
     // Ensure label: prefer k_label, then generated id
