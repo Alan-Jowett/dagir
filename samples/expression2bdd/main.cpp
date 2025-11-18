@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
   if (argc < 4) {
     std::cerr << "Usage: " << argv[0] << " <expression_file> <library> <backend>\n";
-    std::cerr << "library: teddy\n";
+    std::cerr << "library: teddy | cudd\n";
     std::cerr << "backend: dot | json | mermaid\n";
     return 1;
   }
