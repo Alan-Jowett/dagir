@@ -2,6 +2,11 @@
  * @file teddy_convert_expression.hpp
  * @brief Helpers to convert sample expression ASTs to TeDDy BDD diagrams.
  *
+ * @details
+ * This file provides functions to convert expression ASTs defined in
+ * `expression_read_only_dag_view.hpp` into TeDDy BDD diagrams using a
+ * `teddy::bdd_manager`.
+ *
  * @copyright
  * © DagIR Contributors. All rights reserved.
  * SPDX-License-Identifier: MIT

@@ -48,6 +48,11 @@ else()
   set(_dagir_default_samples OFF)
 endif()
 
+# Apple - TeDDy doesn't build correctly with Clang
+if (APPLE)
+  set(_dagir_default_samples OFF)
+endif()
+
 option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" ${_dagir_default_build_tests})
 option(DAGIR_SAMPLES "Build DagIR sample code" ${_dagir_default_samples})
 
@@ -200,6 +205,9 @@ if(DAGIR_SAMPLES)
     # into the sample so their include directories and compile options are available.
     if(TARGET teddy::teddy)
       target_link_libraries(${_target_name} PRIVATE teddy::teddy)
+    endif()
+    if(TARGET cudd::cudd)
+      target_link_libraries(${_target_name} PRIVATE cudd::cudd)
     endif()
 
     # If the sample provides a local `include/` folder, add it as a PRIVATE

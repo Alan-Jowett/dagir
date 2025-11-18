@@ -204,8 +204,6 @@ function(_apply_patches_to_project project_name source_dir patches_dir strip_lev
                 RESULT_VARIABLE patch_result
                 OUTPUT_VARIABLE patch_output
                 ERROR_VARIABLE patch_error
-                OUTPUT_QUIET
-                ERROR_QUIET
             )
 
             if(patch_result EQUAL 0)
@@ -218,8 +216,6 @@ function(_apply_patches_to_project project_name source_dir patches_dir strip_lev
                     RESULT_VARIABLE patch_retry_result
                     OUTPUT_VARIABLE patch_retry_output
                     ERROR_VARIABLE patch_retry_error
-                    OUTPUT_QUIET
-                    ERROR_QUIET
                 )
 
                 if(patch_retry_result EQUAL 0)

@@ -3,6 +3,8 @@
  * @brief Read-only DAG view for TeDDy BDDs.
  *
  * @details
+ * This file provides a non-owning adapter exposing TeDDy BDD nodes
+ * as a DagIR read-only view.
  *
  * @copyright
  * © DagIR Contributors. All rights reserved.
@@ -36,8 +38,12 @@ struct teddy_handle {
   /**
    * @brief Stable key for memoization.
    *
-   * Terminals are encoded using their logical value to avoid pointer-based
-   * collisions; non-terminals use pointer identity.
+   * The key encodes the identity of the underlying TeDDy node using its
+   * pointer value. This function relies on the guarantee that node pointers
+   * remain stable for the lifetime of the view (i.e. the underlying diagram
+   * must not move or free nodes while the view or any memoization using this
+   * key is in use). Terminals are not encoded specially here; callers that
+   * need logical-terminal discrimination should handle that externally.
    */
   std::uint64_t stable_key() const noexcept {
     return static_cast<std::uint64_t>(reinterpret_cast<std::uintptr_t>(ptr));

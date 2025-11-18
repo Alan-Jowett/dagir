@@ -2,6 +2,7 @@
  * @file teddy_policy.hpp
  * @brief Node and edge attribute policies for TeDDy BDD samples.
  *
+ * @details
  * Provides `teddy_node_attributor` and `teddy_edge_attributor` used by the
  * sample pipeline to convert TeDDy BDD nodes and edges into renderer-neutral
  * IR attributes. False edges are styled as dashed and true edges as solid.
