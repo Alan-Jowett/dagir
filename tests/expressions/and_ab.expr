@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Alan Jowett
+#
+# Simple AND between two variables
+a AND b

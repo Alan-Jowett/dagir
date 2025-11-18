@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Alan Jowett
+#
+# NOT with multiple combinations
+NOT x OR (y AND NOT z)

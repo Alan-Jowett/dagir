@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Alan Jowett
+#
+# More complex expression
+NOT (a AND (b OR (c XOR d))) OR e

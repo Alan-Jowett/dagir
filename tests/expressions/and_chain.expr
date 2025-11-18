@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Alan Jowett
+#
+# Chain of ANDs
+a AND b AND c AND d
