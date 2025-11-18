@@ -39,6 +39,7 @@ endif()
 # Options
 # -----------------------------
 option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" OFF)
+option(DAGIR_SAMPLES "Build DagIR sample code" OFF)
 
 # Install developer convenience scripts (pre-commit hook) when present
 include(cmake/format.cmake OPTIONAL)
@@ -142,6 +143,38 @@ if(DAGIR_BUILD_TESTS)
     message(WARNING "DAGIR_BUILD_TESTS=ON but no test sources were found under tests/")
   endif()
 endif()
+
+# -----------------------------
+# Build sample
+# -----------------------------
+if(DAGIR_SAMPLES)
+  # Auto-discover samples: each folder under `samples/` that contains a
+  # `main.cpp` will produce an executable named after the folder.
+  file(GLOB SAMPLE_MAIN_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "${CMAKE_CURRENT_SOURCE_DIR}/samples/*/main.cpp")
+
+  foreach(_main IN LISTS SAMPLE_MAIN_FILES)
+    # _main looks like "samples/<name>/main.cpp"
+    get_filename_component(_sample_dir ${_main} DIRECTORY)
+    get_filename_component(_sample_name ${_sample_dir} NAME)
+    string(REGEX REPLACE "[/\\]+" "_" _target_name ${_sample_name})
+
+    add_executable(${_target_name} ${CMAKE_CURRENT_SOURCE_DIR}/${_main})
+    target_compile_features(${_target_name} PRIVATE cxx_std_20)
+    target_link_libraries(${_target_name} PRIVATE dagir::dagir)
+
+    if(MSVC)
+      target_compile_options(${_target_name} PRIVATE /W4 /wd4996 /permissive-)
+    else()
+      target_compile_options(${_target_name} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+
+    set_target_properties(${_target_name} PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
+  endforeach()
+endif()
+
 
 # -----------------------------
 # Developer convenience targets

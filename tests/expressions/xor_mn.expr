@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Alan Jowett
+#
+# Exclusive OR between variables
+m XOR n

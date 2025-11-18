@@ -22,6 +22,7 @@
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
 #include <format>
+#include <functional>
 #include <iomanip>
 #include <ostream>
 #include <string>
@@ -31,7 +32,7 @@
 
 namespace dagir {
 
-namespace detail {
+namespace render_dot_detail {
 
 /**
  * @brief Escape a string for inclusion inside a quoted GraphViz attribute.
@@ -117,7 +118,7 @@ inline std::unordered_map<std::string, std::string> attrs_to_map(
   return m;
 }
 
-}  // namespace detail
+}  // namespace render_dot_detail
 
 // Writes a GraphViz DOT representation of `g` to `os`.
 // `graph_name` is used as the DOT graph identifier.
@@ -135,53 +136,73 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
   // First, emit global graph attributes (map known keys)
   for (const auto& a : g.global_attrs) {
     if (a.key == std::string(ir_attrs::k_graph_label)) {
-      os << "  label=\"" << detail::escape_dot(a.value) << "\";\n";
+      os << "  label=\"" << render_dot_detail::escape_dot(a.value) << "\";\n";
     } else {
-      os << "  " << a.key << "=\"" << detail::escape_dot(a.value) << "\";\n";
+      os << "  " << a.key << "=\"" << render_dot_detail::escape_dot(a.value) << "\";\n";
     }
   }
 
+  std::unordered_map<std::uint64_t, std::string> name_map;
+  // Gather node names for use in edge emission.
+
   // Emit nodes
   for (const auto& n : g.nodes) {
-    const std::string node_name = std::format("n{}", n.id);
+    const std::string node_name = !n.name.empty() ? n.name : std::format("n{}", n.id);
+
+    name_map[n.id] = node_name;
 
     // Build attribute map from node.attrs and label fields
-    auto amap = detail::attrs_to_map(n.attributes);
+    auto amap = render_dot_detail::attrs_to_map(n.attributes);
 
-    // Ensure label: prefer k_label, then node.label, then id
+    // Ensure label: prefer k_label, then node.label, then ir_node::name, then id
     std::string label;
     if (amap.count(std::string(ir_attrs::k_label)))
       label = amap[std::string(ir_attrs::k_label)];
     else if (!n.label.empty())
       label = n.label;
+    else if (!n.name.empty())
+      label = n.name;
     else
       label = std::format("{}", n.id);
 
-    // If fill color present, advise style=filled unless style set
-    if (amap.count(std::string(ir_attrs::k_fill_color)) &&
-        !amap.count(std::string(ir_attrs::k_style))) {
+    // Ensure nodes have a style of 'filled' by default
+    if (!amap.count(std::string(ir_attrs::k_style))) {
       amap[std::string(ir_attrs::k_style)] = "filled";
     }
 
+    // If no explicit fill color provided, choose a default based on label
+    if (!amap.count(std::string(ir_attrs::k_fill_color))) {
+      if (label == "AND")
+        amap[std::string(ir_attrs::k_fill_color)] = "lightgreen";
+      else if (label == "OR")
+        amap[std::string(ir_attrs::k_fill_color)] = "lightcoral";
+      else if (label == "XOR")
+        amap[std::string(ir_attrs::k_fill_color)] = "lightpink";
+      else if (label == "NOT")
+        amap[std::string(ir_attrs::k_fill_color)] = "yellow";
+      else
+        amap[std::string(ir_attrs::k_fill_color)] = "lightblue";
+    }
+
     os << "  " << node_name << " [";
-    // Emit label first
-    os << "label=\"" << detail::escape_dot(label) << "\"";
+    // Emit label first with spaces around '='
+    os << "label = \"" << render_dot_detail::escape_dot(label) << "\"";
 
     // Emit other attributes, but skip keys we've handled
     for (const auto& kv : amap) {
       if (kv.first == std::string(ir_attrs::k_label)) continue;
-      os << ", " << kv.first << "=\"" << detail::escape_dot(kv.second) << "\"";
+      os << ", " << kv.first << " = \"" << render_dot_detail::escape_dot(kv.second) << "\"";
     }
 
     os << "];\n";
   }
 
-  // Emit edges
+  // Emit edges (use previously computed name_map for identifiers)
   for (const auto& e : g.edges) {
-    const std::string src = std::format("n{}", e.source);
-    const std::string dst = std::format("n{}", e.target);
+    const std::string src = name_map.at(e.source);
+    const std::string dst = name_map.at(e.target);
 
-    auto amap = detail::attrs_to_map(e.attributes);
+    auto amap = render_dot_detail::attrs_to_map(e.attributes);
 
     os << "  " << src << " -> " << dst;
     if (!amap.empty()) {
@@ -189,14 +210,15 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
       bool first = true;
       // Prefer label from k_label
       if (amap.count(std::string(ir_attrs::k_label))) {
-        os << "label=\"" << detail::escape_dot(amap[std::string(ir_attrs::k_label)]) << "\"";
+        os << "label = \"" << render_dot_detail::escape_dot(amap[std::string(ir_attrs::k_label)])
+           << "\"";
         first = false;
       }
       for (const auto& kv : amap) {
         if (kv.first == std::string(ir_attrs::k_label)) continue;
         if (!first) os << ", ";
         first = false;
-        os << kv.first << "=\"" << detail::escape_dot(kv.second) << "\"";
+        os << kv.first << " = \"" << render_dot_detail::escape_dot(kv.second) << "\"";
       }
       os << "]";
     }
