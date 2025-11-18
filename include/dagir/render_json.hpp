@@ -93,23 +93,24 @@ inline std::optional<std::string> try_emit_primitive(const std::string& s) {
   if (s == "null") return std::string("null");
   if (s == "true") return std::string("true");
   if (s == "false") return std::string("false");
-  // Try integer or floating point
-  const char* begin = s.c_str();
-  char* endptr = nullptr;
-  // integer
-  errno = 0;
-  long val = std::strtol(begin, &endptr, 10);
-  if (endptr != begin && *endptr == '\0' && errno == 0) {
-    return std::to_string(val);
+
+  // Try integer using from_chars (no locale dependency)
+  long long iv = 0;
+  auto res = std::from_chars(s.data(), s.data() + s.size(), iv);
+  if (res.ec == std::errc() && res.ptr == s.data() + s.size()) {
+    return std::to_string(iv);
   }
-  // floating
+
+  // Fallback: try floating point via strtod
   errno = 0;
-  double d = std::strtod(begin, &endptr);
-  if (endptr != begin && *endptr == '\0' && errno == 0) {
+  char* endptr = nullptr;
+  double d = std::strtod(s.c_str(), &endptr);
+  if (endptr == s.c_str() + s.size() && errno == 0) {
     std::ostringstream os;
     os << std::setprecision(15) << d;
     return os.str();
   }
+
   return std::nullopt;
 }
 
