@@ -125,13 +125,9 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
   os << "digraph " << graph_name << " {\n";
 
   // Emit default rankdir only if the graph-level attributes do not provide one.
-  bool has_rankdir = false;
-  for (const auto& a : g.global_attrs) {
-    if (a.key == std::string(ir_attrs::k_rankdir)) {
-      has_rankdir = true;
-      break;
-    }
-  }
+  const bool has_rankdir =
+      std::any_of(g.global_attrs.begin(), g.global_attrs.end(),
+                  [](const ir_attr& a) { return a.key == std::string(ir_attrs::k_rankdir); });
   if (!has_rankdir) {
     os << "  rankdir=TB;\n";  // default top-to-bottom layout
   }
