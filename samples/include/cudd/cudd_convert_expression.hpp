@@ -30,19 +30,6 @@ namespace utility {
 inline DdNode* convert_expression_to_cudd(DdManager& mgr, const dagir::utility::my_expression& expr,
                                           std::unordered_map<std::string, int>& var_map) {
   auto resolve_var = [&](const std::string& name) -> int {
-    if (!name.empty() && name[0] == 'x') {
-      const auto begin = name.begin() + 1;
-      const auto end = name.end();
-      const bool all_digits =
-          std::all_of(begin, end, [](unsigned char c) { return std::isdigit(c); });
-      if (all_digits && name.size() > 1) {
-        try {
-          return std::stoi(name.substr(1));
-        } catch (...) {
-        }
-      }
-    }
-
     auto it = var_map.find(name);
     if (it != var_map.end()) return it->second;
     int idx = static_cast<int>(var_map.size());
