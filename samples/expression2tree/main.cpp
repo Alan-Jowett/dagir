@@ -14,7 +14,9 @@
 #include <dagir/utility/expression_parser.hpp>
 #include <dagir/utility/expression_policy.hpp>
 #include <dagir/utility/expression_read_only_dag_view.hpp>
+#include <exception>
 #include <ostream>
+#include <string>
 #include <string_view>
 
 int main(int argc, char** argv) {
