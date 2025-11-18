@@ -1,9 +1,20 @@
-// SPDX-License-Identifier: MIT
-// Copyright (c) DagIR Contributors
-//
-// Header-only DOT renderer for `dagir::ir_graph`.
-// Produces GraphViz-compatible output and maps common `dagir::ir_attrs`
-// to GraphViz attributes where applicable.
+/**
+ * @file
+ * @brief Header-only GraphViz DOT renderer for `dagir::ir_graph`.
+ *
+ * This header provides a minimal, header-only helper to format a
+ * `dagir::ir_graph` as a GraphViz DOT `digraph` into an output stream.
+ * It honors a small set of `dagir::ir_attrs` where applicable (labels,
+ * colors, shapes, style hints) and performs conservative escaping of
+ * attribute values so the produced DOT is syntactically valid.
+ *
+ * The implementation is intentionally small and header-only so it can be
+ * used by tests and tools without introducing additional build-time
+ * dependencies. Internal helpers live in the `detail` namespace; the
+ * primary public entry point is `dagir::render_dot`.
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
 #pragma once
 
@@ -21,6 +32,15 @@ namespace dagir {
 
 namespace detail {
 
+/**
+ * @brief Escape a string for inclusion inside a quoted GraphViz attribute.
+ *
+ * This routine performs conservative escaping for characters that are
+ * significant inside DOT quoted strings (backslash, double quotes, newlines,
+ * etc.) and emits hex escapes for other non-printable control characters.
+ * It is intentionally conservative to avoid producing DOT that the parser
+ * might misinterpret.
+ */
 inline std::string escape_dot(const std::string& s) {
   std::string out;
   out.reserve(s.size() + 8);
@@ -68,6 +88,12 @@ inline std::string escape_dot(const std::string& s) {
   return out;
 }
 
+/**
+ * @brief Helper that emits a comma-separated list of attributes to `os`.
+ *
+ * Each attribute is emitted as `key="escaped value"`. This is an internal
+ * helper used during node/edge emission.
+ */
 inline void write_attrs(std::ostream& os, const std::vector<ir_attr>& attrs) {
   bool first = true;
   for (const auto& a : attrs) {
@@ -78,6 +104,13 @@ inline void write_attrs(std::ostream& os, const std::vector<ir_attr>& attrs) {
   }
 }
 
+/**
+ * @brief Convert an attribute vector into a lookup map.
+ *
+ * This convenience helper is used by the simple emitter logic in this file
+ * to perform presence checks and indexed lookups. It is intentionally
+ * straightforward and trades a small amount of work for code clarity.
+ */
 inline std::unordered_map<std::string, std::string> attrs_to_map(
     const std::vector<ir_attr>& attrs) {
   std::unordered_map<std::string, std::string> m;
@@ -91,7 +124,18 @@ inline std::unordered_map<std::string, std::string> attrs_to_map(
 // `graph_name` is used as the DOT graph identifier.
 inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view graph_name = "G") {
   os << "digraph " << graph_name << " {\n";
-  os << "  rankdir=TB;\n";  // default top-to-bottom layout
+
+  // Emit default rankdir only if the graph-level attributes do not provide one.
+  bool has_rankdir = false;
+  for (const auto& a : g.global_attrs) {
+    if (a.key == std::string(ir_attrs::k_rankdir)) {
+      has_rankdir = true;
+      break;
+    }
+  }
+  if (!has_rankdir) {
+    os << "  rankdir=TB;\n";  // default top-to-bottom layout
+  }
 
   // First, emit global graph attributes (map known keys)
   for (const auto& a : g.global_attrs) {
