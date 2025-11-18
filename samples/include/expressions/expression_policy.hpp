@@ -15,7 +15,7 @@
 #pragma once
 
 #include <dagir/concepts/edge_attributor.hpp>
-#include <dagir/concepts/node_labeler.hpp>
+#include <dagir/concepts/node_attributor.hpp>
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
 
@@ -27,7 +27,7 @@ namespace utility {
 /**
  * @brief Node label policy for expression AST nodes.
  *
- * This functor models `dagir::concepts::node_labeler`. It supports both
+ * This functor models `dagir::concepts::node_attributor`. It supports both
  * `label(handle)` and `label(view, handle)` invocation forms by forwarding
  * the two-argument call to the single-argument implementation.
  */

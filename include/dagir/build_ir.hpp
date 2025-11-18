@@ -26,7 +26,7 @@
 
 namespace dagir {
 
-// Detection idiom helpers for node_labeler return shapes
+// Detection idiom helpers for legacy node labeler return shapes
 //
 // NOTE: We intentionally use the older "detection idiom" / SFINAE-style
 // trait checks here rather than writing the checks inline with C++20
@@ -80,9 +80,10 @@ static H build_ir_extract_child(const E& e) {
  *
  * @tparam View A type modeling ::dagir::read_only_dag_view
  * @tparam node_labeler_or_attributor Callable used to produce node labels or
- *         node attributes. Supported labeler signatures: `node_label(view, handle)`
- *         or `node_label(handle)`. Supported attributor signatures (produce
- *         `std::vector<ir_attr>`): `node_attr(view, handle)` or `node_attr(handle)`.
+ *         node attributes. Supported attributor signatures (produce
+ *         `dagir::ir_attr_map`): `node_attr(view, handle)` or `node_attr(handle)`.
+ *         For backward compatibility this template also accepts labeler
+ *         callables that return string-like or pair/name-label shapes.
  * @tparam edge_attributor Callable used to produce per-edge attributes.
  *         Supported signatures include:
  *           - `edge_attr(view, parent, edge_like)`
