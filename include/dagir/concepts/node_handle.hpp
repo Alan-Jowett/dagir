@@ -1,5 +1,9 @@
-// SPDX-License-Identifier: MIT
-// Core concept: node_handle
+/**
+ * @file node_handle.hpp
+ * @brief Concept describing a lightweight handle to a node in an external DAG.
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
 #pragma once
 

@@ -29,29 +29,44 @@ TEST_CASE("build_ir - default policies produce stringified ids", "[build_ir]") {
   REQUIRE(ir.nodes.size() == 3);
   // labels default to stable_key string
   std::unordered_map<uint64_t, std::string> labels;
-  for (auto const& n : ir.nodes) labels.emplace(n.id, n.label);
+  for (auto const& n : ir.nodes) {
+    const auto& a = n.attributes;
+    labels.emplace(n.id, a.count(std::string(dagir::ir_attrs::k_label))
+                             ? a.at(std::string(dagir::ir_attrs::k_label))
+                             : std::to_string(n.id));
+  }
   REQUIRE(labels[0] == "0");
   REQUIRE(labels[1] == "1");
   REQUIRE(labels[2] == "2");
 }
 
-TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
+TEST_CASE("build_ir - custom node attributor and edge attributes", "[build_ir]") {
   // graph: 0->1, 0->2
   MockDagView g({MockHandle{0}}, {{MockHandle{1}, MockHandle{2}}, {}, {}});
 
-  auto node_label = [](auto const& h) { return std::format("N_{}", h.stable_key()); };
+  auto node_attrib = [](auto const& /*view*/, auto const& h) -> dagir::ir_attr_map {
+    dagir::ir_attr_map m;
+    m.emplace(std::string(dagir::ir_attrs::k_label), std::format("N_{}", h.stable_key()));
+    return m;
+  };
   auto edge_attr = [](auto const& parent, auto const& edge_like) {
     // edge_like is expected to provide target()
     auto child = edge_like.target();
-    return std::vector<dagir::ir_attr>{
-        {"rel", std::format("{}->{}", parent.stable_key(), child.stable_key())}};
+    dagir::ir_attr_map m;
+    m.emplace("rel", std::format("{}->{}", parent.stable_key(), child.stable_key()));
+    return m;
   };
 
-  auto ir = dagir::build_ir(g, node_label, edge_attr);
+  auto ir = dagir::build_ir(g, node_attrib, edge_attr);
   REQUIRE(ir.nodes.size() == 3);
-  // node labels applied
+  // node labels applied by the attributor
   std::unordered_map<uint64_t, std::string> labels;
-  for (auto const& n : ir.nodes) labels.emplace(n.id, n.label);
+  for (auto const& n : ir.nodes) {
+    const auto& a = n.attributes;
+    labels.emplace(n.id, a.count(std::string(dagir::ir_attrs::k_label))
+                             ? a.at(std::string(dagir::ir_attrs::k_label))
+                             : std::to_string(n.id));
+  }
   REQUIRE(labels[0] == "N_0");
 
   // edges: two outgoing from 0
@@ -69,14 +84,12 @@ TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
   for (auto const& e : ir.edges) {
     if (e.source == 0 && e.target == 1) {
       REQUIRE(!e.attributes.empty());
-      REQUIRE(e.attributes[0].key == "rel");
-      REQUIRE(e.attributes[0].value == "0->1");
+      REQUIRE(e.attributes.at("rel") == "0->1");
       found01 = true;
     }
     if (e.source == 0 && e.target == 2) {
       REQUIRE(!e.attributes.empty());
-      REQUIRE(e.attributes[0].key == "rel");
-      REQUIRE(e.attributes[0].value == "0->2");
+      REQUIRE(e.attributes.at("rel") == "0->2");
       found02 = true;
     }
   }

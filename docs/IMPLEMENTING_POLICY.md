@@ -12,9 +12,10 @@ shows examples that policy authors can copy-paste.
 
 DagIR separates traversal from rendering via lightweight policy objects:
 
-- `node_labeler`: callable that returns a `std::string` label for a node.
-- `edge_attributor`: callable that returns a sequence of `dagir::ir_attr`
-  entries for an edge.
+- `node_attributor`: callable that returns an attribute representation for a node
+  (commonly `dagir::ir_attr_map`).
+- `edge_attributor`: callable that returns an attribute representation for an edge
+  (commonly `dagir::ir_attr_map`).
 
 Both concepts target types that model `dagir::concepts::read_only_dag_view`.
 Keep policy objects decoupled from backends: emit generic keys from
@@ -47,27 +48,30 @@ Common keys and intended usages:
 Notes:
 
 - Keys are generic; backends map them to renderer-specific fields.
-- `dagir::ir_attrs` are `std::string_view` constants; construct `dagir::ir_attr`
-  instances using `std::string(dagir::ir_attrs::k_label)` for the key when
-  emitting attributes.
+- `dagir::ir_attrs` are `std::string_view` constants; when producing attributes
+  use `dagir::ir_attr_map` (an alias for `std::unordered_map<std::string,std::string>`) and
+  construct keys with `std::string(dagir::ir_attrs::k_label)`.
 
-### Implementing a `node_labeler`
+### Implementing a `node_attributor`
 
-A `node_labeler` is any callable compatible with the `dagir::concepts::node_labeler`
-concept. The implementation may accept either `(const View&, handle)` or just
-`(handle)` (see the concept documentation for the exact accepted forms).
+A `node_attributor` is any callable compatible with the `dagir::concepts::node_attributor`
+concept. Attributors are invoked with `(const View&, handle)` and are expected to
+return an attribute representation. The canonical and recommended return type is
+`dagir::ir_attr_map` (an alias for `std::unordered_map<std::string,std::string>`).
 
-Example: stable-key stringifier
+Example: stable-key label in a map
 
 ```cpp
 #include <dagir/ir.hpp>
-#include <string>
+#include <dagir/ir_attrs.hpp>
 
-// A simple node labeler that uses the handle's stable_key().
-struct StableKeyLabeler {
+// A simple node attributor that sets the canonical label to the handle's stable_key().
+struct StableKeyAttributor {
   template <class View>
-  std::string operator()(const View&, const typename View::handle& h) const {
-    return std::to_string(h.stable_key());
+  dagir::ir_attr_map operator()(const View&, const typename View::handle& h) const {
+    dagir::ir_attr_map m;
+    m.emplace(std::string(dagir::ir_attrs::k_label), std::to_string(h.stable_key()));
+    return m;
   }
 };
 ```
@@ -75,23 +79,22 @@ struct StableKeyLabeler {
 ### Implementing an `edge_attributor`
 
 `edge_attributor` callables are flexible. The `build_ir` helper accepts several
-call signatures (e.g., `(view, parent, edge_like)`, `(parent, child)`) and
-interprets the result as a `std::vector<dagir::ir_attr>`.
+call signatures (e.g., `(view, parent, edge_like)`, `(parent, child)`) and the
+recommended return type is `dagir::ir_attr_map`.
 
-Example: simple attribute emitter using `dagir::ir_attrs`
+Example: simple edge attributor using `dagir::ir_attrs`
 
 ```cpp
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
-#include <vector>
 
 struct SimpleEdgeAttr {
   template <class View>
-  std::vector<dagir::ir_attr> operator()(const View&, const typename View::handle& p,
-                                         const typename View::handle& c) const {
-    std::vector<dagir::ir_attr> out;
-    out.push_back({std::string(dagir::ir_attrs::k_label), std::to_string(c.stable_key())});
-    out.push_back({std::string(dagir::ir_attrs::k_color), "#ff9900"});
+  dagir::ir_attr_map operator()(const View&, const typename View::handle& p,
+                                const typename View::handle& c) const {
+    dagir::ir_attr_map out;
+    out.emplace(std::string(dagir::ir_attrs::k_label), std::to_string(c.stable_key()));
+    out.emplace(std::string(dagir::ir_attrs::k_color), "#ff9900");
     return out;
   }
 };
@@ -104,6 +107,12 @@ struct SimpleEdgeAttr {
 - Avoid heavy allocations on hot paths; cache small strings if needed.
 - Let backends interpret keys; document mappings when creating a renderer.
 
+- **Colorization:** Set `dagir::ir_attrs::k_fill_color` from your
+  `node_attributor` when you want nodes colorized. Backends should use the
+  attribute value when present and avoid hard-coded mappings from labels to
+  colors; keeping color decisions in policy objects preserves separation of
+  concerns.
+
 ### Backend mapping
 
 Backends map the generic keys to renderer-specific names (examples):
@@ -115,5 +124,5 @@ Backends map the generic keys to renderer-specific names (examples):
 ---
 
 This document aims to provide a concise, copy-pasteable reference for policy
-authors. If you'd like example labelers/attributors for common frameworks or a
-small policy test harness, I can add them here.
+authors. If you'd like example attributors for common frameworks or a small
+policy test harness, I can add them here.

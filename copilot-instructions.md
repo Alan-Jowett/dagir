@@ -29,14 +29,14 @@ Running tests
 
 Renderer implementation notes (`include/dagir/render_dot.hpp`)
 - Header-only renderer `dagir::render_dot(std::ostream&, const dagir::ir_graph&, std::string_view)` added.
-- Behavior and mapping decisions:
-	- Always emits a `digraph` named by the `graph_name` parameter.
-	- Nodes are emitted with identifiers `n{id}` where `id` is `ir_node::id`.
-	- Node label selection order: `ir_attr` with key `k_label` → `ir_node::label` → numeric id.
-	- Edge labels are taken from `k_label` if present.
-	- If a node has `k_fill_color` and no explicit `k_style`, `style=filled` is emitted.
-	- Attribute keys are emitted as provided (the renderer relies on keys in `include/dagir/ir_attrs.hpp` to be GraphViz-appropriate names like `fillcolor`, `penwidth`, `fontsize`, etc.).
-	- Values are quoted and escaped (quotes, backslashes, newlines handled).
+ Behavior and mapping decisions:
+  - Always emits a `digraph` named by the `graph_name` parameter.
+  - Nodes are emitted with identifiers `n{id}` where `id` is `ir_node::id`.
+  - Node label selection order: `ir_attr_map` entry with key `k_label` → numeric id.
+  - Edge labels are taken from `k_label` if present.
+  - If a node has `k_fill_color` and no explicit `k_style`, `style=filled` is emitted.
+  - Attribute keys are emitted as provided (the renderer relies on keys in `include/dagir/ir_attrs.hpp` to be GraphViz-appropriate names like `fillcolor`, `penwidth`, `fontsize`, etc.). Use `dagir::ir_attr_map` when producing attributes.
+  - Values are quoted and escaped (quotes, backslashes, newlines handled).
 
 Testing the renderer
 - A unit test `tests/test_render_dot.cpp` was added that constructs a tiny `ir_graph`, renders it to an `ostringstream`, and asserts presence of expected snippets (graph header, node labels, edge, style filled, etc.).

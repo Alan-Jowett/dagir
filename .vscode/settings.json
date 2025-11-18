@@ -1,5 +1,18 @@
 {
-    "cSpell.words": [
-        "dagir"
-    ]
+  // Use the generated compile_commands.json for exact compile flags (preferred).
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
+
+  // Use the Default IntelliSense engine which understands compileCommands.
+  "C_Cpp.intelliSenseEngine": "Default",
+
+  // Set the project C++ standard.
+  "C_Cpp.default.cppStandard": "c++20",
+
+  // Default IntelliSense mode for Windows MSVC builds. Change to clang-x64 or gcc-x64 if needed.
+  "C_Cpp.intelliSenseMode": "msvc-x64",
+
+  // Ensure header files with .hpp are treated as C++.
+  "files.associations": {
+    "*.hpp": "cpp"
+  }
 }

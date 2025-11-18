@@ -16,22 +16,22 @@ TEST_CASE("render_json emits nodes edges roots and graphAttributes", "[render_js
 
   dagir::ir_node n1;
   n1.id = 1;
-  n1.label = "A";
-  n1.attributes.push_back({"k", "v"});
+  n1.attributes.emplace(std::string(dagir::ir_attrs::k_label), "A");
+  n1.attributes.emplace("k", "v");
   dagir::ir_node n2;
   n2.id = 2;
-  n2.label = "B";
-  n2.attributes.push_back({"num", "42"});
+  n2.attributes.emplace(std::string(dagir::ir_attrs::k_label), "B");
+  n2.attributes.emplace("num", "42");
   g.nodes.push_back(n1);
   g.nodes.push_back(n2);
 
   dagir::ir_edge e;
   e.source = 1;
   e.target = 2;
-  e.attributes.push_back({"rel", "toB"});
+  e.attributes.emplace("rel", "toB");
   g.edges.push_back(e);
 
-  g.global_attrs.push_back({std::string(dagir::ir_attrs::k_graph_label), "MyGraph"});
+  g.global_attrs.emplace(std::string(dagir::ir_attrs::k_graph_label), "MyGraph");
 
   std::ostringstream os;
   dagir::render_json(os, g);

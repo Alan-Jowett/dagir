@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 
     // Build an intermediate representation (ir_graph) from the DAG view
     // Use expression-specific policies for node labels and edge attributes
-    dagir::ir_graph ir = dagir::build_ir(dag_view, dagir::utility::expression_node_labeler{},
+    dagir::ir_graph ir = dagir::build_ir(dag_view, dagir::utility::expression_node_attributor{},
                                          dagir::utility::expression_edge_attributor{});
 
     // Render using the requested backend to stdout.
