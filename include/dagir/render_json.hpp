@@ -209,7 +209,7 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     for (const auto& a : g.global_attrs) {
       if (!first_ga) os << ", ";
       first_ga = false;
-      os << "\"" << detail::escape_json_string(a.key) << "\":";
+      os << "\"" << detail::escape_json_string(a.key) << "\": ";
       if (auto prim = detail::try_emit_primitive(a.value)) {
         os << *prim;
       } else {
