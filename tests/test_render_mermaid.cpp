@@ -38,7 +38,7 @@ TEST_CASE("render_mermaid outputs nodes, edges, title, and respects rankdir", "[
   std::string out = os.str();
   REQUIRE(out.find("graph LR") != std::string::npos);
   REQUIRE(out.find("title TestGraph") != std::string::npos);
-  REQUIRE(out.find("n1[\"Alpha\"]") != std::string::npos ||
-          out.find("n1(\"Alpha\")") != std::string::npos);
+  REQUIRE((out.find("n1[\"Alpha\"]") != std::string::npos ||
+           out.find("n1(\"Alpha\")") != std::string::npos));
   REQUIRE(out.find("n1 -- \"to B\" --> n2") != std::string::npos);
 }
