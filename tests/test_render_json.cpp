@@ -35,6 +35,10 @@ TEST_CASE("render_json emits nodes edges roots and graphAttributes", "[render_js
   dagir::render_json(os, g);
   auto s = os.str();
 
+  // Emit produced JSON to stdout for CI debugging so we can inspect exact output
+  // when tests run on remote runners.
+  fmt::print("Rendered JSON:\n{}\n", s);
+
   REQUIRE(s.find("\"nodes\"") != std::string::npos);
   REQUIRE(s.find("\"edges\"") != std::string::npos);
   // `roots` is optional in the JSON schema; this IR does not expose roots
