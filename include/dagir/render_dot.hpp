@@ -94,16 +94,6 @@ inline std::string escape_dot(const std::string& s) {
  * Each attribute is emitted as `key="escaped value"`. This is an internal
  * helper used during node/edge emission.
  */
-inline void write_attrs(std::ostream& os, const std::vector<ir_attr>& attrs) {
-  bool first = true;
-  for (const auto& a : attrs) {
-    if (!first) os << ", ";
-    first = false;
-    // Emit key="escaped value"
-    os << a.key << "=\"" << escape_dot(a.value) << "\"";
-  }
-}
-
 /**
  * @brief Convert an attribute vector into a lookup map.
  *
@@ -111,12 +101,7 @@ inline void write_attrs(std::ostream& os, const std::vector<ir_attr>& attrs) {
  * to perform presence checks and indexed lookups. It is intentionally
  * straightforward and trades a small amount of work for code clarity.
  */
-inline std::unordered_map<std::string, std::string> attrs_to_map(
-    const std::vector<ir_attr>& attrs) {
-  std::unordered_map<std::string, std::string> m;
-  for (const auto& a : attrs) m.emplace(a.key, a.value);
-  return m;
-}
+// Attributes are stored as `ir_attr_map` in the IR; helpers are not needed.
 
 }  // namespace render_dot_detail
 
@@ -126,19 +111,16 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
   os << "digraph " << graph_name << " {\n";
 
   // Emit default rankdir only if the graph-level attributes do not provide one.
-  const bool has_rankdir =
-      std::any_of(g.global_attrs.begin(), g.global_attrs.end(),
-                  [](const ir_attr& a) { return a.key == std::string(ir_attrs::k_rankdir); });
-  if (!has_rankdir) {
+  if (!g.global_attrs.count(std::string(ir_attrs::k_rankdir))) {
     os << "  rankdir=TB;\n";  // default top-to-bottom layout
   }
 
   // First, emit global graph attributes (map known keys)
-  for (const auto& a : g.global_attrs) {
-    if (a.key == std::string(ir_attrs::k_graph_label)) {
-      os << "  label=\"" << render_dot_detail::escape_dot(a.value) << "\";\n";
+  for (const auto& kv : g.global_attrs) {
+    if (kv.first == std::string(ir_attrs::k_graph_label)) {
+      os << "  label=\"" << render_dot_detail::escape_dot(kv.second) << "\";\n";
     } else {
-      os << "  " << a.key << "=\"" << render_dot_detail::escape_dot(a.value) << "\";\n";
+      os << "  " << kv.first << "=\"" << render_dot_detail::escape_dot(kv.second) << "\";\n";
     }
   }
 
@@ -151,13 +133,13 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
 
     name_map[n.id] = node_name;
 
-    // Build attribute map from node.attrs and label fields
-    auto amap = render_dot_detail::attrs_to_map(n.attributes);
+    // Attribute map from node (now stored directly in `ir_node::attributes`)
+    const auto& amap = n.attributes;
 
     // Ensure label: prefer k_label, then node.label, then ir_node::name, then id
     std::string label;
     if (amap.count(std::string(ir_attrs::k_label)))
-      label = amap[std::string(ir_attrs::k_label)];
+      label = amap.at(std::string(ir_attrs::k_label));
     else if (!n.label.empty())
       label = n.label;
     else if (!n.name.empty())
@@ -165,35 +147,33 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     else
       label = std::format("{}", n.id);
 
-    // Ensure nodes have a style of 'filled' by default
-    if (!amap.count(std::string(ir_attrs::k_style))) {
-      amap[std::string(ir_attrs::k_style)] = "filled";
+    // Work from a local mutable copy when applying defaults so we don't mutate the
+    // const attribute map stored on the node.
+    auto local = amap;
+    if (!local.count(std::string(ir_attrs::k_style))) {
+      local[std::string(ir_attrs::k_style)] = "filled";
     }
 
-    // If no explicit fill color provided, choose a default based on label
-    if (!amap.count(std::string(ir_attrs::k_fill_color))) {
+    if (!local.count(std::string(ir_attrs::k_fill_color))) {
       if (label == "AND")
-        amap[std::string(ir_attrs::k_fill_color)] = "lightgreen";
+        local[std::string(ir_attrs::k_fill_color)] = "lightgreen";
       else if (label == "OR")
-        amap[std::string(ir_attrs::k_fill_color)] = "lightcoral";
+        local[std::string(ir_attrs::k_fill_color)] = "lightcoral";
       else if (label == "XOR")
-        amap[std::string(ir_attrs::k_fill_color)] = "lightpink";
+        local[std::string(ir_attrs::k_fill_color)] = "lightpink";
       else if (label == "NOT")
-        amap[std::string(ir_attrs::k_fill_color)] = "yellow";
+        local[std::string(ir_attrs::k_fill_color)] = "yellow";
       else
-        amap[std::string(ir_attrs::k_fill_color)] = "lightblue";
+        local[std::string(ir_attrs::k_fill_color)] = "lightblue";
     }
 
+    // Emit node using the possibly-updated local map.
     os << "  " << node_name << " [";
-    // Emit label first with spaces around '='
     os << "label = \"" << render_dot_detail::escape_dot(label) << "\"";
-
-    // Emit other attributes, but skip keys we've handled
-    for (const auto& kv : amap) {
+    for (const auto& kv : local) {
       if (kv.first == std::string(ir_attrs::k_label)) continue;
       os << ", " << kv.first << " = \"" << render_dot_detail::escape_dot(kv.second) << "\"";
     }
-
     os << "];\n";
   }
 
@@ -202,15 +182,14 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     const std::string src = name_map.at(e.source);
     const std::string dst = name_map.at(e.target);
 
-    auto amap = render_dot_detail::attrs_to_map(e.attributes);
+    const auto& amap = e.attributes;
 
     os << "  " << src << " -> " << dst;
     if (!amap.empty()) {
       os << " [";
       bool first = true;
-      // Prefer label from k_label
       if (amap.count(std::string(ir_attrs::k_label))) {
-        os << "label = \"" << render_dot_detail::escape_dot(amap[std::string(ir_attrs::k_label)])
+        os << "label = \"" << render_dot_detail::escape_dot(amap.at(std::string(ir_attrs::k_label)))
            << "\"";
         first = false;
       }

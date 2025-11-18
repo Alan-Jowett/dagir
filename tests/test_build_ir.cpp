@@ -43,8 +43,9 @@ TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
   auto edge_attr = [](auto const& parent, auto const& edge_like) {
     // edge_like is expected to provide target()
     auto child = edge_like.target();
-    return std::vector<dagir::ir_attr>{
-        {"rel", std::format("{}->{}", parent.stable_key(), child.stable_key())}};
+    dagir::ir_attr_map m;
+    m.emplace("rel", std::format("{}->{}", parent.stable_key(), child.stable_key()));
+    return m;
   };
 
   auto ir = dagir::build_ir(g, node_label, edge_attr);
@@ -69,14 +70,12 @@ TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
   for (auto const& e : ir.edges) {
     if (e.source == 0 && e.target == 1) {
       REQUIRE(!e.attributes.empty());
-      REQUIRE(e.attributes[0].key == "rel");
-      REQUIRE(e.attributes[0].value == "0->1");
+      REQUIRE(e.attributes.at("rel") == "0->1");
       found01 = true;
     }
     if (e.source == 0 && e.target == 2) {
       REQUIRE(!e.attributes.empty());
-      REQUIRE(e.attributes[0].key == "rel");
-      REQUIRE(e.attributes[0].value == "0->2");
+      REQUIRE(e.attributes.at("rel") == "0->2");
       found02 = true;
     }
   }

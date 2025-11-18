@@ -117,11 +117,7 @@ inline std::optional<std::string> try_emit_primitive(const std::string& s) {
 /**
  * @brief Convert an attribute vector to a map for easier lookup.
  */
-inline std::map<std::string, std::string> attrs_to_map(const std::vector<ir_attr>& attrs) {
-  std::map<std::string, std::string> m;
-  for (const auto& a : attrs) m.emplace(a.key, a.value);
-  return m;
-}
+// Attributes are now stored as `ir_attr_map`; conversion helper removed.
 
 }  // namespace render_json_detail
 
@@ -162,14 +158,14 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     if (!n.attributes.empty()) {
       os << ", \"attributes\": {";
       bool first_attr = true;
-      for (const auto& a : n.attributes) {
+      for (const auto& kv : n.attributes) {
         if (!first_attr) os << ", ";
         first_attr = false;
-        os << "\"" << render_json_detail::escape_json_string(a.key) << "\": ";
-        if (auto prim = render_json_detail::try_emit_primitive(a.value)) {
+        os << "\"" << render_json_detail::escape_json_string(kv.first) << "\": ";
+        if (auto prim = render_json_detail::try_emit_primitive(kv.second)) {
           os << *prim;
         } else {
-          os << "\"" << render_json_detail::escape_json_string(a.value) << "\"";
+          os << "\"" << render_json_detail::escape_json_string(kv.second) << "\"";
         }
       }
       os << "}";
@@ -201,14 +197,14 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     if (!e.attributes.empty()) {
       os << ", \"attributes\": {";
       bool first_attr = true;
-      for (const auto& a : e.attributes) {
+      for (const auto& kv : e.attributes) {
         if (!first_attr) os << ", ";
         first_attr = false;
-        os << "\"" << render_json_detail::escape_json_string(a.key) << "\": ";
-        if (auto prim = render_json_detail::try_emit_primitive(a.value)) {
+        os << "\"" << render_json_detail::escape_json_string(kv.first) << "\": ";
+        if (auto prim = render_json_detail::try_emit_primitive(kv.second)) {
           os << *prim;
         } else {
-          os << "\"" << render_json_detail::escape_json_string(a.value) << "\"";
+          os << "\"" << render_json_detail::escape_json_string(kv.second) << "\"";
         }
       }
       os << "}";
@@ -225,14 +221,14 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
   if (!g.global_attrs.empty()) {
     os << ", \"graphAttributes\": {";
     bool first_ga = true;
-    for (const auto& a : g.global_attrs) {
+    for (const auto& kv : g.global_attrs) {
       if (!first_ga) os << ", ";
       first_ga = false;
-      os << ", \"" << render_json_detail::escape_json_string(a.key) << "\": ";
-      if (auto prim = render_json_detail::try_emit_primitive(a.value)) {
+      os << "\"" << render_json_detail::escape_json_string(kv.first) << "\": ";
+      if (auto prim = render_json_detail::try_emit_primitive(kv.second)) {
         os << *prim;
       } else {
-        os << "\"" << render_json_detail::escape_json_string(a.value) << "\"";
+        os << "\"" << render_json_detail::escape_json_string(kv.second) << "\"";
       }
     }
     os << "}";

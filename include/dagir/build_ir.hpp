@@ -8,7 +8,8 @@
 #pragma once
 
 #include <cstdint>
-#include <dagir/algorithms.hpp>                   // kahn_topological_order
+#include <dagir/algorithms.hpp>                // kahn_topological_order
+#include <dagir/concepts/node_attributor.hpp>  // node_attributor (accept attribute-producing policies)
 #include <dagir/concepts/read_only_dag_view.hpp>  // read_only_dag_view
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
@@ -78,8 +79,10 @@ static H build_ir_extract_child(const E& e) {
  * @brief Construct an `ir_graph` from a read-only DAG view.
  *
  * @tparam View A type modeling ::dagir::read_only_dag_view
- * @tparam node_labeler Callable used to produce node labels. Supported
- *         signatures: `node_label(view, handle)` or `node_label(handle)`.
+ * @tparam node_labeler_or_attributor Callable used to produce node labels or
+ *         node attributes. Supported labeler signatures: `node_label(view, handle)`
+ *         or `node_label(handle)`. Supported attributor signatures (produce
+ *         `std::vector<ir_attr>`): `node_attr(view, handle)` or `node_attr(handle)`.
  * @tparam edge_attributor Callable used to produce per-edge attributes.
  *         Supported signatures include:
  *           - `edge_attr(view, parent, edge_like)`
@@ -97,8 +100,8 @@ static H build_ir_extract_child(const E& e) {
  *  - Calls `view.start_guard(handle)` if provided by the adapter.
  *  - Memoizes nodes by `stable_key()` to avoid duplicates.
  */
-template <dagir::concepts::read_only_dag_view View, class node_labeler, class edge_attributor>
-ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&& edge_attr) {
+template <dagir::concepts::read_only_dag_view View, class NodePolicy, class EdgePolicy>
+ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_attr) {
   using H = typename View::handle;
   using key_t = std::uint64_t;
 
@@ -128,49 +131,65 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
     // override this by returning a name from the node_labeler.
     n.name = std::format("node{}", idx + 1);
 
-    // Flexible node_labeler return types:
+    // Flexible node policy return types:
+    //  - If the policy returns `dagir::ir_attr_map` it is treated as a
+    //    node-attributor and its result populates `n.attributes`.
+    //  - Otherwise the policy is interpreted as a node-labeler with the
+    //    same supported shapes as before (string, pair<string,string>, or
+    //    struct with .name and .label members).
+    //
+    // The detection order prefers attribute-producing policies when their
+    // return type matches `std::vector<ir_attr>`.
     //  - std::string: interpreted as label
     //  - pair<string,string>: interpreted as (name,label)
     //  - struct with .name and .label members: used directly
-    if constexpr (std::invocable<node_labeler, const View&, const H&>) {
-      using ret_t = std::invoke_result_t<node_labeler, const View&, const H&>;
-      if constexpr (std::convertible_to<ret_t, std::string>) {
-        n.label = std::invoke(node_label, view, h);
+    if constexpr (std::invocable<NodePolicy, const View&, const H&>) {
+      using ret_t = std::invoke_result_t<NodePolicy, const View&, const H&>;
+      if constexpr (std::convertible_to<ret_t, dagir::ir_attr_map>) {
+        n.attributes = std::invoke(node_policy, view, h);
+        if (n.attributes.count("name")) n.name = n.attributes["name"];
+        if (n.attributes.count("label")) n.label = n.attributes["label"];
+      } else if constexpr (std::convertible_to<ret_t, std::string>) {
+        n.label = std::invoke(node_policy, view, h);
       } else if constexpr (build_ir_detail::has_first_second<ret_t>::value &&
                            std::convertible_to<decltype(std::declval<ret_t>().first),
                                                std::string> &&
                            std::convertible_to<decltype(std::declval<ret_t>().second),
                                                std::string>) {
-        auto r = std::invoke(node_label, view, h);
+        auto r = std::invoke(node_policy, view, h);
         n.name = std::string(r.first);
         n.label = std::string(r.second);
       } else if constexpr (build_ir_detail::has_name_label<ret_t>::value &&
                            std::convertible_to<decltype(std::declval<ret_t>().name), std::string> &&
                            std::convertible_to<decltype(std::declval<ret_t>().label),
                                                std::string>) {
-        auto r = std::invoke(node_label, view, h);
+        auto r = std::invoke(node_policy, view, h);
         n.name = std::string(r.name);
         n.label = std::string(r.label);
       } else {
         n.label = std::to_string(k);
       }
-    } else if constexpr (std::invocable<node_labeler, const H&>) {
-      using ret_t = std::invoke_result_t<node_labeler, const H&>;
-      if constexpr (std::convertible_to<ret_t, std::string>) {
-        n.label = std::invoke(node_label, h);
+    } else if constexpr (std::invocable<NodePolicy, const H&>) {
+      using ret_t = std::invoke_result_t<NodePolicy, const H&>;
+      if constexpr (std::convertible_to<ret_t, dagir::ir_attr_map>) {
+        n.attributes = std::invoke(node_policy, h);
+        if (n.attributes.count("name")) n.name = n.attributes["name"];
+        if (n.attributes.count("label")) n.label = n.attributes["label"];
+      } else if constexpr (std::convertible_to<ret_t, std::string>) {
+        n.label = std::invoke(node_policy, h);
       } else if constexpr (build_ir_detail::has_first_second<ret_t>::value &&
                            std::convertible_to<decltype(std::declval<ret_t>().first),
                                                std::string> &&
                            std::convertible_to<decltype(std::declval<ret_t>().second),
                                                std::string>) {
-        auto r = std::invoke(node_label, h);
+        auto r = std::invoke(node_policy, h);
         n.name = std::string(r.first);
         n.label = std::string(r.second);
       } else if constexpr (build_ir_detail::has_name_label<ret_t>::value &&
                            std::convertible_to<decltype(std::declval<ret_t>().name), std::string> &&
                            std::convertible_to<decltype(std::declval<ret_t>().label),
                                                std::string>) {
-        auto r = std::invoke(node_label, h);
+        auto r = std::invoke(node_policy, h);
         n.name = std::string(r.name);
         n.label = std::string(r.label);
       } else {
@@ -204,14 +223,13 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
       ie.target = ck;
 
       // Determine attributes via flexible invocation forms
-      if constexpr (std::invocable<edge_attributor, const View&, const H&,
-                                   const decltype(edge_like)&>) {
+      if constexpr (std::invocable<EdgePolicy, const View&, const H&, const decltype(edge_like)&>) {
         ie.attributes = std::invoke(edge_attr, view, parent, edge_like);
-      } else if constexpr (std::invocable<edge_attributor, const View&, const H&, const H&>) {
+      } else if constexpr (std::invocable<EdgePolicy, const View&, const H&, const H&>) {
         ie.attributes = std::invoke(edge_attr, view, parent, child);
-      } else if constexpr (std::invocable<edge_attributor, const H&, const decltype(edge_like)&>) {
+      } else if constexpr (std::invocable<EdgePolicy, const H&, const decltype(edge_like)&>) {
         ie.attributes = std::invoke(edge_attr, parent, edge_like);
-      } else if constexpr (std::invocable<edge_attributor, const H&, const H&>) {
+      } else if constexpr (std::invocable<EdgePolicy, const H&, const H&>) {
         ie.attributes = std::invoke(edge_attr, parent, child);
       } else {
         ie.attributes = {};
@@ -233,7 +251,7 @@ ir_graph build_ir(const View& view, node_labeler&& node_label, edge_attributor&&
 template <dagir::concepts::read_only_dag_view View>
 ir_graph build_ir(const View& view) {
   auto node_label = [](auto const& h) -> std::string { return std::format("{}", h.stable_key()); };
-  auto edge_attr = [](auto&&...) -> std::vector<ir_attr> { return {}; };
+  auto edge_attr = [](auto&&...) -> dagir::ir_attr_map { return {}; };
   return build_ir(view, node_label, edge_attr);
 }
 

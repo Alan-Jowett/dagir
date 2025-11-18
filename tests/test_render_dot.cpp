@@ -21,12 +21,12 @@ TEST_CASE("render_dot outputs nodes and edges with attributes", "[render_dot]") 
   dagir::ir_node a;
   a.id = 1;
   a.label = "Alpha";
-  a.attributes.push_back({std::string(dagir::ir_attrs::k_fill_color), "#ff0000"});
+  a.attributes.emplace(std::string(dagir::ir_attrs::k_fill_color), "#ff0000");
 
   dagir::ir_node b;
   b.id = 2;
   b.label = "Beta";
-  b.attributes.push_back({std::string(dagir::ir_attrs::k_shape), "box"});
+  b.attributes.emplace(std::string(dagir::ir_attrs::k_shape), "box");
 
   g.nodes.push_back(a);
   g.nodes.push_back(b);
@@ -35,7 +35,7 @@ TEST_CASE("render_dot outputs nodes and edges with attributes", "[render_dot]") 
   dagir::ir_edge e;
   e.source = 1;
   e.target = 2;
-  e.attributes.push_back({std::string(dagir::ir_attrs::k_label), "to B"});
+  e.attributes.emplace(std::string(dagir::ir_attrs::k_label), "to B");
   g.edges.push_back(e);
 
   std::ostringstream oss;

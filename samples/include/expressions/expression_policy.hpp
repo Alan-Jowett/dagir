@@ -68,34 +68,27 @@ struct expression_node_labeler {
 struct expression_edge_attributor {
   using handle = typename expression_read_only_dag_view::handle;
 
-  std::vector<dagir::ir_attr> operator()(const expression_read_only_dag_view& /*view*/,
-                                         const handle& parent, const handle& child) const {
-    std::vector<dagir::ir_attr> out;
+  dagir::ir_attr_map operator()(const expression_read_only_dag_view& /*view*/, const handle& parent,
+                                const handle& child) const {
+    dagir::ir_attr_map out;
     if (!parent.ptr) return out;
-
-    auto add = [&out](std::string key, std::string value) {
-      dagir::ir_attr a;
-      a.key = std::move(key);
-      a.value = std::move(value);
-      out.push_back(std::move(a));
-    };
     // For binary operators, label edges left/right. Keep some styles
     // (e.g. bold for AND, dashed for NOT) but do not set edge colors.
     if (auto p_and = std::get_if<my_and>(parent.ptr)) {
       if (p_and->left && p_and->left.get() == child.ptr)
-        add(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
+        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
       else if (p_and->right && p_and->right.get() == child.ptr)
-        add(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
+        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
     } else if (auto p_or = std::get_if<my_or>(parent.ptr)) {
       if (p_or->left && p_or->left.get() == child.ptr)
-        add(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
+        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
       else if (p_or->right && p_or->right.get() == child.ptr)
-        add(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
+        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
     } else if (auto p_xor = std::get_if<my_xor>(parent.ptr)) {
       if (p_xor->left && p_xor->left.get() == child.ptr)
-        add(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
+        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
       else if (p_xor->right && p_xor->right.get() == child.ptr)
-        add(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
+        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
     } else if (auto p_not = std::get_if<my_not>(parent.ptr)) {
       // Unary operator: do not emit edge labels for NOT -- leave edges unlabeled
       (void)child;

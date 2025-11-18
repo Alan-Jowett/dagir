@@ -70,12 +70,7 @@ inline std::string escape_mermaid(const std::string& s) {
  *
  * Convenience helper to simplify attribute lookup when emitting nodes/edges.
  */
-inline std::unordered_map<std::string, std::string> attrs_to_map(
-    const std::vector<ir_attr>& attrs) {
-  std::unordered_map<std::string, std::string> m;
-  for (const auto& a : attrs) m.emplace(a.key, a.value);
-  return m;
-}
+// Attributes are now stored as `ir_attr_map`; helper removed.
 
 }  // namespace render_mermaid_detail
 
@@ -89,29 +84,27 @@ inline std::unordered_map<std::string, std::string> attrs_to_map(
 inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view graph_name = "G") {
   // Determine direction: prefer graph-level k_rankdir if present
   std::string rankdir = "TB";
-  auto it = std::find_if(g.global_attrs.begin(), g.global_attrs.end(), [](const ir_attr& a) {
-    return a.key == std::string(ir_attrs::k_rankdir);
-  });
-  if (it != g.global_attrs.end()) rankdir = it->value;
+  if (g.global_attrs.count(std::string(ir_attrs::k_rankdir)))
+    rankdir = g.global_attrs.at(std::string(ir_attrs::k_rankdir));
 
   // Mermaid requires `graph <dir>` where <dir> is TB, LR, etc.
   os << "graph " << rankdir << "\n";
 
   // Emit title if provided
-  for (const auto& a : g.global_attrs) {
-    if (a.key == std::string(ir_attrs::k_graph_label)) {
-      os << "  title " << render_mermaid_detail::escape_mermaid(a.value) << "\n";
+  for (const auto& kv : g.global_attrs) {
+    if (kv.first == std::string(ir_attrs::k_graph_label)) {
+      os << "  title " << render_mermaid_detail::escape_mermaid(kv.second) << "\n";
     }
   }
 
   // Emit nodes. Mermaid syntax for a node with a box is: n1[Label]
   for (const auto& n : g.nodes) {
-    auto amap = render_mermaid_detail::attrs_to_map(n.attributes);
+    const auto& amap = n.attributes;
 
     // Determine label: prefer k_label, then node.label, then id
     std::string label;
     if (amap.count(std::string(ir_attrs::k_label)))
-      label = amap[std::string(ir_attrs::k_label)];
+      label = amap.at(std::string(ir_attrs::k_label));
     else if (!n.label.empty())
       label = n.label;
     else
@@ -121,7 +114,7 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
     std::string opening = "[";
     std::string closing = "]";
     if (amap.count(std::string(ir_attrs::k_shape))) {
-      const auto& s = amap[std::string(ir_attrs::k_shape)];
+      const auto& s = amap.at(std::string(ir_attrs::k_shape));
       if (s == "circle" || s == "ellipse") {
         opening = "(";
         closing = ")";
@@ -145,11 +138,12 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
         amap.count(std::string(ir_attrs::k_pen_width))) {
       std::vector<std::string> parts;
       if (amap.count(std::string(ir_attrs::k_fill_color)))
-        parts.push_back(std::format("fill:{}", amap[std::string(ir_attrs::k_fill_color)]));
+        parts.push_back(std::format("fill:{}", amap.at(std::string(ir_attrs::k_fill_color))));
       if (amap.count(std::string(ir_attrs::k_color)))
-        parts.push_back(std::format("stroke:{}", amap[std::string(ir_attrs::k_color)]));
+        parts.push_back(std::format("stroke:{}", amap.at(std::string(ir_attrs::k_color))));
       if (amap.count(std::string(ir_attrs::k_pen_width)))
-        parts.push_back(std::format("stroke-width:{}", amap[std::string(ir_attrs::k_pen_width)]));
+        parts.push_back(
+            std::format("stroke-width:{}", amap.at(std::string(ir_attrs::k_pen_width))));
       if (!parts.empty()) {
         os << "  style " << node_name << " "
            << std::format("{}", std::accumulate(std::next(parts.begin()), parts.end(), parts[0],
@@ -172,12 +166,11 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
 
     const std::string src = find_node_name(e.source);
     const std::string dst = find_node_name(e.target);
-    auto amap = render_mermaid_detail::attrs_to_map(e.attributes);
-
+    const auto& amap = e.attributes;
     if (amap.count(std::string(ir_attrs::k_label))) {
       os << "  " << src << " -- \""
-         << render_mermaid_detail::escape_mermaid(amap[std::string(ir_attrs::k_label)]) << "\" --> "
-         << dst << "\n";
+         << render_mermaid_detail::escape_mermaid(amap.at(std::string(ir_attrs::k_label)))
+         << "\" --> " << dst << "\n";
     } else {
       os << "  " << src << " --> " << dst << "\n";
     }

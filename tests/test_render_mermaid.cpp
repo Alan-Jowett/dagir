@@ -28,12 +28,12 @@ TEST_CASE("render_mermaid outputs nodes, edges, title, and respects rankdir", "[
   dagir::ir_edge e;
   e.source = 1;
   e.target = 2;
-  e.attributes.push_back({"label", "to B"});
+  e.attributes.emplace("label", "to B");
   g.edges.push_back(e);
 
   // Set graph-level attributes: label and rankdir
-  g.global_attrs.push_back({std::string(dagir::ir_attrs::k_graph_label), "TestGraph"});
-  g.global_attrs.push_back({std::string(dagir::ir_attrs::k_rankdir), "LR"});
+  g.global_attrs.emplace(std::string(dagir::ir_attrs::k_graph_label), "TestGraph");
+  g.global_attrs.emplace(std::string(dagir::ir_attrs::k_rankdir), "LR");
 
   std::ostringstream os;
   dagir::render_mermaid(os, g, "TestGraph");
