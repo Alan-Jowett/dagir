@@ -19,6 +19,7 @@
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
 #include <dagir/utility/expression_ast.hpp>
+#include <dagir/utility/expression_read_only_dag_view.hpp>
 
 namespace dagir {
 namespace utility {

@@ -147,7 +147,7 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
 
   // Emit nodes
   for (const auto& n : g.nodes) {
-    const std::string node_name = !n.name.empty() ? n.name : std::format("node{}", n.id);
+    const std::string node_name = !n.name.empty() ? n.name : std::format("n{}", n.id);
 
     name_map[n.id] = node_name;
 
