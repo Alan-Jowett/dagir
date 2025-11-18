@@ -37,7 +37,7 @@ TEST_CASE("render_json emits nodes edges roots and graphAttributes", "[render_js
 
   // Emit produced JSON to stdout for CI debugging so we can inspect exact output
   // when tests run on remote runners.
-  fmt::print("Rendered JSON:\n{}\n", s);
+  std::cout << "Rendered JSON:\n" << s << std::endl;
 
   REQUIRE(s.find("\"nodes\"") != std::string::npos);
   REQUIRE(s.find("\"edges\"") != std::string::npos);
