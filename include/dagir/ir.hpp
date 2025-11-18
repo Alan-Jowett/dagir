@@ -30,9 +30,11 @@ struct ir_attr {
 struct ir_node {
   std::uint64_t id;
   // cppcheck-suppress unusedStructMember
-  [[maybe_unused]] std::string label;
+  [[maybe_unused]] std::string name;  ///< Always contains the nodes unique name.
   // cppcheck-suppress unusedStructMember
-  [[maybe_unused]] std::vector<ir_attr> attributes;
+  [[maybe_unused]] std::string label;  ///< Human-readable label for the node.
+  // cppcheck-suppress unusedStructMember
+  [[maybe_unused]] std::vector<ir_attr> attributes;  ///< Node-specific attributes.
 };
 
 /**
@@ -67,6 +69,7 @@ inline void touch_ir_members_for_static_analysis() {
   (void)&ir_attr::key;
   (void)&ir_attr::value;
   (void)&ir_node::label;
+  (void)&ir_node::name;
   (void)&ir_node::attributes;
   (void)&ir_edge::attributes;
   (void)&ir_graph::nodes;

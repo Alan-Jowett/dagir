@@ -17,6 +17,21 @@
 
 namespace dagir::concepts {
 
+// Helper concept describing acceptable node-labeler return shapes.
+template <class R>
+concept node_label_result =
+    std::convertible_to<R, std::string> ||
+    (requires(R r) {
+      r.first;
+      r.second;
+    } && std::convertible_to<decltype(std::declval<R>().first), std::string> &&
+     std::convertible_to<decltype(std::declval<R>().second), std::string>) ||
+    (requires(R r) {
+      r.name;
+      r.label;
+    } && std::convertible_to<decltype(std::declval<R>().name), std::string> &&
+     std::convertible_to<decltype(std::declval<R>().label), std::string>);
+
 /**
  * @concept node_labeler_with_view
  * @tparam F Callable type.
@@ -24,10 +39,12 @@ namespace dagir::concepts {
  * @brief True if `F` is invocable as `f(view, handle)` and returns a string.
  */
 template <class F, class View>
-concept node_labeler_with_view =
-    requires(const F& f, const View& v, const typename View::handle& h) {
-      { f(v, h) } -> std::convertible_to<std::string>;
-    };
+concept node_labeler_with_view = requires(const F& f, const View& v,
+                                          const typename View::handle& h) {
+  { f(v, h) };
+} && requires {
+  requires node_label_result<std::invoke_result_t<F, const View&, const typename View::handle&>>;
+};
 
 /**
  * @concept node_labeler_with_handle
@@ -37,7 +54,9 @@ concept node_labeler_with_view =
  */
 template <class F, class View>
 concept node_labeler_with_handle = requires(const F& f, const typename View::handle& h) {
-  { f(h) } -> std::convertible_to<std::string>;
+  { f(h) };
+} && requires {
+  requires node_label_result<std::invoke_result_t<F, const typename View::handle&>>;
 };
 
 /**

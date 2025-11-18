@@ -28,7 +28,7 @@
 
 namespace dagir {
 
-namespace detail {
+namespace render_mermaid_detail {
 
 /**
  * @brief Escape a string for inclusion in Mermaid labels.
@@ -77,7 +77,7 @@ inline std::unordered_map<std::string, std::string> attrs_to_map(
   return m;
 }
 
-}  // namespace detail
+}  // namespace render_mermaid_detail
 
 /**
  * @brief Render `ir_graph` as a Mermaid `graph` to `os`.
@@ -101,13 +101,13 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
   // Emit title if provided
   for (const auto& a : g.global_attrs) {
     if (a.key == std::string(ir_attrs::k_graph_label)) {
-      os << "  title " << detail::escape_mermaid(a.value) << "\n";
+      os << "  title " << render_mermaid_detail::escape_mermaid(a.value) << "\n";
     }
   }
 
   // Emit nodes. Mermaid syntax for a node with a box is: n1[Label]
   for (const auto& n : g.nodes) {
-    auto amap = detail::attrs_to_map(n.attributes);
+    auto amap = render_mermaid_detail::attrs_to_map(n.attributes);
 
     // Determine label: prefer k_label, then node.label, then id
     std::string label;
@@ -135,9 +135,10 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
       }
     }
 
-    const std::string node_name = std::format("n{}", n.id);
-    os << "  " << node_name << opening << '"' << detail::escape_mermaid(label) << '"' << closing
-       << "\n";
+    // Prefer `ir_node::name` for the identifier used in edges and styles.
+    std::string node_name = n.name.empty() ? std::format("n{}", n.id) : n.name;
+    os << "  " << node_name << opening << '"' << render_mermaid_detail::escape_mermaid(label) << '"'
+       << closing << "\n";
 
     // Emit simple style directive if fill or stroke is provided
     if (amap.count(std::string(ir_attrs::k_fill_color)) ||
@@ -163,13 +164,21 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
 
   // Emit edges. Mermaid edge label syntax: A -- "label" --> B
   for (const auto& e : g.edges) {
-    const std::string src = std::format("n{}", e.source);
-    const std::string dst = std::format("n{}", e.target);
-    auto amap = detail::attrs_to_map(e.attributes);
+    auto find_node_name = [&](std::uint64_t nid) -> std::string {
+      auto it = std::find_if(g.nodes.begin(), g.nodes.end(),
+                             [&](const ir_node& nn) { return nn.id == nid; });
+      if (it != g.nodes.end()) return it->name.empty() ? std::format("n{}", it->id) : it->name;
+      return std::format("n{}", nid);
+    };
+
+    const std::string src = find_node_name(e.source);
+    const std::string dst = find_node_name(e.target);
+    auto amap = render_mermaid_detail::attrs_to_map(e.attributes);
 
     if (amap.count(std::string(ir_attrs::k_label))) {
-      os << "  " << src << " -- \"" << detail::escape_mermaid(amap[std::string(ir_attrs::k_label)])
-         << "\" --> " << dst << "\n";
+      os << "  " << src << " -- \""
+         << render_mermaid_detail::escape_mermaid(amap[std::string(ir_attrs::k_label)]) << "\" --> "
+         << dst << "\n";
     } else {
       os << "  " << src << " --> " << dst << "\n";
     }

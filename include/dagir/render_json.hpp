@@ -36,7 +36,7 @@
 
 namespace dagir {
 
-namespace detail {
+namespace render_json_detail {
 
 /**
  * @brief Escape a string for inclusion in JSON string literals.
@@ -123,7 +123,7 @@ inline std::map<std::string, std::string> attrs_to_map(const std::vector<ir_attr
   return m;
 }
 
-}  // namespace detail
+}  // namespace render_json_detail
 
 /**
  * @brief Render `ir_graph` as JSON to the provided output stream.
@@ -147,9 +147,17 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     if (!first_node) os << ", ";
     first_node = false;
     os << "{";
-    os << "\"id\": \"" << detail::escape_json_string(std::to_string(n.id)) << "\"";
+    // Prefer `ir_node::name` as the node identifier; fall back to numeric id.
+    if (!n.name.empty())
+      os << "\"id\": \"" << render_json_detail::escape_json_string(n.name) << "\"";
+    else
+      os << "\"id\": \"" << render_json_detail::escape_json_string(std::to_string(n.id)) << "\"";
     if (!n.label.empty()) {
-      os << ", \"label\": \"" << detail::escape_json_string(n.label) << "\"";
+      os << ", \"label\": \"" << render_json_detail::escape_json_string(n.label) << "\"";
+    } else if (!n.name.empty()) {
+      // Emit label from ir_node::name when label is empty; this helps
+      // consumers that expect a human-readable label field.
+      os << ", \"label\": \"" << render_json_detail::escape_json_string(n.name) << "\"";
     }
     if (!n.attributes.empty()) {
       os << ", \"attributes\": {";
@@ -157,11 +165,11 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
       for (const auto& a : n.attributes) {
         if (!first_attr) os << ", ";
         first_attr = false;
-        os << "\"" << detail::escape_json_string(a.key) << "\": ";
-        if (auto prim = detail::try_emit_primitive(a.value)) {
+        os << "\"" << render_json_detail::escape_json_string(a.key) << "\": ";
+        if (auto prim = render_json_detail::try_emit_primitive(a.value)) {
           os << *prim;
         } else {
-          os << "\"" << detail::escape_json_string(a.value) << "\"";
+          os << "\"" << render_json_detail::escape_json_string(a.value) << "\"";
         }
       }
       os << "}";
@@ -177,19 +185,30 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     if (!first_edge) os << ", ";
     first_edge = false;
     os << "{";
-    os << "\"source\": \"" << detail::escape_json_string(std::to_string(e.source)) << "\",";
-    os << " \"target\": \"" << detail::escape_json_string(std::to_string(e.target)) << "\"";
+    // For edges, attempt to use node `name` where available. Look up the
+    // nodes by id in the graph to find their names; fall back to numeric id.
+    auto find_node_name = [&](std::uint64_t nid) -> std::string {
+      auto it = std::find_if(g.nodes.begin(), g.nodes.end(),
+                             [&](const ir_node& nn) { return nn.id == nid; });
+      if (it != g.nodes.end()) return it->name.empty() ? std::to_string(it->id) : it->name;
+      return std::to_string(nid);
+    };
+
+    os << "\"source\": \"" << render_json_detail::escape_json_string(find_node_name(e.source))
+       << "\",";
+    os << " \"target\": \"" << render_json_detail::escape_json_string(find_node_name(e.target))
+       << "\"";
     if (!e.attributes.empty()) {
       os << ", \"attributes\": {";
       bool first_attr = true;
       for (const auto& a : e.attributes) {
         if (!first_attr) os << ", ";
         first_attr = false;
-        os << "\"" << detail::escape_json_string(a.key) << "\": ";
-        if (auto prim = detail::try_emit_primitive(a.value)) {
+        os << "\"" << render_json_detail::escape_json_string(a.key) << "\": ";
+        if (auto prim = render_json_detail::try_emit_primitive(a.value)) {
           os << *prim;
         } else {
-          os << "\"" << detail::escape_json_string(a.value) << "\"";
+          os << "\"" << render_json_detail::escape_json_string(a.value) << "\"";
         }
       }
       os << "}";
@@ -209,11 +228,11 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     for (const auto& a : g.global_attrs) {
       if (!first_ga) os << ", ";
       first_ga = false;
-      os << "\"" << detail::escape_json_string(a.key) << "\": ";
-      if (auto prim = detail::try_emit_primitive(a.value)) {
+      os << ", \"" << render_json_detail::escape_json_string(a.key) << "\": ";
+      if (auto prim = render_json_detail::try_emit_primitive(a.value)) {
         os << *prim;
       } else {
-        os << "\"" << detail::escape_json_string(a.value) << "\"";
+        os << "\"" << render_json_detail::escape_json_string(a.value) << "\"";
       }
     }
     os << "}";
