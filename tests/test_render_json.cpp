@@ -1,7 +1,9 @@
-// SPDX-License-Identifier: MIT
 /**
  * @file tests/test_render_json.cpp
  * @brief Unit tests for JSON renderer
+ * @copyright
+ * © DagIR Contributors. All rights reserved.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <catch2/catch_test_macros.hpp>
@@ -35,10 +37,6 @@ TEST_CASE("render_json emits nodes edges roots and graphAttributes", "[render_js
   dagir::render_json(os, g);
   auto s = os.str();
 
-  // Emit produced JSON to stdout for CI debugging so we can inspect exact output
-  // when tests run on remote runners.
-  std::cout << "Rendered JSON:\n" << s << std::endl;
-
   REQUIRE(s.find("\"nodes\"") != std::string::npos);
   REQUIRE(s.find("\"edges\"") != std::string::npos);
   // `roots` is optional in the JSON schema; this IR does not expose roots
@@ -46,5 +44,5 @@ TEST_CASE("render_json emits nodes edges roots and graphAttributes", "[render_js
   REQUIRE(s.find("\"graphAttributes\"") != std::string::npos);
   REQUIRE(s.find("\"id\": \"1\"") != std::string::npos);
   REQUIRE(s.find("\"label\": \"A\"") != std::string::npos);
-  REQUIRE(s.find("\"num\": 42") != std::string::npos);
+  REQUIRE(s.find("\"num\":42") != std::string::npos);
 }

@@ -1,7 +1,10 @@
-// SPDX-License-Identifier: MIT
 /**
  * @file tests/test_render_mermaid.cpp
  * @brief Unit test for Mermaid renderer
+ *
+ * @copyright
+ * © DagIR Contributors. All rights reserved.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <catch2/catch_test_macros.hpp>
