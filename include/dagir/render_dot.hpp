@@ -149,19 +149,6 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
       local[std::string(ir_attrs::k_style)] = "filled";
     }
 
-    if (!local.count(std::string(ir_attrs::k_fill_color))) {
-      if (label == "AND")
-        local[std::string(ir_attrs::k_fill_color)] = "lightgreen";
-      else if (label == "OR")
-        local[std::string(ir_attrs::k_fill_color)] = "lightcoral";
-      else if (label == "XOR")
-        local[std::string(ir_attrs::k_fill_color)] = "lightpink";
-      else if (label == "NOT")
-        local[std::string(ir_attrs::k_fill_color)] = "yellow";
-      else
-        local[std::string(ir_attrs::k_fill_color)] = "lightblue";
-    }
-
     // Emit node using the possibly-updated local map.
     os << "  " << node_name << " [";
     os << "label = \"" << render_dot_detail::escape_dot(label) << "\"";

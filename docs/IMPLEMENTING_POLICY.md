@@ -107,6 +107,12 @@ struct SimpleEdgeAttr {
 - Avoid heavy allocations on hot paths; cache small strings if needed.
 - Let backends interpret keys; document mappings when creating a renderer.
 
+- **Colorization:** Set `dagir::ir_attrs::k_fill_color` from your
+  `node_attributor` when you want nodes colorized. Backends should use the
+  attribute value when present and avoid hard-coded mappings from labels to
+  colors; keeping color decisions in policy objects preserves separation of
+  concerns.
+
 ### Backend mapping
 
 Backends map the generic keys to renderer-specific names (examples):

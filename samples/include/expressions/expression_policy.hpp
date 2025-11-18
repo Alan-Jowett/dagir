@@ -41,14 +41,23 @@ struct expression_node_attributor {
 
     if (auto v = std::get_if<my_variable>(h.ptr)) {
       out.emplace(std::string{dagir::ir_attrs::k_label}, v->variable_name);
+      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightblue"});
     } else if (std::get_if<my_and>(h.ptr)) {
       out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"AND"});
+      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightgreen"});
+      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
     } else if (std::get_if<my_or>(h.ptr)) {
       out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"OR"});
+      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightcoral"});
+      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
     } else if (std::get_if<my_xor>(h.ptr)) {
       out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"XOR"});
+      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightpink"});
+      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
     } else if (std::get_if<my_not>(h.ptr)) {
       out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"NOT"});
+      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"yellow"});
+      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
     }
 
     return out;
