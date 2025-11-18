@@ -1,0 +1,125 @@
+/**
+ * @file teddy_policy.hpp
+ * @brief Node and edge attribute policies for TeDDy BDD samples.
+ *
+ * @details
+ * Provides `teddy_node_attributor` and `teddy_edge_attributor` used by the
+ * sample pipeline to convert TeDDy BDD nodes and edges into renderer-neutral
+ * IR attributes. False edges are styled as dashed and true edges as solid.
+ *
+ * SPDX-License-Identifier: MIT
+ * © DagIR Contributors. All rights reserved.
+ */
+
+#pragma once
+
+#include <dagir/concepts/edge_attributor.hpp>
+#include <dagir/concepts/node_attributor.hpp>
+#include <dagir/ir.hpp>
+#include <dagir/ir_attrs.hpp>
+
+#include "teddy_read_only_dag_view.hpp"
+
+namespace dagir {
+namespace utility {
+
+/**
+ * @brief Node attributor for TeDDy nodes.
+ */
+
+/**
+ * @brief Node attribute policy for TeDDy nodes.
+ *
+ * Produces renderer-neutral attributes (labels, shapes, colors) for nodes.
+ */
+struct teddy_node_attributor {
+  using view_t = teddy_read_only_dag_view;  // forward declaration use-case
+
+  /**
+   * @brief Produce attributes for a single node handle.
+   * @param h The node handle.
+   * @return Map of attribute key/value pairs.
+   */
+  dagir::ir_attr_map operator()(const typename teddy_read_only_dag_view::handle& h) const {
+    dagir::ir_attr_map out;
+    if (!h.ptr) return out;
+
+    // Terminal nodes: show their boolean value
+    if (h.ptr->is_terminal()) {
+      // Ensure terminal nodes are labeled with either "0" or "1" explicitly.
+      const auto val = h.ptr->get_value();
+      out.emplace(std::string{dagir::ir_attrs::k_label}, val ? std::string{"1"} : std::string{"0"});
+      out.emplace(std::string{dagir::ir_attrs::k_shape}, std::string{"box"});
+      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightgray"});
+    } else {
+      // Variable nodes: label with variable name if available, otherwise index
+      std::string label = std::to_string(h.ptr->get_index());
+      // view-aware overload will populate var_names via the view argument when available
+      out.emplace(std::string{dagir::ir_attrs::k_label}, label);
+      out.emplace(std::string{dagir::ir_attrs::k_shape}, std::string{"circle"});
+    }
+
+    return out;
+  }
+
+  /**
+   * @brief Two-argument overload that forwards to the single-argument form.
+   */
+  dagir::ir_attr_map operator()(const teddy_read_only_dag_view& view,
+                                const typename teddy_read_only_dag_view::handle& h) const {
+    dagir::ir_attr_map out = operator()(h);
+    if (!h.ptr) return out;
+
+    // If the view provided variable names, use them for variable nodes
+    const auto* names = view.var_names();
+    if (names && !h.ptr->is_terminal()) {
+      int idx = h.ptr->get_index();
+      if (idx >= 0 && static_cast<size_t>(idx) < names->size()) {
+        const std::string nm = (*names)[static_cast<size_t>(idx)];
+        out[std::string{dagir::ir_attrs::k_label}] = nm;
+        // Also provide a renderer-visible 'name' attribute so DOT renderer uses it as the node id
+        out.emplace(std::string{"name"}, nm);
+      }
+    }
+
+    return out;
+  }
+};
+
+/**
+ * @brief Edge attribute policy for TeDDy BDD edges.
+ *
+ * Styles the false branch (son 0) as dashed and the true branch (son 1)
+ * as solid.
+ */
+struct teddy_edge_attributor {
+  using handle = typename teddy_read_only_dag_view::handle;
+
+  /**
+   * @brief Produce attributes for an edge from `parent` to `child`.
+   * @param view The view (unused).
+   * @param parent Parent node handle.
+   * @param child Child node handle.
+   * @return Map of attribute key/value pairs.
+   */
+  dagir::ir_attr_map operator()(const teddy_read_only_dag_view& /*view*/, const handle& parent,
+                                const handle& child) const {
+    dagir::ir_attr_map out;
+    if (!parent.ptr) return out;
+
+    // Determine whether this child is the false (0) or true (1) branch.
+    auto son0 = parent.ptr->get_son(0);
+    auto son1 = parent.ptr->get_son(1);
+
+    if (son0 && son0 == child.ptr) {
+      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"dashed"});
+    } else if (son1 && son1 == child.ptr) {
+      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"solid"});
+    }
+
+    return out;
+  }
+};
+
+}  // namespace utility
+}  // namespace dagir

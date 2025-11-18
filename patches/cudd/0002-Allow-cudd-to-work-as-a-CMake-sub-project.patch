@@ -1,0 +1,26 @@
+From 1aad282ca2ce5b77d2dfa6dd714d59dc3d47c093 Mon Sep 17 00:00:00 2001
+From: Alan Jowett <alan.jowett@microsoft.com>
+Date: Tue, 11 Nov 2025 12:08:51 -0800
+Subject: [PATCH 2/2] Allow cudd to work as a CMake sub-project
+
+Signed-off-by: Alan Jowett <alan.jowett@microsoft.com>
+---
+ cmake/cudd_configure_system.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmake/cudd_configure_system.cmake b/cmake/cudd_configure_system.cmake
+index 97c8412..30099c1 100644
+--- a/cmake/cudd_configure_system.cmake
++++ b/cmake/cudd_configure_system.cmake
+@@ -127,7 +127,7 @@ CHECK_C_SOURCE_COMPILES(
+   " HAVE_IEEE_754)
+ 
+ configure_file(
+-  ${CMAKE_SOURCE_DIR}/cmake/config.h.in
++  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in
+   ${CMAKE_BINARY_DIR}/src/config.h
+ )
+ message(STATUS "CUDD reconfiguration complete.")
+-- 
+2.51.2.vfs.0.0
+

@@ -48,6 +48,11 @@ else()
   set(_dagir_default_samples OFF)
 endif()
 
+# Apple - TeDDy doesn't build correctly with Clang
+if (APPLE)
+  set(_dagir_default_samples OFF)
+endif()
+
 option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" ${_dagir_default_build_tests})
 option(DAGIR_SAMPLES "Build DagIR sample code" ${_dagir_default_samples})
 
@@ -160,6 +165,26 @@ endif()
 # Build sample
 # -----------------------------
 if(DAGIR_SAMPLES)
+  # Fetch and patch the BDD libraries
+
+  # Include our custom FetchAndPatch module
+  include(cmake/FetchAndPatch.cmake)
+
+  # Fetch and patch TeDDy library from GitHub
+  fetch_and_patch(DecisionDiagrams
+      GIT_REPOSITORY https://github.com/MichalMrena/DecisionDiagrams.git
+      GIT_TAG a5b73864106d98ae407095033e75b0bc29fc22af
+      PATCHES_DIR ${CMAKE_SOURCE_DIR}/patches/teddy
+  )
+
+  # Fetch and patch CUDD library from GitHub
+  fetch_and_patch(CUDD
+      GIT_REPOSITORY https://github.com/cuddorg/cudd.git
+      GIT_TAG b7b1ca9f35d86e2437ba35be9e5335222c524da0
+      PATCHES_DIR ${CMAKE_SOURCE_DIR}/patches/cudd
+  )
+
+
   # Auto-discover samples: each folder under `samples/` that contains a
   # `main.cpp` will produce an executable named after the folder.
   file(GLOB SAMPLE_MAIN_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -175,6 +200,15 @@ if(DAGIR_SAMPLES)
     target_compile_features(${_target_name} PRIVATE cxx_std_20)
     target_link_libraries(${_target_name} PRIVATE dagir::dagir)
     target_include_directories(${_target_name} PRIVATE samples/include)
+
+    # If external BDD libraries were fetched (e.g., TeDDy), link their CMake targets
+    # into the sample so their include directories and compile options are available.
+    if(TARGET teddy::teddy)
+      target_link_libraries(${_target_name} PRIVATE teddy::teddy)
+    endif()
+    if(TARGET cudd::cudd)
+      target_link_libraries(${_target_name} PRIVATE cudd::cudd)
+    endif()
 
     # If the sample provides a local `include/` folder, add it as a PRIVATE
     # include directory. Use an absolute path so includes resolve properly.
