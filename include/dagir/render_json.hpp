@@ -157,7 +157,7 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
       for (const auto& a : n.attributes) {
         if (!first_attr) os << ", ";
         first_attr = false;
-        os << "\"" << detail::escape_json_string(a.key) << "\":";
+        os << "\"" << detail::escape_json_string(a.key) << "\": ";
         if (auto prim = detail::try_emit_primitive(a.value)) {
           os << *prim;
         } else {
@@ -185,7 +185,7 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
       for (const auto& a : e.attributes) {
         if (!first_attr) os << ", ";
         first_attr = false;
-        os << "\"" << detail::escape_json_string(a.key) << "\":";
+        os << "\"" << detail::escape_json_string(a.key) << "\": ";
         if (auto prim = detail::try_emit_primitive(a.value)) {
           os << *prim;
         } else {

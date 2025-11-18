@@ -44,5 +44,5 @@ TEST_CASE("render_json emits nodes edges roots and graphAttributes", "[render_js
   REQUIRE(s.find("\"graphAttributes\"") != std::string::npos);
   REQUIRE(s.find("\"id\": \"1\"") != std::string::npos);
   REQUIRE(s.find("\"label\": \"A\"") != std::string::npos);
-  REQUIRE(s.find("\"num\":42") != std::string::npos);
+  REQUIRE(s.find("\"num\": 42") != std::string::npos);
 }
