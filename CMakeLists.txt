@@ -160,6 +160,26 @@ endif()
 # Build sample
 # -----------------------------
 if(DAGIR_SAMPLES)
+  # Fetch and patch the BDD libraries
+
+  # Include our custom FetchAndPatch module
+  include(cmake/FetchAndPatch.cmake)
+
+  # Fetch and patch TeDDy library from GitHub
+  fetch_and_patch(DecisionDiagrams
+      GIT_REPOSITORY https://github.com/MichalMrena/DecisionDiagrams.git
+      GIT_TAG a5b73864106d98ae407095033e75b0bc29fc22af
+      PATCHES_DIR ${CMAKE_SOURCE_DIR}/patches/teddy
+  )
+
+  # Fetch and patch CUDD library from GitHub
+  fetch_and_patch(CUDD
+      GIT_REPOSITORY https://github.com/cuddorg/cudd.git
+      GIT_TAG b7b1ca9f35d86e2437ba35be9e5335222c524da0
+      PATCHES_DIR ${CMAKE_SOURCE_DIR}/patches/cudd
+  )
+
+
   # Auto-discover samples: each folder under `samples/` that contains a
   # `main.cpp` will produce an executable named after the folder.
   file(GLOB SAMPLE_MAIN_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}

@@ -1,0 +1,33 @@
+From 734c5b1dfd409733b776851aa8eb6cbb5b1a5a15 Mon Sep 17 00:00:00 2001
+From: Alan Jowett <alan.jowett@microsoft.com>
+Date: Mon, 10 Nov 2025 17:47:59 -0800
+Subject: [PATCH] Backport leak fix
+
+Signed-off-by: Alan Jowett <alan.jowett@microsoft.com>
+---
+ libteddy/details/hash_tables.hpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/libteddy/details/hash_tables.hpp b/libteddy/details/hash_tables.hpp
+index 6557921..353d80b 100644
+--- a/libteddy/details/hash_tables.hpp
++++ b/libteddy/details/hash_tables.hpp
+@@ -627,6 +627,7 @@ auto unique_table<Data, Degree>::rehash(int64 const newCapacity) -> void
+ #ifdef LIBTEDDY_VERBOSE
+     debug::out(", load after ", this->get_load_factor(), "\n");
+ #endif
++    std::free(oldBuckets);
+ }
+ 
+ template<class Data, class Degree>
+@@ -861,6 +862,7 @@ auto apply_cache<Data, Degree>::rehash(int64 const newCapacity) -> void
+ #ifdef LIBTEDDY_VERBOSE
+     debug::out(" new load is ", this->get_load_factor(), "\n");
+ #endif
++    std::free(oldEntries);
+ }
+ 
+ template<class Data, class Degree>
+-- 
+2.51.2.vfs.0.0
+

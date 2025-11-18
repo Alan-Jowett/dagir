@@ -1,0 +1,64 @@
+From 040f29db0f60c5999850ef9731463216cab3d8fa Mon Sep 17 00:00:00 2001
+From: Alan Jowett <alan.jowett@microsoft.com>
+Date: Mon, 10 Nov 2025 18:27:45 -0800
+Subject: [PATCH 2/2] Handle single variable edge case
+
+Signed-off-by: Alan Jowett <alan.jowett@microsoft.com>
+---
+ libteddy/details/node_manager.hpp | 35 ++++++++++++++++++++-----------
+ 1 file changed, 23 insertions(+), 12 deletions(-)
+
+diff --git a/libteddy/details/node_manager.hpp b/libteddy/details/node_manager.hpp
+index d14ae86..345315c 100644
+--- a/libteddy/details/node_manager.hpp
++++ b/libteddy/details/node_manager.hpp
+@@ -382,23 +382,34 @@ node_manager<Data, Degree, Domain>::node_manager(
+     double const c  = RelPeakPosition * (static_cast<double>(varCount) - 1);
+     double const fc = RelPeakNodeCount * static_cast<double>(nodePoolSize);
+ 
+-    for (int32 i = 0; i <= static_cast<int32>(c); ++i)
++    // Handle edge case where varCount is 1 (c becomes 0)
++    if (varCount_ == 1)
+     {
+-        auto const x = static_cast<double>(i);
+         uniqueTables_.emplace_back(
+-            static_cast<int64>(fc * x / c),
+-            this->get_domain(i)
++            static_cast<int64>(fc),
++            this->get_domain(0)
+         );
+     }
+-
+-    for (auto i = static_cast<int32>(c) + 1; i < varCount_; ++i)
++    else
+     {
+-        auto const n = static_cast<double>(varCount) - 1;
+-        auto const x = static_cast<double>(i);
+-        uniqueTables_.emplace_back(
+-            static_cast<int64>((fc * x) / (c - n) - (fc * n) / (c - n)),
+-            this->get_domain(i)
+-        );
++        for (int32 i = 0; i <= static_cast<int32>(c); ++i)
++        {
++            auto const x = static_cast<double>(i);
++            uniqueTables_.emplace_back(
++                static_cast<int64>(fc * x / c),
++                this->get_domain(i)
++            );
++        }
++
++        for (auto i = static_cast<int32>(c) + 1; i < varCount_; ++i)
++        {
++            auto const n = static_cast<double>(varCount) - 1;
++            auto const x = static_cast<double>(i);
++            uniqueTables_.emplace_back(
++                static_cast<int64>((fc * x) / (c - n) - (fc * n) / (c - n)),
++                this->get_domain(i)
++            );
++        }
+     }
+ }
+ 
+-- 
+2.51.2.vfs.0.0
+
