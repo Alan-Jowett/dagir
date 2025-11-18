@@ -1,9 +1,17 @@
-// SPDX-License-Identifier: MIT
-// Copyright (c) DagIR Contributors
-//
-// File: build_ir.hpp
-// Brief: Build a renderer-neutral IR (nodes/edges/attributes) from a read_only_dag_view.
-// Note : Header-only, C++20. Depends on dagir/algorithms.hpp for traversal order.
+/**
+ * @file build_ir.hpp
+ * @brief Build a renderer-neutral IR (nodes, edges, attributes) from a
+ *        `read_only_dag_view` adapter.
+ *
+ * This header provides the `build_ir` utility which accepts a view and
+ * policy callables to produce a `dagir::ir_graph`. Policies are expected to
+ * be attribute-producing (see `dagir::concepts::node_attributor` and
+ * `dagir::concepts::edge_attributor`). The implementation is header-only
+ * and uses C++20 concepts and utilities.
+ *
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) DagIR Contributors
+ */
 
 #pragma once
 

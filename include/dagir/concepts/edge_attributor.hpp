@@ -1,6 +1,9 @@
-// SPDX-License-Identifier: MIT
-// Concept: edge_attributor
-// Defines the `dagir::concepts::edge_attributor` concept used by policy implementers.
+/**
+ * @file edge_attributor.hpp
+ * @brief Concept for edge attribute-producing policy callables.
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
 #pragma once
 
@@ -20,8 +23,7 @@ namespace dagir::concepts {
  * A type models ::dagir::edge_attributor when an lvalue of @c F is invocable as:
  *  - @c f(view, parent_handle, child_handle)
  *
- * The return type is unconstrained (string, struct, map, etc.) and is left to the
- * renderer/IR builder to interpret. Edge attribution is optional.
+ * The return type is unconstrained and left to the renderer/IR builder to interpret.
  */
 template <class F, class View>
 concept edge_attributor = requires(const F& f, const View& v, const typename View::handle& p,

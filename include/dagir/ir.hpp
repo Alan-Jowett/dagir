@@ -1,7 +1,10 @@
-// SPDX-License-Identifier: MIT
-// Copyright (c) DagIR Contributors
-//
-// IR types for renderer-neutral intermediate representation.
+/**
+ * @file ir.hpp
+ * @brief Renderer-neutral intermediate representation types (nodes, edges, graph).
+ *
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) DagIR Contributors
+ */
 
 #pragma once
 

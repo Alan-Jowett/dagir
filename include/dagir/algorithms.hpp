@@ -1,8 +1,13 @@
-// SPDX-License-Identifier: MIT
-// © DagIR Contributors. All rights reserved.
-//
-// File: algorithms.hpp
-// Description: Algorithms for working with DAGs modeled by read_only_dag_view.
+/**
+ * @file algorithms.hpp
+ * @brief Graph algorithms operating on `read_only_dag_view` adapters.
+ *
+ * Contains helpers like `kahn_topological_order` and `postorder_fold` which
+ * operate on types modeling `dagir::concepts::read_only_dag_view`.
+ *
+ * SPDX-License-Identifier: MIT
+ * © DagIR Contributors. All rights reserved.
+ */
 
 #pragma once
 
