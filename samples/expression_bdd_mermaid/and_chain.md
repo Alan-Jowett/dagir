@@ -1,0 +1,19 @@
+```mermaid
+graph TB
+  a("a")
+  b("b")
+  c("c")
+  d("d")
+  node5["0"]
+  style node5 fill:lightgray
+  node6["1"]
+  style node6 fill:lightgray
+  a --> b
+  a --> node5
+  b --> c
+  b --> node5
+  c --> d
+  c --> node5
+  d --> node5
+  d --> node6
+```

@@ -1,0 +1,1 @@
+{"nodes": [{"id": "node1", "label": "NOT", "attributes": {"label": "NOT", "fillcolor": "yellow", "name": "node1", "style": "filled"}}, {"id": "node2", "label": "p", "attributes": {"label": "p", "fillcolor": "lightblue", "name": "node2"}}], "edges": [{"source": "node1", "target": "node2"}]}

@@ -55,6 +55,14 @@ else
   SRC_FILES=$(printf '%s\n%s' "$STAGED_SRC" "$MOD_SRC" | sed '/^$/d' | sort -u || true)
 fi
 
+# Exclude generated expression outputs from checks
+if [ -n "$SPDX_FILES" ]; then
+  SPDX_FILES=$(printf '%s\n' "$SPDX_FILES" | grep -Ev '^(samples/expression_tree_|samples/expression_bdd_)' || true)
+fi
+if [ -n "$SRC_FILES" ]; then
+  SRC_FILES=$(printf '%s\n' "$SRC_FILES" | grep -Ev '^(samples/expression_tree_|samples/expression_bdd_)' || true)
+fi
+
 if [ -z "$SPDX_FILES" ]; then
   if [ "$ALL" -eq 1 ]; then
     echo "No eligible files found in repository."

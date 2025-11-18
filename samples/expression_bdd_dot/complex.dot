@@ -1,0 +1,23 @@
+digraph bdd {
+  rankdir=TB;
+  "a" [label = "a", style = "filled", shape = "circle", name = "a"];
+  "b" [label = "b", style = "filled", shape = "circle", name = "b"];
+  "c" [label = "c", style = "filled", shape = "circle", name = "c"];
+  "d" [label = "d", style = "filled", shape = "circle", name = "d"];
+  "d" [label = "d", style = "filled", shape = "circle", name = "d"];
+  "e" [label = "e", style = "filled", shape = "circle", name = "e"];
+  "node7" [label = "0", style = "filled", shape = "box", name = "node7", fillcolor = "lightgray"];
+  "node8" [label = "1", style = "filled", shape = "box", name = "node8", fillcolor = "lightgray"];
+  "a" -> "b" [style = "solid"];
+  "a" -> "node8" [style = "dashed"];
+  "b" -> "c" [style = "dashed"];
+  "b" -> "e" [style = "solid"];
+  "c" -> "d" [style = "dashed"];
+  "c" -> "d" [style = "solid"];
+  "d" -> "e" [style = "solid"];
+  "d" -> "e" [style = "dashed"];
+  "d" -> "node8" [style = "dashed"];
+  "d" -> "node8" [style = "solid"];
+  "e" -> "node7" [style = "dashed"];
+  "e" -> "node8" [style = "solid"];
+}

@@ -1,0 +1,11 @@
+digraph bdd {
+  rankdir=TB;
+  "node3" [label = "0", style = "filled", shape = "box", name = "node3", fillcolor = "lightgray"];
+  "node4" [label = "1", style = "filled", shape = "box", name = "node4", fillcolor = "lightgray"];
+  "x" [label = "x", style = "filled", shape = "circle", name = "x"];
+  "y" [label = "y", style = "filled", shape = "circle", name = "y"];
+  "x" -> "node4" [style = "solid"];
+  "x" -> "y" [style = "dashed"];
+  "y" -> "node3" [style = "dashed"];
+  "y" -> "node4" [style = "solid"];
+}
