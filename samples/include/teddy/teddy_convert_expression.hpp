@@ -94,7 +94,7 @@ inline teddy::bdd_manager::diagram_t convert_expression_to_teddy(
       auto D = std::visit(*this, *n.expr);
       return mgr.apply<teddy::ops::NAND>(D, D);
     }
-  } vis{mgr, var_map, resolve_var};
+  } vis{mgr, resolve_var};
 
   return std::visit(vis, expr);
 }

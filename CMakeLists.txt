@@ -196,6 +196,12 @@ if(DAGIR_SAMPLES)
     target_link_libraries(${_target_name} PRIVATE dagir::dagir)
     target_include_directories(${_target_name} PRIVATE samples/include)
 
+    # If external BDD libraries were fetched (e.g., TeDDy), link their CMake targets
+    # into the sample so their include directories and compile options are available.
+    if(TARGET teddy::teddy)
+      target_link_libraries(${_target_name} PRIVATE teddy::teddy)
+    endif()
+
     # If the sample provides a local `include/` folder, add it as a PRIVATE
     # include directory. Use an absolute path so includes resolve properly.
     set(_sample_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/${_sample_dir}/include")

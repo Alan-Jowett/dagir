@@ -51,8 +51,10 @@ struct teddy_node_attributor {
       out.emplace(std::string{dagir::ir_attrs::k_shape}, std::string{"box"});
       out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightgray"});
     } else {
-      // Variable nodes: label with variable index
-      out.emplace(std::string{dagir::ir_attrs::k_label}, std::to_string(h.ptr->get_index()));
+      // Variable nodes: label with variable name if available, otherwise index
+      std::string label = std::to_string(h.ptr->get_index());
+      // view-aware overload will populate var_names via the view argument when available
+      out.emplace(std::string{dagir::ir_attrs::k_label}, label);
       out.emplace(std::string{dagir::ir_attrs::k_shape}, std::string{"circle"});
     }
 
@@ -62,9 +64,24 @@ struct teddy_node_attributor {
   /**
    * @brief Two-argument overload that forwards to the single-argument form.
    */
-  dagir::ir_attr_map operator()(const teddy_read_only_dag_view& /*view*/,
+  dagir::ir_attr_map operator()(const teddy_read_only_dag_view& view,
                                 const typename teddy_read_only_dag_view::handle& h) const {
-    return operator()(h);
+    dagir::ir_attr_map out = operator()(h);
+    if (!h.ptr) return out;
+
+    // If the view provided variable names, use them for variable nodes
+    const auto* names = view.var_names();
+    if (names && !h.ptr->is_terminal()) {
+      int idx = h.ptr->get_index();
+      if (idx >= 0 && static_cast<size_t>(idx) < names->size()) {
+        const std::string nm = (*names)[static_cast<size_t>(idx)];
+        out[std::string{dagir::ir_attrs::k_label}] = nm;
+        // Also provide a renderer-visible 'name' attribute so DOT renderer uses it as the node id
+        out.emplace(std::string{"name"}, nm);
+      }
+    }
+
+    return out;
   }
 };
 

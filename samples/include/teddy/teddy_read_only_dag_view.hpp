@@ -87,6 +87,12 @@ class teddy_read_only_dag_view {
       : mgr_(mgr), var_names_(var_names), roots_(std::move(roots)) {}
 
   /**
+   * @brief Optional variable name array previously supplied to the view.
+   * @return pointer to the variable name vector or nullptr if not provided.
+   */
+  constexpr const std::vector<std::string>* var_names() const noexcept { return var_names_; }
+
+  /**
    * @brief Return the outgoing edges for a handle (false then true).
    *
    * Returns an empty vector for terminal nodes or null handles.
