@@ -54,7 +54,7 @@ fi
 if command -v cppcheck >/dev/null 2>&1; then
   echo "[check-format] Running cppcheck..."
   if [ -n "$FILES" ]; then
-    printf '%s\n' "$FILES" | xargs cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet
+    printf '%s\n' "$FILES" | xargs cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet --check-level=exhaustive
   fi || {
     echo "[check-format] cppcheck found issues." >&2
     exit 3

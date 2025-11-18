@@ -1,4 +1,5 @@
-SPDX-License-Identifier: MIT
+<!-- SPDX-License-Identifier: MIT
+  Copyright (c) 2025 DagIR contributors -->
 
 # Implementing `read_only_dag_view`
 

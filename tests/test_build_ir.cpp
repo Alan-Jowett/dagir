@@ -18,6 +18,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <dagir/algorithms.hpp>
 #include <dagir/build_ir.hpp>
+#include <format>
 
 #include "mock_dag.hpp"
 
@@ -38,14 +39,12 @@ TEST_CASE("build_ir - custom node labeler and edge attributes", "[build_ir]") {
   // graph: 0->1, 0->2
   MockDagView g({MockHandle{0}}, {{MockHandle{1}, MockHandle{2}}, {}, {}});
 
-  auto node_label = [](auto const& h) {
-    return std::string("N_") + std::to_string(h.stable_key());
-  };
+  auto node_label = [](auto const& h) { return std::format("N_{}", h.stable_key()); };
   auto edge_attr = [](auto const& parent, auto const& edge_like) {
     // edge_like is expected to provide target()
     auto child = edge_like.target();
     return std::vector<dagir::ir_attr>{
-        {"rel", std::to_string(parent.stable_key()) + "->" + std::to_string(child.stable_key())}};
+        {"rel", std::format("{}->{}", parent.stable_key(), child.stable_key())}};
   };
 
   auto ir = dagir::build_ir(g, node_label, edge_attr);

@@ -83,7 +83,7 @@ if ((@($SRC_FILES)).Count -gt 0) {
   if (Get-Command cppcheck -ErrorAction SilentlyContinue) {
     Write-Output "Running cppcheck on C/C++ files..."
     $paths = @($SRC_FILES)
-    & cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet $paths
+    & cppcheck --enable=warning,style --inconclusive --std=c++20 --quiet --check-level=exhaustive $paths
     if ($LASTEXITCODE -ne 0) {
       Write-Error "cppcheck found issues."
       exit 3
