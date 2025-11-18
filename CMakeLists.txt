@@ -26,7 +26,8 @@ if(MSVC)
   # Leave runtime selection to the parent unless not set.
   if(NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
     # Default to MultiThreadedDLL on MSVC 2019+; consumers can override.
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" CACHE STRING "" FORCE)
+    # Do not FORCE the cache value so parent projects can override it.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" CACHE STRING "")
   endif()
 endif()
 
@@ -38,11 +39,22 @@ endif()
 # -----------------------------
 # Options
 # -----------------------------
-option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" OFF)
-option(DAGIR_SAMPLES "Build DagIR sample code" OFF)
+# Default tests/samples ON when this is the top-level project, otherwise OFF.
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  set(_dagir_default_build_tests ON)
+  set(_dagir_default_samples ON)
+else()
+  set(_dagir_default_build_tests OFF)
+  set(_dagir_default_samples OFF)
+endif()
 
-# Install developer convenience scripts (pre-commit hook) when present
-include(cmake/format.cmake OPTIONAL)
+option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" ${_dagir_default_build_tests})
+option(DAGIR_SAMPLES "Build DagIR sample code" ${_dagir_default_samples})
+
+# Install developer convenience scripts (pre-commit hook) only for the top-level project
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  include(cmake/format.cmake OPTIONAL)
+endif()
 
 # -----------------------------
 # Library (header-only)
@@ -163,6 +175,13 @@ if(DAGIR_SAMPLES)
     target_compile_features(${_target_name} PRIVATE cxx_std_20)
     target_link_libraries(${_target_name} PRIVATE dagir::dagir)
     target_include_directories(${_target_name} PRIVATE samples/include)
+
+    # If the sample provides a local `include/` folder, add it as a PRIVATE
+    # include directory. Use an absolute path so includes resolve properly.
+    set(_sample_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/${_sample_dir}/include")
+    if(EXISTS ${_sample_include_dir})
+      target_include_directories(${_target_name} PRIVATE ${_sample_include_dir})
+    endif()
 
     if(MSVC)
       target_compile_options(${_target_name} PRIVATE /W4 /wd4996 /permissive-)
