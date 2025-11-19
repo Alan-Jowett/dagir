@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 DagIR Contributors
+#
+# Complex XOR chains
+a XOR b XOR c XOR d XOR e

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 DagIR Contributors
+#
+# Filter Expression File
+# This file contains a boolean expression using variables and logical operators
+# Supported operators: AND, OR, XOR, NOT
+# Use parentheses for grouping operations
+# Lines starting with # are comments and will be ignored
+
+# Complex expression demonstrating all operators:
+((x0 AND x1) OR (NOT x2)) XOR ((x3 AND (NOT x4)) OR (x5 XOR x6))
