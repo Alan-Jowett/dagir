@@ -1,0 +1,10 @@
+digraph expression {
+  rankdir=TB;
+  "node000" [label = "NOT", fillcolor = "yellow", name = "node000", style = "filled"];
+  "node001" [label = "NOT", fillcolor = "yellow", name = "node001", style = "filled"];
+  "node002" [label = "NOT", fillcolor = "yellow", name = "node002", style = "filled"];
+  "node003" [label = "x", fillcolor = "lightblue", name = "node003", style = "filled"];
+  "node000" -> "node001";
+  "node001" -> "node002";
+  "node002" -> "node003";
+}

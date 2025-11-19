@@ -1,0 +1,35 @@
+digraph bdd {
+  rankdir=TB;
+  "node000" [label = "x1", name = "node000", shape = "circle", style = "filled"];
+  "node001" [label = "x2", name = "node001", shape = "circle", style = "filled"];
+  "node002" [label = "x3", name = "node002", shape = "circle", style = "filled"];
+  "node003" [label = "x4", name = "node003", shape = "circle", style = "filled"];
+  "node004" [label = "x5", name = "node004", shape = "circle", style = "filled"];
+  "node005" [label = "x6", name = "node005", shape = "circle", style = "filled"];
+  "node006" [label = "x7", name = "node006", shape = "circle", style = "filled"];
+  "node007" [label = "x8", name = "node007", shape = "circle", style = "filled"];
+  "node008" [label = "x9", name = "node008", shape = "circle", style = "filled"];
+  "node009" [label = "x10", name = "node009", shape = "circle", style = "filled"];
+  "node010" [label = "0", fillcolor = "lightgray", name = "node010", shape = "box", style = "filled"];
+  "node011" [label = "1", fillcolor = "lightgray", name = "node011", shape = "box", style = "filled"];
+  "node000" -> "node001" [style = "dashed"];
+  "node000" -> "node011" [style = "solid"];
+  "node001" -> "node002" [style = "dashed"];
+  "node001" -> "node011" [style = "solid"];
+  "node002" -> "node003" [style = "dashed"];
+  "node002" -> "node011" [style = "solid"];
+  "node003" -> "node004" [style = "dashed"];
+  "node003" -> "node011" [style = "solid"];
+  "node004" -> "node005" [style = "dashed"];
+  "node004" -> "node011" [style = "solid"];
+  "node005" -> "node006" [style = "dashed"];
+  "node005" -> "node011" [style = "solid"];
+  "node006" -> "node007" [style = "dashed"];
+  "node006" -> "node011" [style = "solid"];
+  "node007" -> "node008" [style = "dashed"];
+  "node007" -> "node011" [style = "solid"];
+  "node008" -> "node009" [style = "dashed"];
+  "node008" -> "node011" [style = "solid"];
+  "node009" -> "node010" [style = "dashed"];
+  "node009" -> "node011" [style = "solid"];
+}
