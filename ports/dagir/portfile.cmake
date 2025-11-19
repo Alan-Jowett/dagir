@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
-include(vcpkg_common_functions)
+
+# Note: do not include vcpkg_common_functions (removed in newer vcpkg).
 
 # Fetch source from GitHub. Update REF and SHA512 to the desired release tag before
 # submitting the port upstream into vcpkg.
@@ -25,7 +26,9 @@ vcpkg_configure_cmake(
 vcpkg_install_cmake()
 
 # Provide a minimal CMake package config if upstream did not install one.
-set(_targets_file "${CURRENT_PACKAGES_DIR}/lib/cmake/DagIR/DagIRTargets.cmake")
+set(_share_cmake_dir "${CURRENT_PACKAGES_DIR}/share/dagir/cmake")
+file(MAKE_DIRECTORY "${_share_cmake_dir}")
+set(_targets_file "${_share_cmake_dir}/DagIRTargets.cmake")
 if(NOT EXISTS "${_targets_file}")
   file(WRITE "${_targets_file}"
     "add_library(dagir INTERFACE)\n"
@@ -34,7 +37,7 @@ if(NOT EXISTS "${_targets_file}")
   )
 endif()
 
-file(WRITE "${CURRENT_PACKAGES_DIR}/lib/cmake/DagIR/DagIRConfig.cmake"
+file(WRITE "${_share_cmake_dir}/DagIRConfig.cmake"
   "include(\"\${CMAKE_CURRENT_LIST_DIR}/DagIRTargets.cmake\")\n"
 )
 
@@ -53,4 +56,22 @@ if(NOT _has_samples EQUAL -1)
   file(COPY "${SOURCE_PATH}/samples" DESTINATION "${CURRENT_PACKAGES_DIR}/share/dagir/")
 endif()
 
-# End of portfile. The duplicate/sourceforge code has been removed.
+# Run vcpkg helper to normalize installed CMake files into the vcpkg expected
+# layout (share/<port>/cmake) and perform any additional fixups.
+vcpkg_cmake_config_fixup()
+
+# Remove any accidental debug/include or debug/share directories created by
+# the install step to silence post-build validation warnings.
+if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/include")
+  file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+endif()
+if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/share")
+  file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
+endif()
+
+# Install copyright/license into share/<port>/copyright as recommended by vcpkg.
+if(EXISTS "${SOURCE_PATH}/LICENSE")
+  vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
+endif()
+
+# End of portfile.
