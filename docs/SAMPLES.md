@@ -18,7 +18,7 @@ Notes and prerequisites
 - The sample apps are small CLI programs that depend on the header-only DagIR library in `include/dagir` and the helper headers in `samples/include`.
 - The `expression2bdd` sample optionally depends on third-party BDD libraries:
   - Teddy: the repository includes sample Teddy helpers, but a real build will require linking the Teddy library if you want to run the binary.
-  - CUDD: building/running with `cudd` requires installed CUDD development headers and libraries.
+  - CUDD: building/running with `cudd` requires CUDD development headers and libraries to be installed.
 - The `mermaid` backend writes fenced Markdown with a Mermaid block (```mermaid ... ```) suitable for embedding in Markdown viewers.
 - To build the samples with CMake (recommended):
 
