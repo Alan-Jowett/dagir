@@ -341,28 +341,31 @@ jobs:
       uses: actions/checkout@v5
       with:
         submodules: recursive
-
-    - name: Build Release
+    - name: Create release package
       run: |
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        make -j$(nproc)
-
-    - name: Create Release Archive
-      run: |
+        set -e
+        rm -rf release || true
         mkdir -p release
-        cp build/bdd_demo release/
-        cp README.md LICENSE release/
-        cp -r test_expressions release/
-        cp generate_all_visualizations.ps1 release/
-        tar -czf dagir-${{ github.ref_name }}.tar.gz -C release .
 
-    - name: Create GitHub Release
+        # Copy header files and examples; keep the tree minimal
+        cp -r include release/ || true
+        cp -r examples release/ || true
+        cp README.md LICENSE CMakeLists.txt release/ || true
+        # Optional docs if present
+        if [ -d docs ]; then cp -r docs release/; fi
+
+        # Create tar.gz and zip archives
+        TARNAME=dagir-${{ github.ref_name }}.tar.gz
+        ZIPNAME=dagir-${{ github.ref_name }}.zip
+        tar -czf ${TARNAME} -C release .
+        (cd release && zip -r ../${ZIPNAME} .)
+
+    - name: Publish GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         files: |
           dagir-${{ github.ref_name }}.tar.gz
+          dagir-${{ github.ref_name }}.zip
         generate_release_notes: true
         draft: false
         prerelease: false
