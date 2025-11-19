@@ -78,8 +78,8 @@ jobs:
     - name: Run tests
       working-directory: ${{github.workspace}}/build
       run: |
-        # Run tests with error handling
-        ctest --output-on-failure --verbose || true
+        # Run tests with error handling (fail the job on test failures)
+        ctest --output-on-failure --verbose
 
     - name: Generate coverage data
       working-directory: ${{github.workspace}}/build

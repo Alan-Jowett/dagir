@@ -69,8 +69,6 @@ jobs:
           # Exclude combinations that don't make sense
           - os: ubuntu-latest
             compiler: msvc
-          - os: macos-latest
-            compiler: msvc
           - os: windows-latest
             compiler: gcc
           - os: windows-latest

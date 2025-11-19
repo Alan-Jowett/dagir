@@ -78,7 +78,7 @@ PRs welcome! Please see CONTRIBUTING.md for guidelines.
 ---
 
 ## Continuous Integration
-This repository now includes GitHub Actions workflows to run sanitizer builds (ASAN/UBSAN) and collect coverage using `lcov`/Codecov. See `.github/workflows/sanitizers.yml` and `.github/workflows/coverage.yml`.
+This repository now includes GitHub Actions workflows to run sanitizer builds (ASAN/UBSAN) and collect coverage using `lcov`/Codecov. See `.github/workflows/main.yml` (sanitizer-tests job) and `.github/workflows/coverage.yml`.
 
 
 ## 📚 Why DagIR?
