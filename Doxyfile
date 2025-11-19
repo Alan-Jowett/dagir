@@ -1,0 +1,15 @@
+# Minimal Doxyfile for DagIR
+PROJECT_NAME           = "DagIR"
+PROJECT_BRIEF          = "Directed Acyclic Graph Intermediate Representation"
+PROJECT_NUMBER         = 0.0.0
+OUTPUT_DIRECTORY       = docs
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+EXTRACT_ALL            = YES
+RECURSIVE              = YES
+INPUT                  = include src
+FILE_PATTERNS          = *.h *.hpp *.cpp *.c
+QUIET                  = NO
+WARNINGS               = YES
+GENERATE_TREEVIEW      = YES
