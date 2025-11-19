@@ -26,11 +26,11 @@ vcpkg_configure_cmake(
 vcpkg_install_cmake()
 
 # Ensure any CMake config files installed under lib/cmake are relocated to
-# the vcpkg-preferred location `share/<port>/cmake`. Some upstream projects
+# the vcpkg-preferred location `share/<port>`. Some upstream projects
 # install their `*Config.cmake` and `*Targets.cmake` into `lib/cmake/...`.
-# Move those into `${CURRENT_PACKAGES_DIR}/share/dagir/cmake` so consumers can
-# find `find_package(DagIR CONFIG)` correctly and vcpkg post-build checks pass.
-set(_share_cmake_dir "${CURRENT_PACKAGES_DIR}/share/dagir/cmake")
+# Move those into `${CURRENT_PACKAGES_DIR}/share/dagir` so `vcpkg_fixup_cmake_targets`
+# and other helpers can find and process them correctly.
+set(_share_cmake_dir "${CURRENT_PACKAGES_DIR}/share/dagir")
 file(MAKE_DIRECTORY "${_share_cmake_dir}")
 
 # If upstream placed CMake package files under lib/cmake/DagIR, copy them
@@ -108,9 +108,9 @@ file(WRITE "${_targets_file}"
   "add_library(dagir::dagir INTERFACE IMPORTED)\n"
   "# Resolve the include directory relative to this file so the config is\n"
   "# relocatable and doesn't depend on absolute paths. From the installed\n"
-  "# layout this file lives in: <prefix>/share/dagir/cmake, so ../../../include\n"
+  "# layout this file lives in: <prefix>/share/dagir, so ../../include\n"
   "# refers to <prefix>/include.\n"
-  "set_target_properties(dagir::dagir PROPERTIES INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../../include\")\n"
+  "set_target_properties(dagir::dagir PROPERTIES INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../include\")\n"
 )
 
 file(WRITE "${_share_cmake_dir}/DagIRConfig.cmake"
