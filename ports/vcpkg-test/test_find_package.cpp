@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+// © DagIR Contributors. All rights reserved.
+
 #include <dagir/ir.hpp>
 
 int main() {

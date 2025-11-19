@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+# © DagIR Contributors. All rights reserved.
 
 # Note: do not include vcpkg_common_functions (removed in newer vcpkg).
 
@@ -7,15 +8,14 @@
 vcpkg_from_github(
   OUT_SOURCE_PATH SOURCE_PATH
   REPO Alan-Jowett/dagir
-  REF v0.0.1
-  SHA512 F46563BA13C13A3DC5A21F191B834AA5669D52C642503729036F6E192AEB8C3F47CB628DC5C5FF23CE372F767BA25A7E0FFDACEE7E85DF72A5114AE242EEA1CF
+  REF 0.1.0
+  SHA512 0450B03C282DAA9B941A56283CCC00663C8EB66C9D02BDAE05D2EA5DD60C4048A30BA4B4D3F51FE51D7A7F43132D48989140FC02D088522A2177FF779C204ED3
 )
 
 # Configure and install. DagIR is header-only so we disable tests and samples
 # to keep the build minimal inside vcpkg.
-vcpkg_configure_cmake(
+vcpkg_cmake_configure(
   SOURCE_PATH ${SOURCE_PATH}
-  PREFER_NINJA
   OPTIONS
     -DDAGIR_BUILD_TESTS=OFF
     -DDAGIR_EXAMPLES=OFF
@@ -23,14 +23,14 @@ vcpkg_configure_cmake(
     -DCMAKE_INSTALL_INCLUDEDIR=include
 )
 
-vcpkg_install_cmake()
+vcpkg_cmake_install()
 
 # Ensure any CMake config files installed under lib/cmake are relocated to
-# the vcpkg-preferred location `share/<port>/cmake`. Some upstream projects
+# the vcpkg-preferred location `share/<port>`. Some upstream projects
 # install their `*Config.cmake` and `*Targets.cmake` into `lib/cmake/...`.
-# Move those into `${CURRENT_PACKAGES_DIR}/share/dagir/cmake` so consumers can
-# find `find_package(DagIR CONFIG)` correctly and vcpkg post-build checks pass.
-set(_share_cmake_dir "${CURRENT_PACKAGES_DIR}/share/dagir/cmake")
+# Move those into `${CURRENT_PACKAGES_DIR}/share/dagir` so `vcpkg_cmake_config_fixup`
+# (provided by the `vcpkg-cmake-config` port) and other helpers can find and process them correctly.
+set(_share_cmake_dir "${CURRENT_PACKAGES_DIR}/share/dagir")
 file(MAKE_DIRECTORY "${_share_cmake_dir}")
 
 # If upstream placed CMake package files under lib/cmake/DagIR, copy them
@@ -81,9 +81,9 @@ file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/share/dagir")
 
 # Run vcpkg helper to normalize installed CMake files into the vcpkg expected
 # layout (share/<port>/cmake) and perform any additional fixups. Use the
-# builtin `vcpkg_fixup_cmake_targets` helper shipped with vcpkg scripts so
-# no extra port dependency is required.
-vcpkg_fixup_cmake_targets()
+# builtin `vcpkg_cmake_config_fixup` helper (provided by the `vcpkg-cmake-config`
+# port) so no extra port dependency is required for simple relocations.
+vcpkg_cmake_config_fixup()
 
 # Remove any accidental debug/include or debug/share directories created by
 # the install step to silence post-build validation warnings.
@@ -92,6 +92,28 @@ if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/include")
 endif()
 if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/share")
   file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
+endif()
+
+# Remove empty lib folders that may be left by header-only installs
+if(EXISTS "${CURRENT_PACKAGES_DIR}/lib")
+  file(GLOB _maybe_lib_files "${CURRENT_PACKAGES_DIR}/lib/*")
+  if(NOT _maybe_lib_files)
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/lib")
+  endif()
+endif()
+if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/lib")
+  file(GLOB _maybe_debug_lib_files "${CURRENT_PACKAGES_DIR}/debug/lib/*")
+  if(NOT _maybe_debug_lib_files)
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/lib")
+  endif()
+endif()
+
+# If `debug` is now empty, remove it to avoid empty-directory warnings
+if(EXISTS "${CURRENT_PACKAGES_DIR}/debug")
+  file(GLOB _maybe_debug_entries "${CURRENT_PACKAGES_DIR}/debug/*")
+  if(NOT _maybe_debug_entries)
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
+  endif()
 endif()
 
 # Install copyright/license into share/<port>/copyright as recommended by vcpkg.
@@ -108,9 +130,9 @@ file(WRITE "${_targets_file}"
   "add_library(dagir::dagir INTERFACE IMPORTED)\n"
   "# Resolve the include directory relative to this file so the config is\n"
   "# relocatable and doesn't depend on absolute paths. From the installed\n"
-  "# layout this file lives in: <prefix>/share/dagir/cmake, so ../../../include\n"
+  "# layout this file lives in: <prefix>/share/dagir, so ../../include\n"
   "# refers to <prefix>/include.\n"
-  "set_target_properties(dagir::dagir PROPERTIES INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../../include\")\n"
+  "set_target_properties(dagir::dagir PROPERTIES INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../include\")\n"
 )
 
 file(WRITE "${_share_cmake_dir}/DagIRConfig.cmake"
