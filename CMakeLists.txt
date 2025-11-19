@@ -233,6 +233,79 @@ endif()
 # -----------------------------
 # Developer convenience targets
 # -----------------------------
+# If both samples and tests are enabled, add CTest tests that run the sample
+# executables over the expressions and compare their output to the expected
+# files under samples/expression_* directories.
+if(DAGIR_SAMPLES AND DAGIR_BUILD_TESTS)
+  # Gather expressions
+  file(GLOB SAMPLE_EXPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/samples/expressions/*.expr")
+
+  if(SAMPLE_EXPRESSIONS)
+    include(CTest)
+
+    set(_sample_test_out_dir "${CMAKE_BINARY_DIR}/_sample_test_outputs")
+    file(MAKE_DIRECTORY ${_sample_test_out_dir})
+
+    # expression2tree: backends and expected extensions
+    set(_tree_backends dot json mermaid)
+
+    foreach(_expr IN LISTS SAMPLE_EXPRESSIONS)
+      get_filename_component(_expr_name ${_expr} NAME_WE)
+
+      foreach(_backend IN LISTS _tree_backends)
+        if(_backend STREQUAL "mermaid")
+          set(_ext md)
+        else()
+          set(_ext ${_backend})
+        endif()
+
+        set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/samples/expression_tree_${_backend}/${_expr_name}.${_ext}")
+        if(EXISTS ${_expected})
+          set(_out "${_sample_test_out_dir}/expression2tree_${_expr_name}_${_backend}.${_ext}")
+
+          add_test(NAME sample_expression2tree_${_expr_name}_${_backend}
+            COMMAND ${CMAKE_COMMAND}
+              -DPROG=$<TARGET_FILE:expression2tree>
+              -DARG0=${CMAKE_CURRENT_SOURCE_DIR}/samples/expressions/${_expr_name}.expr
+              -DARG1=${_backend}
+                -DEXPECTED=${_expected}
+                -DBINARY_OUT=${_out}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run_and_capture.cmake)
+        endif()
+      endforeach()
+    endforeach()
+
+    # expression2bdd: use teddy library to match the expected outputs
+    set(_bdd_backends dot json mermaid)
+
+    foreach(_expr IN LISTS SAMPLE_EXPRESSIONS)
+      get_filename_component(_expr_name ${_expr} NAME_WE)
+
+      foreach(_backend IN LISTS _bdd_backends)
+        if(_backend STREQUAL "mermaid")
+          set(_ext md)
+        else()
+          set(_ext ${_backend})
+        endif()
+
+        set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/samples/expression_bdd_${_backend}/${_expr_name}.${_ext}")
+        if(EXISTS ${_expected})
+          set(_out "${_sample_test_out_dir}/expression2bdd_${_expr_name}_${_backend}.${_ext}")
+
+          add_test(NAME sample_expression2bdd_${_expr_name}_${_backend}
+            COMMAND ${CMAKE_COMMAND}
+              -DPROG=$<TARGET_FILE:expression2bdd>
+              -DARG0=${CMAKE_CURRENT_SOURCE_DIR}/samples/expressions/${_expr_name}.expr
+              -DARG1=teddy
+              -DARG2=${_backend}
+                -DEXPECTED=${_expected}
+                -DBINARY_OUT=${_out}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run_and_capture.cmake)
+        endif()
+      endforeach()
+    endforeach()
+  endif()
+endif()
 add_custom_target(dagir_headers
   COMMAND ${CMAKE_COMMAND} -E echo "DagIR headers at: ${CMAKE_CURRENT_SOURCE_DIR}/include"
   VERBATIM)
