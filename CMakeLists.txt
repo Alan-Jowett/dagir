@@ -282,27 +282,47 @@ if(DAGIR_SAMPLES AND DAGIR_BUILD_TESTS)
       get_filename_component(_expr_name ${_expr} NAME_WE)
 
       foreach(_backend IN LISTS _bdd_backends)
-        if(_backend STREQUAL "mermaid")
-          set(_ext md)
-        else()
-          set(_ext ${_backend})
-        endif()
+          if(_backend STREQUAL "mermaid")
+            set(_ext md)
+          else()
+            set(_ext ${_backend})
+          endif()
 
-        set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/samples/expression_bdd_${_backend}/${_expr_name}.${_ext}")
-        if(EXISTS ${_expected})
-          set(_out "${_sample_test_out_dir}/expression2bdd_${_expr_name}_${_backend}.${_ext}")
+          set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/samples/expression_bdd_${_backend}/${_expr_name}.${_ext}")
+          if(EXISTS ${_expected})
+            set(_out "${_sample_test_out_dir}/expression2bdd_${_expr_name}_${_backend}.${_ext}")
 
-          add_test(NAME sample_expression2bdd_${_expr_name}_${_backend}
-            COMMAND ${CMAKE_COMMAND}
-              -DPROG=$<TARGET_FILE:expression2bdd>
-              -DARG0=${CMAKE_CURRENT_SOURCE_DIR}/samples/expressions/${_expr_name}.expr
-              -DARG1=teddy
-              -DARG2=${_backend}
-                -DEXPECTED=${_expected}
-                -DBINARY_OUT=${_out}
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run_and_capture.cmake)
-        endif()
-      endforeach()
+            # For BDD backends we support both teddy (TeDDy) and cudd (CUDD) when
+            # the corresponding target is available. Use the library name as ARG1.
+            # Prefer `teddy` if both targets are present to preserve previous behavior.
+            set(_bdd_arg_list)
+            if(TARGET teddy::teddy)
+              list(APPEND _bdd_arg_list teddy)
+            endif()
+            if(TARGET cudd::cudd)
+              list(APPEND _bdd_arg_list cudd)
+            endif()
+
+            # If no backend targets were fetched/available, fall back to `teddy`
+            # to avoid changing behavior when TeDDy is present as before.
+            if(NOT _bdd_arg_list)
+              list(APPEND _bdd_arg_list teddy)
+            endif()
+
+            foreach(_bdd_impl IN LISTS _bdd_arg_list)
+              add_test(NAME sample_expression2bdd_${_expr_name}_${_backend}_${_bdd_impl}
+                COMMAND ${CMAKE_COMMAND}
+                  -DPROG=$<TARGET_FILE:expression2bdd>
+                  -DARG0=${CMAKE_CURRENT_SOURCE_DIR}/samples/expressions/${_expr_name}.expr
+                  -DARG1=${_bdd_impl}
+                  -DARG2=${_backend}
+                    -DEXPECTED=${_expected}
+                    -DBINARY_OUT=${_out}
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run_and_capture.cmake)
+            endforeach()
+
+          endif()
+        endforeach()
     endforeach()
   endif()
 endif()

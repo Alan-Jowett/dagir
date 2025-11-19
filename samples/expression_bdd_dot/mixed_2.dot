@@ -1,12 +1,12 @@
 digraph bdd {
   rankdir=TB;
-  "node6" [label = "0", style = "filled", shape = "box", name = "node6", fillcolor = "lightgray"];
-  "node7" [label = "1", style = "filled", shape = "box", name = "node7", fillcolor = "lightgray"];
-  "u" [label = "u", style = "filled", shape = "circle", name = "u"];
-  "v" [label = "v", style = "filled", shape = "circle", name = "v"];
-  "x" [label = "x", style = "filled", shape = "circle", name = "x"];
-  "y" [label = "y", style = "filled", shape = "circle", name = "y"];
-  "y" [label = "y", style = "filled", shape = "circle", name = "y"];
+  "node6" [label = "0", style = "filled", name = "node6", shape = "box", fillcolor = "lightgray"];
+  "node7" [label = "1", style = "filled", name = "node7", shape = "box", fillcolor = "lightgray"];
+  "u" [label = "u", style = "filled", name = "u", shape = "circle"];
+  "v" [label = "v", style = "filled", name = "v", shape = "circle"];
+  "x" [label = "x", style = "filled", name = "x", shape = "circle"];
+  "y" [label = "y", style = "filled", name = "y", shape = "circle"];
+  "y" [label = "y", style = "filled", name = "y", shape = "circle"];
   "u" -> "node7" [style = "solid"];
   "u" -> "v" [style = "dashed"];
   "v" -> "node6" [style = "dashed"];
@@ -15,6 +15,6 @@ digraph bdd {
   "x" -> "y" [style = "solid"];
   "y" -> "node6" [style = "dashed"];
   "y" -> "node6" [style = "solid"];
-  "y" -> "u" [style = "solid"];
   "y" -> "u" [style = "dashed"];
+  "y" -> "u" [style = "solid"];
 }

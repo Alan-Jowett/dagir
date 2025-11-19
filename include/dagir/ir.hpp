@@ -10,8 +10,11 @@
 
 #include <cstdint>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
+
+#include "dagir/ir_attrs.hpp"
 
 namespace dagir {
 
@@ -29,6 +32,22 @@ struct ir_node {
   [[maybe_unused]] ir_attr_map attributes;  ///< Node-specific attributes.
 };
 
+inline bool operator<(ir_node const& a, ir_node const& b) {
+  const auto a_it = a.attributes.find(std::string{"name"});
+  const auto b_it = b.attributes.find(std::string{"name"});
+  const bool a_has = (a_it != a.attributes.end());
+  const bool b_has = (b_it != b.attributes.end());
+  if (a_has && b_has) {
+    const std::string& a_name = a_it->second;
+    const std::string& b_name = b_it->second;
+    if (a_name != b_name) return a_name < b_name;
+    return a.id < b.id;
+  }
+  if (a_has && !b_has) return true;   // named nodes come before unnamed
+  if (!a_has && b_has) return false;  // unnamed after named
+  return a.id < b.id;
+}
+
 /**
  * @brief An edge in the renderer-neutral IR.
  */
@@ -38,6 +57,17 @@ struct ir_edge {
   // cppcheck-suppress unusedStructMember
   [[maybe_unused]] ir_attr_map attributes;
 };
+
+inline bool operator<(ir_edge const& a, ir_edge const& b) {
+  // Compare by source id, then target id, then by style attribute (if present).
+  const auto a_style_it = a.attributes.find(std::string{ir_attrs::k_style});
+  const auto b_style_it = b.attributes.find(std::string{ir_attrs::k_style});
+  const std::string a_style =
+      (a_style_it != a.attributes.end()) ? a_style_it->second : std::string{};
+  const std::string b_style =
+      (b_style_it != b.attributes.end()) ? b_style_it->second : std::string{};
+  return std::tie(a.source, a.target, a_style) < std::tie(b.source, b.target, b_style);
+}
 
 /**
  * @brief Top-level intermediate representation produced from a DAG view.

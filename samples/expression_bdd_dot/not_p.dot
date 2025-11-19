@@ -1,8 +1,8 @@
 digraph bdd {
   rankdir=TB;
-  "node2" [label = "1", style = "filled", shape = "box", name = "node2", fillcolor = "lightgray"];
-  "node3" [label = "0", style = "filled", shape = "box", name = "node3", fillcolor = "lightgray"];
-  "p" [label = "p", style = "filled", shape = "circle", name = "p"];
+  "node2" [label = "1", style = "filled", name = "node2", shape = "box", fillcolor = "lightgray"];
+  "node3" [label = "0", style = "filled", name = "node3", shape = "box", fillcolor = "lightgray"];
+  "p" [label = "p", style = "filled", name = "p", shape = "circle"];
   "p" -> "node2" [style = "dashed"];
   "p" -> "node3" [style = "solid"];
 }

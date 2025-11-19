@@ -9,6 +9,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <algorithm>
 #include <dagir/build_ir.hpp>
 #include <dagir/render_dot.hpp>
 #include <dagir/render_json.hpp>
@@ -28,6 +29,115 @@
 #include "cudd/cudd_convert_expression.hpp"
 #include "cudd/cudd_policy.hpp"
 #include "cudd/cudd_read_only_dag_view.hpp"
+
+// Helper: sort IR nodes/edges deterministically and render using requested backend
+static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
+  dagir::ir_graph ir = in_ir;  // make a local copy we can reorder
+
+  auto node_print_name = [&](const dagir::ir_node& n) {
+    auto it = n.attributes.find("name");
+    if (it != n.attributes.end()) return it->second;
+    return std::to_string(n.id);
+  };
+
+  // Sort nodes by printable name ('name' attribute if present, otherwise id)
+  std::sort(
+      ir.nodes.begin(), ir.nodes.end(), [&](const dagir::ir_node& a, const dagir::ir_node& b) {
+        auto a_it = a.attributes.find("name");
+        auto b_it = b.attributes.find("name");
+        std::string a_name = (a_it != a.attributes.end()) ? a_it->second : std::to_string(a.id);
+        std::string b_name = (b_it != b.attributes.end()) ? b_it->second : std::to_string(b.id);
+        if (a_name != b_name) return a_name < b_name;
+        return a.id < b.id;
+      });
+
+  std::sort(ir.edges.begin(), ir.edges.end(),
+            [&](const dagir::ir_edge& A, const dagir::ir_edge& B) {
+              std::string a_src, a_dst, b_src, b_dst;
+              auto fa = std::find_if(ir.nodes.begin(), ir.nodes.end(),
+                                     [&](const dagir::ir_node& n) { return n.id == A.source; });
+              if (fa != ir.nodes.end())
+                a_src = node_print_name(*fa);
+              else
+                a_src = std::to_string(A.source);
+              auto ta = std::find_if(ir.nodes.begin(), ir.nodes.end(),
+                                     [&](const dagir::ir_node& n) { return n.id == A.target; });
+              if (ta != ir.nodes.end())
+                a_dst = node_print_name(*ta);
+              else
+                a_dst = std::to_string(A.target);
+              auto fb = std::find_if(ir.nodes.begin(), ir.nodes.end(),
+                                     [&](const dagir::ir_node& n) { return n.id == B.source; });
+              if (fb != ir.nodes.end())
+                b_src = node_print_name(*fb);
+              else
+                b_src = std::to_string(B.source);
+              auto tb = std::find_if(ir.nodes.begin(), ir.nodes.end(),
+                                     [&](const dagir::ir_node& n) { return n.id == B.target; });
+              if (tb != ir.nodes.end())
+                b_dst = node_print_name(*tb);
+              else
+                b_dst = std::to_string(B.target);
+
+              if (a_src != b_src) return a_src < b_src;
+
+              // Prefer true-edges (solid) before false-edges (dashed) to match
+              // the sample expected ordering used in the repository.
+              auto style_of = [&](const dagir::ir_edge& e) -> std::string {
+                auto it = e.attributes.find(std::string{dagir::ir_attrs::k_style});
+                if (it != e.attributes.end()) return it->second;
+                return std::string{};
+              };
+
+              const std::string a_style = style_of(A);
+              const std::string b_style = style_of(B);
+
+              // Straightforward lexicographic ordering: (source, target, style)
+              if (a_dst != b_dst) return a_dst < b_dst;
+              return a_style < b_style;
+            });
+  // Sort edges by source node printable name, then target printable name, then style
+  auto find_node_name = [&](std::uint64_t id) -> std::string {
+    auto it = std::find_if(ir.nodes.begin(), ir.nodes.end(),
+                           [&](const dagir::ir_node& n) { return n.id == id; });
+    if (it != ir.nodes.end()) {
+      auto nit = it->attributes.find("name");
+      if (nit != it->attributes.end()) return nit->second;
+      return std::to_string(it->id);
+    }
+    return std::to_string(id);
+  };
+
+  std::sort(ir.edges.begin(), ir.edges.end(),
+            [&](const dagir::ir_edge& A, const dagir::ir_edge& B) {
+              const std::string a_src = find_node_name(A.source);
+              const std::string b_src = find_node_name(B.source);
+              if (a_src != b_src) return a_src < b_src;
+              const std::string a_tgt = find_node_name(A.target);
+              const std::string b_tgt = find_node_name(B.target);
+              if (a_tgt != b_tgt) return a_tgt < b_tgt;
+              auto a_style_it = A.attributes.find(std::string{dagir::ir_attrs::k_style});
+              auto b_style_it = B.attributes.find(std::string{dagir::ir_attrs::k_style});
+              const std::string a_style =
+                  (a_style_it != A.attributes.end()) ? a_style_it->second : std::string{};
+              const std::string b_style =
+                  (b_style_it != B.attributes.end()) ? b_style_it->second : std::string{};
+              return a_style < b_style;
+            });
+
+  if (backend == "dot") {
+    dagir::render_dot(std::cout, ir, "bdd");
+  } else if (backend == "json") {
+    dagir::render_json(std::cout, ir);
+  } else if (backend == "mermaid") {
+    std::cout << "```mermaid\n";
+    dagir::render_mermaid(std::cout, ir, "bdd");
+    std::cout << "```\n";
+  } else {
+    std::cerr << "Unknown backend: " << backend << "\n";
+    throw std::runtime_error("Unknown backend");
+  }
+}
 
 int main(int argc, char** argv) {
   using namespace dagir::utility;
@@ -105,73 +215,10 @@ int main(int argc, char** argv) {
 
       dagir::utility::teddy_read_only_dag_view view(&mgr, &var_names, std::move(roots));
 
-      // Build IR using teddy policies
+      // Build IR using teddy policies and render deterministically
       dagir::ir_graph ir = dagir::build_ir(view, dagir::utility::teddy_node_attributor{},
                                            dagir::utility::teddy_edge_attributor{});
-
-      // Sort IR nodes and edges deterministically by the printable node name
-      auto node_print_name = [&](const dagir::ir_node& n) {
-        auto it = n.attributes.find("name");
-        if (it != n.attributes.end()) return it->second;
-        return std::to_string(n.id);
-      };
-
-      std::sort(ir.nodes.begin(), ir.nodes.end(),
-                [&](const dagir::ir_node& a, const dagir::ir_node& b) {
-                  return node_print_name(a) < node_print_name(b);
-                });
-
-      // Rebuild a mapping from old id to new id (if we preserved ids, keep them the same)
-      // The renderer expects node ids to remain unique; here we leave numeric ids untouched
-      // but sorting ensures emission order is stable.
-
-      std::sort(ir.edges.begin(), ir.edges.end(),
-                [&](const dagir::ir_edge& A, const dagir::ir_edge& B) {
-                  std::string a_src, a_dst, b_src, b_dst;
-                  // find node names for A
-                  auto fa = std::find_if(ir.nodes.begin(), ir.nodes.end(),
-                                         [&](const dagir::ir_node& n) { return n.id == A.source; });
-                  if (fa != ir.nodes.end())
-                    a_src = node_print_name(*fa);
-                  else
-                    a_src = std::to_string(A.source);
-                  auto ta = std::find_if(ir.nodes.begin(), ir.nodes.end(),
-                                         [&](const dagir::ir_node& n) { return n.id == A.target; });
-                  if (ta != ir.nodes.end())
-                    a_dst = node_print_name(*ta);
-                  else
-                    a_dst = std::to_string(A.target);
-                  // find node names for B
-                  auto fb = std::find_if(ir.nodes.begin(), ir.nodes.end(),
-                                         [&](const dagir::ir_node& n) { return n.id == B.source; });
-                  if (fb != ir.nodes.end())
-                    b_src = node_print_name(*fb);
-                  else
-                    b_src = std::to_string(B.source);
-                  auto tb = std::find_if(ir.nodes.begin(), ir.nodes.end(),
-                                         [&](const dagir::ir_node& n) { return n.id == B.target; });
-                  if (tb != ir.nodes.end())
-                    b_dst = node_print_name(*tb);
-                  else
-                    b_dst = std::to_string(B.target);
-
-                  if (a_src != b_src) return a_src < b_src;
-                  return a_dst < b_dst;
-                });
-
-      // Render
-      if (backend == "dot") {
-        dagir::render_dot(std::cout, ir, "bdd");
-      } else if (backend == "json") {
-        dagir::render_json(std::cout, ir);
-      } else if (backend == "mermaid") {
-        std::cout << "```mermaid\n";
-        dagir::render_mermaid(std::cout, ir, "bdd");
-        std::cout << "```\n";
-      } else {
-        std::cerr << "Unknown backend: " << backend << "\n";
-        return 1;
-      }
+      emit_ir(ir, backend);
 
     } else if (library == "cudd") {
       std::unordered_map<std::string, int> var_map;
@@ -222,22 +269,15 @@ int main(int argc, char** argv) {
 
       dagir::utility::cudd_read_only_dag_view view(mgr, &var_names, std::move(roots));
 
+      // Build IR using cudd policies and render deterministically
       dagir::ir_graph ir = dagir::build_ir(view, dagir::utility::cudd_node_attributor{},
                                            dagir::utility::cudd_edge_attributor{});
-
-      if (backend == "dot") {
-        dagir::render_dot(std::cout, ir, "bdd");
-      } else if (backend == "json") {
-        dagir::render_json(std::cout, ir);
-      } else if (backend == "mermaid") {
-        std::cout << "```mermaid\n";
-        dagir::render_mermaid(std::cout, ir, "bdd");
-        std::cout << "```\n";
-      } else {
-        std::cerr << "Unknown backend: " << backend << "\n";
+      try {
+        emit_ir(ir, backend);
+      } catch (...) {
         Cudd_RecursiveDeref(mgr, diag);
         Cudd_Quit(mgr);
-        return 1;
+        throw;
       }
 
       // Clean up CUDD objects
