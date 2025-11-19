@@ -7,8 +7,7 @@
   "default-features": [],
   "features": {
     "samples": {
-      "description": "Install example/sample programs",
-      "description-url": "https://github.com/Alan-Jowett/dagir/tree/main/samples"
+      "description": "Install example/sample programs"
     }
   },
   "dependencies": []

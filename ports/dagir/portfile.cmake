@@ -52,25 +52,5 @@ if(NOT _has_samples EQUAL -1)
   message(STATUS "vcpkg: installing samples because 'samples' feature is enabled")
   file(COPY "${SOURCE_PATH}/samples" DESTINATION "${CURRENT_PACKAGES_DIR}/share/dagir/")
 endif()
-include(vcpkg_common_functions)
 
-vcpkg_from_sourceforge(
-  OUT_SOURCE_PATH SOURCE_PATH
-  SOURCE_NAME dagir
-)
-
-# The project is header-only. Install include/ and export a CMake config that
-# allows find_package(dagir CONFIG) to work for vcpkg users.
-
-file(INSTALL
-  ${CURRENT_PACKAGES_DIR}/..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\INCLUDE
-)
-
-vcpkg_configure_cmake(
-  SOURCE_PATH ${SOURCE_PATH}
-  PREFER_NINJA
-)
-
-vcpkg_install_cmake()
-
-file(WRITE ${CURRENT_PACKAGES_DIR}/share/dagir/dagir-config.cmake "include(\"${CMAKE_CURRENT_LIST_DIR}/../lib/cmake/DagIR/DagIRTargets.cmake\")\n")
+# End of portfile. The duplicate/sourceforge code has been removed.
