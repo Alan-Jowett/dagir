@@ -55,6 +55,105 @@ endif()
 
 option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" ${_dagir_default_build_tests})
 option(DAGIR_SAMPLES "Build DagIR sample code" ${_dagir_default_samples})
+option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
+
+# Configure coverage flags
+if(ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    message(STATUS "Enabling code coverage")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --coverage")
+endif()
+
+# Add sanitizer options
+# These sanitizers help detect various runtime errors during development and testing:
+# - ASAN: Detects memory errors (buffer overflows, use-after-free, etc.)
+# - UBSAN: Detects undefined behavior (signed integer overflow, etc.)
+# - MSAN: Detects uninitialized memory reads (Clang only)
+# - TSAN: Detects data races in multi-threaded code
+#
+# Usage examples:
+#   cmake -DENABLE_ASAN=ON ..          # AddressSanitizer
+#   cmake -DENABLE_UBSAN=ON ..         # UndefinedBehaviorSanitizer
+#   cmake -DENABLE_ASAN=ON -DENABLE_UBSAN=ON ..  # Both (compatible)
+#
+# Note: Some sanitizers are mutually exclusive (ASAN+MSAN, ASAN+TSAN, MSAN+TSAN)
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+option(ENABLE_MSAN "Enable MemorySanitizer (Clang only)" OFF)
+option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
+
+# Configure AddressSanitizer (ASan)
+if(ENABLE_ASAN)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Enabling AddressSanitizer (ASan) for GCC/Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer -g")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        message(STATUS "Enabling AddressSanitizer (ASan) for MSVC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fsanitize=address")
+        # MSVC ASan requires specific runtime library
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebug")
+    else()
+        message(WARNING "AddressSanitizer not supported for compiler: ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+endif()
+
+# Configure UndefinedBehaviorSanitizer (UBSan)
+if(ENABLE_UBSAN)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Enabling UndefinedBehaviorSanitizer (UBSan) for GCC/Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=undefined -fno-omit-frame-pointer -g")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=undefined -fno-omit-frame-pointer -g")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=undefined")
+    else()
+        message(WARNING "UndefinedBehaviorSanitizer not supported for compiler: ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+endif()
+
+# Configure MemorySanitizer (MSan) - Clang only
+if(ENABLE_MSAN)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        message(STATUS "Enabling MemorySanitizer (MSan) for Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=memory -fno-omit-frame-pointer -g")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=memory")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=memory")
+    else()
+        message(WARNING "MemorySanitizer only supported with Clang, not ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+endif()
+
+# Configure ThreadSanitizer (TSan)
+if(ENABLE_TSAN)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Enabling ThreadSanitizer (TSan) for GCC/Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread -fno-omit-frame-pointer -g")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=thread")
+    else()
+        message(WARNING "ThreadSanitizer not supported for compiler: ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+endif()
+
+# Sanitizer compatibility check
+if((ENABLE_ASAN OR ENABLE_MSAN OR ENABLE_TSAN) AND ENABLE_COVERAGE)
+    message(WARNING "Sanitizers and coverage may not work together reliably")
+endif()
+
+if(ENABLE_ASAN AND ENABLE_MSAN)
+    message(FATAL_ERROR "AddressSanitizer and MemorySanitizer cannot be used together")
+endif()
+
+if(ENABLE_ASAN AND ENABLE_TSAN)
+    message(FATAL_ERROR "AddressSanitizer and ThreadSanitizer cannot be used together")
+endif()
+
+if(ENABLE_MSAN AND ENABLE_TSAN)
+    message(FATAL_ERROR "MemorySanitizer and ThreadSanitizer cannot be used together")
+endif()
+
 
 # Install developer convenience scripts (pre-commit hook) only for the top-level project
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
