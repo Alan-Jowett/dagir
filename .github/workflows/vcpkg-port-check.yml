@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+
+name: vcpkg port check
+
+on:
+  push:
+    paths:
+      - 'ports/dagir/**'
+      - '.github/workflows/vcpkg-port-check.yml'
+  workflow_dispatch:
+
+jobs:
+  build-port:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Bootstrap vcpkg
+        run: |
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
+          ./vcpkg/bootstrap-vcpkg.sh
+
+      - name: Install dagir via overlay-ports
+        run: |
+          ./vcpkg/vcpkg install dagir --overlay-ports=${{ github.workspace }}/ports
+
+      - name: Configure and build test
+        run: |
+          mkdir build && cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ports/vcpkg-test
+          cmake --build . --config Release
