@@ -332,7 +332,7 @@ jobs:
   release:
     name: Create Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-and-test, code-quality, documentation, python-bdd-comparison]
+    needs: [build-and-test, code-quality]
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
