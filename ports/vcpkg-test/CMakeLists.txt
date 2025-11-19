@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: MIT
+# © DagIR Contributors. All rights reserved.
+
 cmake_minimum_required(VERSION 3.20)
 project(dagir_vcpkg_test LANGUAGES CXX)
 
