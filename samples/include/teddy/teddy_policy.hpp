@@ -17,9 +17,7 @@
 #include <dagir/concepts/node_attributor.hpp>
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
-#include <format>
-#include <mutex>
-#include <unordered_map>
+#include <dagir/node_id.hpp>
 
 #include "teddy_read_only_dag_view.hpp"
 
@@ -38,19 +36,7 @@ namespace utility {
 struct teddy_node_attributor {
   using view_t = teddy_read_only_dag_view;  // forward declaration use-case
 
-  // Generate a short unique node id (nodeNNN) for a given stable key.
-  // Uses an internal map to assign compact sequential ids on first-seen.
-  static std::string make_node_id(std::uint64_t key) {
-    static std::mutex m;
-    static std::unordered_map<std::uint64_t, int> map;
-    static int next = 0;
-    std::scoped_lock lk(m);
-    auto it = map.find(key);
-    if (it != map.end()) return std::format("node{:03}", it->second);
-    int id = next++;
-    map.emplace(key, id);
-    return std::format("node{:03}", id);
-  }
+  // Node id helper is provided by shared helper: dagir::utility::make_node_id(key)
 
   /**
    * @brief Produce attributes for a single node handle.
@@ -100,7 +86,7 @@ struct teddy_node_attributor {
     // Always assign a unique renderer-visible `name` attribute derived from the
     // node's stable key. This ensures distinct nodes receive distinct ids
     // even when labels collide.
-    out[std::string{"name"}] = make_node_id(h.stable_key());
+    out[std::string{"name"}] = dagir::utility::make_node_id(h.stable_key());
 
     return out;
   }

@@ -16,7 +16,11 @@
 #include <dagir/render_mermaid.hpp>
 #include <iostream>
 #include <set>
+#include <span>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "expressions/expression_parser.hpp"
 
@@ -30,7 +34,16 @@
 #include "cudd/cudd_policy.hpp"
 #include "cudd/cudd_read_only_dag_view.hpp"
 
-// Helper: sort IR nodes/edges deterministically and render using requested backend
+/**
+ * @brief Render an IR graph using the requested backend.
+ *
+ * Sorts nodes and edges deterministically to ensure stable output, then
+ * forwards to the selected renderer (`dot`, `json`, or `mermaid`).
+ *
+ * @param in_ir Input IR graph (copied internally for reordering).
+ * @param backend Target backend name: "dot", "json", or "mermaid".
+ * @throws std::runtime_error If an unknown backend is requested.
+ */
 static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
   dagir::ir_graph ir = in_ir;  // make a local copy we can reorder
 
@@ -139,6 +152,72 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
   }
 }
 
+/**
+ * @brief Collect variable names from an expression AST and assign indices.
+ *
+ * Runs a `postorder_fold` over an expression read-only view, records
+ * variable occurrences and assigns small integer indices in first-seen order.
+ *
+ * @param expr Pointer to the expression variant root.
+ * @return Map from variable name to assigned index.
+ */
+static std::unordered_map<std::string, int> build_var_map(dagir::utility::my_expression* expr) {
+  using vec_t = std::vector<std::string>;
+  std::unordered_map<std::string, int> var_map;
+  dagir::utility::expression_read_only_dag_view expr_view(expr);
+
+  auto results = dagir::postorder_fold<dagir::utility::expression_read_only_dag_view, vec_t>(
+      expr_view, [](auto const& /*view*/, auto node, std::span<const vec_t> child_vecs) -> vec_t {
+        vec_t out;
+        for (auto const& v : child_vecs) out.insert(out.end(), v.begin(), v.end());
+        if (auto p_var = std::get_if<dagir::utility::my_variable>(node.ptr)) {
+          out.push_back(p_var->variable_name);
+        }
+        return out;
+      });
+
+  std::unordered_set<std::string> seen;
+  int idx = 0;
+  for (auto const& r : expr_view.roots()) {
+    auto it = results.find(r.stable_key());
+    if (it == results.end()) continue;
+    for (auto const& name : it->second) {
+      if (seen.insert(name).second) {
+        var_map.emplace(name, idx++);
+      }
+    }
+  }
+
+  return var_map;
+}
+
+/**
+ * @brief Build an index -> name vector from a name->index map.
+ *
+ * This is useful to supply variable names to external libraries that
+ * expect a vector indexed by variable index.
+ *
+ * @param var_map Map from variable name to index.
+ * @return Vector where result[idx] == variable_name.
+ */
+static std::vector<std::string> build_var_names(
+    const std::unordered_map<std::string, int>& var_map) {
+  std::vector<std::string> var_names;
+  var_names.resize(var_map.size());
+  for (auto const& [name, idx] : var_map) {
+    if (idx >= 0 && static_cast<size_t>(idx) < var_names.size())
+      var_names[static_cast<size_t>(idx)] = name;
+  }
+  return var_names;
+}
+
+/**
+ * @brief CLI entrypoint for the expression2bdd sample application.
+ *
+ * Usage: expression2bdd <expression_file> <library> <backend>
+ *   library: teddy | cudd
+ *   backend: dot | json | mermaid
+ */
 int main(int argc, char** argv) {
   using namespace dagir::utility;
 
@@ -156,56 +235,14 @@ int main(int argc, char** argv) {
   try {
     my_expression_ptr expr = read_expression_from_file(filename);
 
+    // Use DagIR algorithms to collect variable names from the expression AST.
+    auto var_map = build_var_map(expr.get());
+    // Build inverse map (index -> name) once and reuse for both libraries
+    auto var_names = build_var_names(var_map);
+
     if (library == "teddy") {
       // Create a Teddy manager and convert expression to a diagram
-      // Use DagIR algorithms to collect variable names from the expression AST.
-      std::unordered_map<std::string, int> var_map;
-      {
-        // Build a read-only view over the expression AST and run a postorder_fold
-        // combiner that collects variable names into an unordered_set.
-        using vec_t = std::vector<std::string>;
-        dagir::utility::expression_read_only_dag_view expr_view(expr.get());
-
-        auto results = dagir::postorder_fold<dagir::utility::expression_read_only_dag_view, vec_t>(
-            expr_view,
-            [](auto const& /*view*/, auto node, std::span<const vec_t> child_vecs) -> vec_t {
-              vec_t out;
-              // Concatenate child vectors in left-to-right order
-              for (auto const& v : child_vecs) out.insert(out.end(), v.begin(), v.end());
-
-              // If this node is a variable, append its name
-              if (auto p_var = std::get_if<my_variable>(node.ptr)) {
-                out.push_back(p_var->variable_name);
-              }
-
-              return out;
-            });
-
-        // Build var_map preserving first occurrence order across the root(s)
-        std::unordered_set<std::string> seen;
-        int idx = 0;
-        for (auto const& r : expr_view.roots()) {
-          auto it = results.find(r.stable_key());
-          if (it == results.end()) continue;
-          for (auto const& name : it->second) {
-            if (seen.insert(name).second) {
-              var_map.emplace(name, idx++);
-            }
-          }
-        }
-
-        // Create manager with variable count and a reasonable node pool size
-      }
-
       teddy::bdd_manager mgr(static_cast<int32_t>(var_map.size()), 1024);
-
-      // Build inverse map: index -> name for labeling variable nodes
-      std::vector<std::string> var_names;
-      var_names.resize(var_map.size());
-      for (auto const& [name, idx] : var_map) {
-        if (idx >= 0 && static_cast<size_t>(idx) < var_names.size())
-          var_names[static_cast<size_t>(idx)] = name;
-      }
 
       auto diag = convert_expression_to_teddy(mgr, *expr, var_map);
 
@@ -221,46 +258,9 @@ int main(int argc, char** argv) {
       emit_ir(ir, backend);
 
     } else if (library == "cudd") {
-      std::unordered_map<std::string, int> var_map;
-      {
-        using vec_t = std::vector<std::string>;
-        dagir::utility::expression_read_only_dag_view expr_view(expr.get());
-
-        auto results = dagir::postorder_fold<dagir::utility::expression_read_only_dag_view, vec_t>(
-            expr_view,
-            [](auto const& /*view*/, auto node, std::span<const vec_t> child_vecs) -> vec_t {
-              vec_t out;
-              for (auto const& v : child_vecs) out.insert(out.end(), v.begin(), v.end());
-              if (auto p_var = std::get_if<my_variable>(node.ptr)) {
-                out.push_back(p_var->variable_name);
-              }
-              return out;
-            });
-
-        std::unordered_set<std::string> seen;
-        int idx = 0;
-        for (auto const& r : expr_view.roots()) {
-          auto it = results.find(r.stable_key());
-          if (it == results.end()) continue;
-          for (auto const& name : it->second) {
-            if (seen.insert(name).second) {
-              var_map.emplace(name, idx++);
-            }
-          }
-        }
-      }
-
       // Initialize CUDD manager
       DdManager* mgr =
           Cudd_Init(static_cast<int>(var_map.size()), 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0);
-
-      // Build inverse map: index -> name for labeling variable nodes
-      std::vector<std::string> var_names;
-      var_names.resize(var_map.size());
-      for (auto const& [name, idx] : var_map) {
-        if (idx >= 0 && static_cast<size_t>(idx) < var_names.size())
-          var_names[static_cast<size_t>(idx)] = name;
-      }
 
       DdNode* diag = convert_expression_to_cudd(*mgr, *expr, var_map);
 
