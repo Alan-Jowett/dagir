@@ -27,6 +27,5 @@ jobs:
 
       - name: Configure and build test
         run: |
-          mkdir build && cd build
-          cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ports/vcpkg-test
-          cmake --build . --config Release
+          cmake -S ports/vcpkg-test -B build -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+          cmake --build build --config Release
