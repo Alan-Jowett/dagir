@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
 # SPDX-License-Identifier: MIT
+cmake_minimum_required(VERSION 3.20)
 project(dagir_vcpkg_test LANGUAGES CXX)
 
 find_package(DagIR CONFIG REQUIRED)
