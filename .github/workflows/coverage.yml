@@ -1,0 +1,140 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Copyright (c) 2025 Alan Jowett
+
+name: Code Coverage
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.c'
+      - '**/CMakeLists.txt'
+      - '**.cmake'
+      - 'test_expressions/**'
+      - '.github/workflows/coverage.yml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.c'
+      - '**/CMakeLists.txt'
+      - '**.cmake'
+      - 'test_expressions/**'
+      - '.github/workflows/coverage.yml'
+  workflow_dispatch:
+
+# Permissions required for coverage reporting
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+# Cancel previous runs if a new commit is pushed to the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+
+jobs:
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          gcc \
+          g++ \
+          cmake \
+          lcov \
+          gcovr \
+          git
+
+    - name: Create build directory
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure CMake with Coverage
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_C_COMPILER=gcc \
+          -DCMAKE_CXX_COMPILER=g++ \
+          -DENABLE_COVERAGE=ON
+
+    - name: Build project
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config Debug --parallel
+
+    - name: Run tests
+      working-directory: ${{github.workspace}}/build
+      run: |
+        # Run tests with error handling (fail the job on test failures)
+        ctest --output-on-failure --verbose
+
+    - name: Generate coverage data
+      working-directory: ${{github.workspace}}/build
+      run: |
+        # Initialize coverage counters
+        lcov --zerocounters --directory .
+
+        # Run tests again to ensure coverage data is fresh
+        ctest --output-on-failure
+
+        # Create coverage info with lcov
+        lcov --capture \
+          --directory . \
+          --output-file coverage.info \
+          --rc branch_coverage=1 \
+          --ignore-errors graph,gcov,unused,mismatch,source
+
+        # Remove external libraries and system files from coverage
+        lcov --remove coverage.info \
+          '/usr/*' \
+          '*/build/_deps/*' \
+          '*/CMakeFiles/*' \
+          '*/_deps/*' \
+          '*/tests/unit/*' \
+          '*/patches/*' \
+          '*/catch2*' \
+          '*/Catch2*' \
+          --output-file coverage_filtered.info \
+          --rc branch_coverage=1 \
+          --ignore-errors unused,mismatch,source
+
+        # Generate HTML report for debugging
+        genhtml coverage_filtered.info \
+          --output-directory coverage_html \
+          --branch-coverage \
+          --function-coverage \
+          --title "BDD Demo Coverage Report"
+
+        # Display coverage summary
+        echo "=== Coverage Summary ==="
+        lcov --summary coverage_filtered.info
+
+    - name: Upload coverage to Coveralls
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/coverage_filtered.info
+        format: lcov
+        fail-on-error: false
+
+    - name: Upload coverage reports as artifact
+      uses: actions/upload-artifact@v5
+      with:
+        name: coverage-reports
+        path: |
+          build/coverage_filtered.info
+          build/coverage_html/
+        retention-days: 30

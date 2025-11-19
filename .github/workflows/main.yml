@@ -6,79 +6,365 @@
 # - Optionally builds & runs Catch2 unit tests (DAGIR_BUILD_TESTS=ON)
 # - Runs on Windows, Linux, and macOS
 
-name: ci
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop, v*.*.* ]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.c'
+      - '**/CMakeLists.txt'
+      - '**.cmake'
+      - '**.ps1'
+      - '**.py'
+      - 'python_bdd/**'
+      - 'test_expressions/**'
+      - '.github/workflows/**'
   pull_request:
-    branches: [ "**" ]
+    branches: [ main, master, develop ]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.c'
+      - '**/CMakeLists.txt'
+      - '**.cmake'
+      - '**.ps1'
+      - '**.py'
+      - 'python_bdd/**'
+      - 'test_expressions/**'
+      - '.github/workflows/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
   workflow_dispatch:
 
+# Permissions required for security scanning and artifact upload
 permissions:
   contents: read
+  security-events: write
+  actions: read
+  pull-requests: read
+
+# Cancel previous runs if a new commit is pushed to the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
 jobs:
   build-and-test:
-    name: ${{ matrix.os }} • ${{ matrix.build_type }}
+    name: Build and Test
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-        build_type: [ Release ]
-
-    env:
-      BUILD_DIR: build
-      CMAKE_BUILD_TYPE: ${{ matrix.build_type }}
-      # Toggle unit tests here; set to OFF to skip fetching Catch2/tests
-      DAGIR_BUILD_TESTS: ON
+        # Test on Linux, macOS and Windows
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        build_type: [Debug, Release]
+        compiler: [gcc, clang, msvc]
+        exclude:
+          # Exclude combinations that don't make sense
+          - os: ubuntu-latest
+            compiler: msvc
+          - os: macos-latest
+            compiler: msvc
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: clang
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        submodules: recursive
 
-      - name: Setup MSVC developer command prompt
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
+    - name: Setup C++ environment (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          sudo apt-get install -y gcc g++ cmake
+        elif [ "${{ matrix.compiler }}" = "clang" ]; then
+          sudo apt-get install -y clang cmake
+        fi
 
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '>=3.20.0'
+    - name: Setup C++ environment (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install cmake
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          brew install gcc
+        fi
 
-      # Configure
-      - name: Configure (single-config generators)
-        if: runner.os != 'Windows'
-        run: |
-          cmake -S . -B "${BUILD_DIR}" \
-            -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
-            -DDAGIR_BUILD_TESTS=${{ env.DAGIR_BUILD_TESTS }}
+    - name: Setup C++ environment (Windows)
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v2
 
-      # FIX: put all args on one line in PowerShell (no caret continuation)
-      - name: Configure (multi-config generators / MSVC)
-        if: runner.os == 'Windows'
-        run: cmake -S . -B "${env:BUILD_DIR}" -DDAGIR_BUILD_TESTS=${{ env.DAGIR_BUILD_TESTS }}
+    - name: Set compiler environment variables (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          echo "CC=gcc" >> $GITHUB_ENV
+          echo "CXX=g++" >> $GITHUB_ENV
+        elif [ "${{ matrix.compiler }}" = "clang" ]; then
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+        fi
 
-      # Build
-      - name: Build (single-config)
-        if: runner.os != 'Windows'
-        run: cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" --parallel
+    - name: Create build directory
+      run: cmake -E make_directory ${{github.workspace}}/build
 
-      - name: Build (multi-config / MSVC)
-        if: runner.os == 'Windows'
-        run: cmake --build "${env:BUILD_DIR}" --config "${env:CMAKE_BUILD_TYPE}" --parallel
+    - name: Configure CMake (Linux/macOS)
+      if: runner.os != 'Windows'
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_C_COMPILER=$CC \
+          -DCMAKE_CXX_COMPILER=$CXX
 
-      # Test (if enabled)
-      - name: Run tests (single-config)
-        if: runner.os != 'Windows' && env.DAGIR_BUILD_TESTS == 'ON'
-        run: ctest --test-dir "${BUILD_DIR}" -C "${CMAKE_BUILD_TYPE}" --output-on-failure
+    - name: Configure CMake (Windows)
+      if: runner.os == 'Windows'
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
-      - name: Run tests (multi-config / MSVC)
-        if: runner.os == 'Windows' && env.DAGIR_BUILD_TESTS == 'ON'
-        run: ctest --test-dir "${env:BUILD_DIR}" -C "${env:CMAKE_BUILD_TYPE}" --output-on-failure
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{ matrix.build_type }} --parallel
 
-      - name: Verify headers installed in tree
-        run: |
-          echo "Project headers:"
-          ls -R include || dir include
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{ matrix.build_type }} --output-on-failure --verbose
+
+  sanitizer-tests:
+    name: Sanitizer Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [asan, ubsan, asan+ubsan]
+        compiler: [gcc, clang]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        submodules: recursive
+
+    - name: Setup C++ environment
+      run: |
+        sudo apt-get update
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          sudo apt-get install -y gcc g++ cmake
+        elif [ "${{ matrix.compiler }}" = "clang" ]; then
+          sudo apt-get install -y clang cmake
+        fi
+
+    - name: Set compiler environment variables
+      run: |
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          echo "CC=gcc" >> $GITHUB_ENV
+          echo "CXX=g++" >> $GITHUB_ENV
+        elif [ "${{ matrix.compiler }}" = "clang" ]; then
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+        fi
+
+    - name: Configure sanitizer options
+      run: |
+        case "${{ matrix.sanitizer }}" in
+          "asan")
+            echo "CMAKE_SANITIZER_FLAGS=-DENABLE_ASAN=ON" >> $GITHUB_ENV
+            echo "ASAN_OPTIONS=detect_leaks=1:abort_on_error=1:halt_on_error=1:check_initialization_order=1" >> $GITHUB_ENV
+            ;;
+          "ubsan")
+            echo "CMAKE_SANITIZER_FLAGS=-DENABLE_UBSAN=ON" >> $GITHUB_ENV
+            echo "UBSAN_OPTIONS=print_stacktrace=1:abort_on_error=1:halt_on_error=1" >> $GITHUB_ENV
+            ;;
+          "asan+ubsan")
+            echo "CMAKE_SANITIZER_FLAGS=-DENABLE_ASAN=ON -DENABLE_UBSAN=ON" >> $GITHUB_ENV
+            echo "ASAN_OPTIONS=detect_leaks=1:abort_on_error=1:halt_on_error=1:check_initialization_order=1" >> $GITHUB_ENV
+            echo "UBSAN_OPTIONS=print_stacktrace=1:abort_on_error=1:halt_on_error=1" >> $GITHUB_ENV
+            ;;
+        esac
+
+    - name: Create build directory
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure CMake with sanitizers
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_C_COMPILER=$CC \
+          -DCMAKE_CXX_COMPILER=$CXX \
+          $CMAKE_SANITIZER_FLAGS
+
+    - name: Build with sanitizers
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config Debug --parallel
+
+    - name: Run tests with sanitizers
+      working-directory: ${{github.workspace}}/build
+      run: |
+        # Run tests with verbose output and proper error handling
+        echo "Running tests with ${{ matrix.sanitizer }} using ${{ matrix.compiler }}..."
+        ctest -C Debug --output-on-failure --verbose --timeout 300
+
+    - name: Check for sanitizer reports
+      if: always()
+      run: |
+        # Look for any sanitizer output files or crash dumps
+        find ${{github.workspace}} -name "*.asan" -o -name "*.msan" -o -name "*.tsan" -o -name "*.ubsan" -o -name "core.*" | while read file; do
+          echo "❌ Found sanitizer report: $file"
+          cat "$file" || true
+        done
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck clang-format clang-tidy
+
+    - name: Run cppcheck
+      run: |
+        # Run cppcheck with focused checks to avoid noise
+        # Filter out information messages which don't indicate actual issues
+        cppcheck --enable=warning,style,performance,portability \
+          --std=c++20 \
+          --inline-suppr \
+          --suppress=missingIncludeSystem \
+          --suppress=unmatchedSuppression \
+          -I include/ \
+          --template='[{file}:{line}]: ({severity}) {message}' \
+          sample/ tests/ 2>&1 | grep -v '(information)' || {
+            echo "❌ cppcheck found issues in the code"
+            echo "ℹ️  Run 'cppcheck --enable=warning,style,performance,portability --std=c++20 -I include/ src/' locally to see details"
+            exit 1
+          }
+
+        # Check if there were any real errors (not just information)
+        ISSUES=$(cppcheck --enable=warning,style,performance,portability \
+          --std=c++20 \
+          --inline-suppr \
+          --suppress=missingIncludeSystem \
+          --suppress=unmatchedSuppression \
+          -I include/ \
+          --quiet \
+          --template='[{file}:{line}]: ({severity}) {message}' \
+          sample/ tests/ 2>&1 | grep -v '(information)' | wc -l)
+
+        if [ "$ISSUES" -gt 0 ]; then
+          echo "❌ cppcheck found $ISSUES issue(s) in the code"
+          exit 1
+        fi
+
+        echo "✅ cppcheck passed - no issues found"
+
+    - name: Check code formatting
+      run: |
+        # Check if code follows consistent formatting
+        echo "Checking code formatting with clang-format..."
+
+        format_issues=false
+        for file in $(find src include -name "*.cpp" -o -name "*.hpp"); do
+          echo "Checking $file..."
+          if ! clang-format --dry-run --Werror "$file" > /dev/null 2>&1; then
+            echo "❌ Formatting issues found in $file"
+            echo "To fix, run: clang-format -i $file"
+            format_issues=true
+          else
+            echo "✅ $file is properly formatted"
+          fi
+        done
+
+        if [ "$format_issues" = true ]; then
+          echo ""
+          echo "💡 To fix all formatting issues, run:"
+          echo "   find src include -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i"
+          exit 1
+        fi
+
+        echo "✅ All files are properly formatted"
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Skip security scan for draft PRs to save resources
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: cpp
+
+    - name: Build for analysis
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: "/language:cpp"
+
+  release:
+    name: Create Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-and-test, code-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        submodules: recursive
+
+    - name: Build Release
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        make -j$(nproc)
+
+    - name: Create Release Archive
+      run: |
+        mkdir -p release
+        cp build/bdd_demo release/
+        cp README.md LICENSE release/
+        cp -r test_expressions release/
+        cp generate_all_visualizations.ps1 release/
+        tar -czf dagir-${{ github.ref_name }}.tar.gz -C release .
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dagir-${{ github.ref_name }}.tar.gz
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
