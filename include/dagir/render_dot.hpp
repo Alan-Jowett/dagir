@@ -119,7 +119,8 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
   if (!g.global_attrs.empty()) {
     std::vector<std::string> gkeys;
     gkeys.reserve(g.global_attrs.size());
-    for (const auto& kv : g.global_attrs) gkeys.push_back(kv.first);
+    std::transform(g.global_attrs.begin(), g.global_attrs.end(), std::back_inserter(gkeys),
+                   [](auto const& p) { return p.first; });
     std::sort(gkeys.begin(), gkeys.end());
     for (const auto& k : gkeys) {
       const auto& v = g.global_attrs.at(k);
@@ -172,7 +173,8 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     if (!local.empty()) {
       std::vector<std::string> keys;
       keys.reserve(local.size());
-      for (const auto& kv : local) keys.push_back(kv.first);
+      std::transform(local.begin(), local.end(), std::back_inserter(keys),
+                     [](auto const& p) { return p.first; });
       std::sort(keys.begin(), keys.end());
       for (const auto& k : keys) {
         if (k == std::string(ir_attrs::k_label)) continue;
@@ -201,7 +203,8 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
       if (!amap.empty()) {
         std::vector<std::string> keys;
         keys.reserve(amap.size());
-        for (const auto& kv : amap) keys.push_back(kv.first);
+        std::transform(amap.begin(), amap.end(), std::back_inserter(keys),
+                       [](auto const& p) { return p.first; });
         std::sort(keys.begin(), keys.end());
         for (const auto& k : keys) {
           if (k == std::string(ir_attrs::k_label)) continue;
