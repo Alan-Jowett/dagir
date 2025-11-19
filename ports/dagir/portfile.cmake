@@ -35,7 +35,7 @@ if(NOT EXISTS "${_targets_file}")
 endif()
 
 file(WRITE "${CURRENT_PACKAGES_DIR}/lib/cmake/DagIR/DagIRConfig.cmake"
-  "include(\"${CMAKE_CURRENT_LIST_DIR}/DagIRTargets.cmake\")\n"
+  "include(\"$${CMAKE_CURRENT_LIST_DIR}/DagIRTargets.cmake\")\n"
 )
 
 # Optionally install samples when the "samples" feature is enabled.
