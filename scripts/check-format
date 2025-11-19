@@ -36,7 +36,7 @@ if [ -z "$FILES" ]; then
 fi
 
 # Exclude generated expression outputs
-FILES=$(printf '%s\n' "$FILES" | grep -Ev '^(samples/expression_tree_|samples/expression_bdd_)' || true)
+FILES=$(printf '%s\n' "$FILES" | grep -Ev '^(tests/regression_tests/expression_tree_|tests/regression_tests/expression_bdd_)' || true)
 
 echo "[check-format] Checking formatting for tracked C/C++ files..."
 if [ "$FIX" -eq 1 ]; then

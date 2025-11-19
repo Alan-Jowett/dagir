@@ -22,17 +22,18 @@
 #include <unordered_set>
 #include <vector>
 
-#include "expressions/expression_parser.hpp"
+// Expression parser
+#include <dagir/utility/expressions/expression_parser.hpp>
 
 // Teddy-specific helpers
-#include "teddy/teddy_convert_expression.hpp"
-#include "teddy/teddy_policy.hpp"
-#include "teddy/teddy_read_only_dag_view.hpp"
+#include <dagir/utility/teddy/teddy_convert_expression.hpp>
+#include <dagir/utility/teddy/teddy_policy.hpp>
+#include <dagir/utility/teddy/teddy_read_only_dag_view.hpp>
 
 // CUDD-specific helpers
-#include "cudd/cudd_convert_expression.hpp"
-#include "cudd/cudd_policy.hpp"
-#include "cudd/cudd_read_only_dag_view.hpp"
+#include <dagir/utility/cudd/cudd_convert_expression.hpp>
+#include <dagir/utility/cudd/cudd_policy.hpp>
+#include <dagir/utility/cudd/cudd_read_only_dag_view.hpp>
 
 /**
  * @brief Render an IR graph using the requested backend.

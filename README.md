@@ -7,7 +7,7 @@
 
 
 # DagIR
-**A header-only C++20 library for external DAG traversal, IR generation, and multi-backend rendering.**
+**Traverse external DAGs without copying and render them anywhere: DagIR builds a lightweight IR for DOT, Mermaid, or JSON — header‑only, C++20, cross‑platform.**
 
 ---
 
@@ -37,6 +37,20 @@ Existing graph libraries assume you own the graph. DagIR is different:
 ---
 
 ## 🚀 Quick Start
+Add DagIR as a CMake dependency using `FetchContent` and then include the headers:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+  dagir
+  GIT_REPOSITORY https://github.com/Alan-Jowett/dagir.git
+  GIT_TAG main
+)
+FetchContent_MakeAvailable(dagir)
+
+target_include_directories(your_target PRIVATE ${dagir_SOURCE_DIR}/include)
+```
+
 ```cpp
 #include <dagir/ir.hpp>
 #include <dagir/algorithms.hpp>
@@ -86,6 +100,3 @@ PRs welcome! Please see CONTRIBUTING.md for guidelines.
 ## Continuous Integration
 This repository now includes GitHub Actions workflows to run sanitizer builds (ASAN/UBSAN) and collect coverage using `lcov`/Codecov. See `.github/workflows/main.yml` (sanitizer-tests job) and `.github/workflows/coverage.yml`.
 
-
-## 📚 Why DagIR?
-Because you shouldn’t have to copy your DAG just to visualize or analyze it.

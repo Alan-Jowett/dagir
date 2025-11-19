@@ -13,12 +13,10 @@
 
 #pragma once
 
-#include "libteddy/core.hpp"
-
-// Implement read_only_dag_view over TeDDy BDDs
 #include <algorithm>
 #include <cstdint>
 #include <dagir/concepts/read_only_dag_view.hpp>
+#include <libteddy/core.hpp>
 #include <string>
 #include <vector>
 

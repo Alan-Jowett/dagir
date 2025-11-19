@@ -12,12 +12,14 @@
 #include <dagir/render_json.hpp>
 #include <dagir/render_mermaid.hpp>
 #include <exception>
-#include <expressions/expression_parser.hpp>
-#include <expressions/expression_policy.hpp>
-#include <expressions/expression_read_only_dag_view.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
+
+// Expression parser
+#include <dagir/utility/expressions/expression_parser.hpp>
+#include <dagir/utility/expressions/expression_policy.hpp>
+#include <dagir/utility/expressions/expression_read_only_dag_view.hpp>
 
 int main(int argc, char** argv) {
   using namespace dagir::utility;

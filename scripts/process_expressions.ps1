@@ -2,10 +2,10 @@
 SPDX-FileCopyrightText: DagIR Contributors
 SPDX-License-Identifier: MIT
 
-Processes all `.expr` files in `samples\expressions` and generates
+Processes all `.expr` files in `tests\regression_tests\expressions` and generates
 outputs for both `expression2tree` and `expression2bdd`.
 
-Creates these folders under the repo root `samples`:
+Creates these folders under the repo root `tests\regression_tests`:
 - `expression_tree_dot`     : DOT output from `expression2tree`
 - `expression_tree_json`    : JSON output from `expression2tree`
 - `expression_tree_mermaid` : Mermaid output from `expression2tree`
@@ -42,19 +42,19 @@ Set-StrictMode -Version Latest
 $scriptRoot = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $repoRoot = Resolve-Path (Join-Path $scriptRoot "..")
 
-$exprDir = Join-Path $repoRoot "samples\expressions"
+$exprDir = Join-Path $repoRoot "tests\regression_tests\expressions"
 if (-not (Test-Path $exprDir)) {
     Write-Error "Expressions directory not found: $exprDir"
     exit 2
 }
 
 $out = [ordered]@{
-    tree_dot     = Join-Path $repoRoot "samples\expression_tree_dot"
-    tree_json    = Join-Path $repoRoot "samples\expression_tree_json"
-    tree_mermaid = Join-Path $repoRoot "samples\expression_tree_mermaid"
-    bdd_dot      = Join-Path $repoRoot "samples\expression_bdd_dot"
-    bdd_json     = Join-Path $repoRoot "samples\expression_bdd_json"
-    bdd_mermaid  = Join-Path $repoRoot "samples\expression_bdd_mermaid"
+    tree_dot     = Join-Path $repoRoot "tests\regression_tests\expression_tree_dot"
+    tree_json    = Join-Path $repoRoot "tests\regression_tests\expression_tree_json"
+    tree_mermaid = Join-Path $repoRoot "tests\regression_tests\expression_tree_mermaid"
+    bdd_dot      = Join-Path $repoRoot "tests\regression_tests\expression_bdd_dot"
+    bdd_json     = Join-Path $repoRoot "tests\regression_tests\expression_bdd_json"
+    bdd_mermaid  = Join-Path $repoRoot "tests\regression_tests\expression_bdd_mermaid"
 }
 
 foreach ($d in $out.Values) {

@@ -12,14 +12,13 @@
 #pragma once
 
 #include <cctype>
+#include <dagir/utility/expressions/expression_ast.hpp>
 #include <format>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
-
-#include "expression_ast.hpp"
 
 namespace dagir {
 namespace utility {

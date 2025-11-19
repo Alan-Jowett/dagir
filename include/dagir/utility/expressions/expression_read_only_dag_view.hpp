@@ -14,11 +14,10 @@
 #include <array>
 #include <cstdint>
 #include <dagir/concepts/read_only_dag_view.hpp>
+#include <dagir/utility/expressions/expression_ast.hpp>
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-#include "expression_ast.hpp"
 
 // Implement read_only_dag_view over expression ASTs
 namespace dagir {

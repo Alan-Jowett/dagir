@@ -12,17 +12,18 @@
  * SPDX-License-Identifier: MIT
  */
 
+#pragma once
+
 #include <cudd/cudd.h>
 
 #include <algorithm>
 #include <cctype>
 #include <dagir/algorithms.hpp>
+#include <dagir/utility/expressions/expression_read_only_dag_view.hpp>
 #include <functional>
 #include <string>
 #include <unordered_map>
 #include <variant>
-
-#include "../expressions/expression_read_only_dag_view.hpp"
 
 namespace dagir {
 namespace utility {
