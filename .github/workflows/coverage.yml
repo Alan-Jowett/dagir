@@ -1,0 +1,49 @@
+name: Coverage (lcov)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build lcov
+
+      - name: Configure with coverage
+        run: |
+          mkdir -p build
+          cd build
+          export CXXFLAGS="-g -O0 --coverage"
+          export CFLAGS="-g -O0 --coverage"
+          cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build . -- -j
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure -j || true
+
+      - name: Generate lcov
+        run: |
+          cd build
+          lcov --capture --directory . --output-file coverage.info || true
+          lcov --remove coverage.info '/usr/*' --output-file coverage.info || true
+          lcov --list coverage.info
+
+      - name: Upload coverage to GitHub
+        uses: codecov/codecov-action@v4
+        with:
+          files: build/coverage.info

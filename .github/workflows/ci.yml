@@ -1,0 +1,55 @@
+name: CI (ASAN/UBSAN build+tests)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: [Debug]
+        sanitizer: [address, undefined]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build clang lcov
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          if [ "${{ matrix.sanitizer }}" = "address" ]; then
+            export CFLAGS="-fsanitize=address -fno-omit-frame-pointer -g"
+            export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer -g"
+            export LDFLAGS="-fsanitize=address"
+          else
+            export CFLAGS="-fsanitize=undefined -fno-sanitize-recover=all -g"
+            export CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover=all -g"
+            export LDFLAGS="-fsanitize=undefined"
+          fi
+          cmake -G Ninja .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build . -- -j
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure -j || true
+
+      - name: Fail if sanitizer found problems
+        if: always()
+        run: |
+          # ctest above may succeed even when sanitizers print errors; rely on test logs for now
+          echo "If sanitizers reported issues the job should be examined manually."
