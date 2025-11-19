@@ -82,6 +82,12 @@ inline std::string escape_mermaid(const std::string& s) {
  * @param graph_name Optional identifier for the graph (used in comments only).
  */
 inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view graph_name = "G") {
+  // Ensure consistent appearance on platforms (e.g. GitHub) that may
+  // apply a dark theme to Mermaid renderings. Emit an init directive
+  // to request the default (light) Mermaid theme so node fill/stroke
+  // colours remain visible.
+  os << "%%{ init: {\"theme\": \"default\"} }%%\n";
+
   // Determine direction: prefer graph-level k_rankdir if present
   std::string rankdir = "TB";
   if (g.global_attrs.count(std::string(ir_attrs::k_rankdir)))

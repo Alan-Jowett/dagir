@@ -1,4 +1,5 @@
 ```mermaid
+%%{ init: {"theme": "default"} }%%
 graph TB
   node000("x")
   node001("y")
