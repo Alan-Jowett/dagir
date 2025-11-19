@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 DagIR Contributors
+#
+# Expression with only NOT operators
+NOT NOT NOT x

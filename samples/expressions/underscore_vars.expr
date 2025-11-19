@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 DagIR Contributors
+#
+# Test with variable names that have underscores and numbers
+var_1 AND var_2 OR var_3

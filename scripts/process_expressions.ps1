@@ -33,7 +33,8 @@ param(
     [ValidateSet('teddy','cudd')]
     [string]$Library = 'teddy',
     [switch]$StripMermaidFences,
-    [switch]$Verbose
+    [switch]$Verbose,
+    [int]$MaxDotSizeKB = 200
 )
 
 Set-StrictMode -Version Latest
@@ -162,14 +163,20 @@ foreach ($f in $exprFiles) {
         Run-And-Save -exe $treeExe -arguments @($f.FullName,'dot') -outfile $dotOut
         if ($dotExe -and (Test-Path $dotOut)) {
             $pngOut = [System.IO.Path]::ChangeExtension($dotOut, '.png')
-            if ($Verbose) { Write-Host "Converting DOT -> PNG: $dotOut -> $pngOut" }
-            $convOut = & $dotExe.FullName -Tpng -o $pngOut $dotOut 2>&1
-            $convExit = $LASTEXITCODE
-            if ($convExit -ne 0) {
-                $msg = $convOut -join "`n"
-                Write-Warning ("Graphviz conversion failed (exit {0}) for {1}: {2}" -f $convExit, $dotOut, $msg)
+            $dotInfo = Get-Item $dotOut
+            $sizeKB = [math]::Ceiling($dotInfo.Length / 1KB)
+            if ($sizeKB -gt $MaxDotSizeKB) {
+                if ($Verbose) { Write-Host "Skipping DOT->PNG for $dotOut (size ${sizeKB}KB > ${MaxDotSizeKB}KB)" }
+            } else {
+                if ($Verbose) { Write-Host "Converting DOT -> PNG: $dotOut -> $pngOut" }
+                $convOut = & $dotExe.FullName -Tpng -o $pngOut $dotOut 2>&1
+                $convExit = $LASTEXITCODE
+                if ($convExit -ne 0) {
+                    $msg = $convOut -join "`n"
+                    Write-Warning ("Graphviz conversion failed (exit {0}) for {1}: {2}" -f $convExit, $dotOut, $msg)
+                }
+                elseif ($Verbose) { Write-Host "Wrote: $pngOut" }
             }
-            elseif ($Verbose) { Write-Host "Wrote: $pngOut" }
         }
 
         $jsonOut = Join-Path $out.tree_json "$base.json"
@@ -186,14 +193,20 @@ foreach ($f in $exprFiles) {
         Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'dot') -outfile $dotOut
         if ($dotExe -and (Test-Path $dotOut)) {
             $pngOut = [System.IO.Path]::ChangeExtension($dotOut, '.png')
-            if ($Verbose) { Write-Host "Converting DOT -> PNG: $dotOut -> $pngOut" }
-            $convOut = & $dotExe.FullName -Tpng -o $pngOut $dotOut 2>&1
-            $convExit = $LASTEXITCODE
-            if ($convExit -ne 0) {
-                $msg = $convOut -join "`n"
-                Write-Warning ("Graphviz conversion failed (exit {0}) for {1}: {2}" -f $convExit, $dotOut, $msg)
+            $dotInfo = Get-Item $dotOut
+            $sizeKB = [math]::Ceiling($dotInfo.Length / 1KB)
+            if ($sizeKB -gt $MaxDotSizeKB) {
+                if ($Verbose) { Write-Host "Skipping DOT->PNG for $dotOut (size ${sizeKB}KB > ${MaxDotSizeKB}KB)" }
+            } else {
+                if ($Verbose) { Write-Host "Converting DOT -> PNG: $dotOut -> $pngOut" }
+                $convOut = & $dotExe.FullName -Tpng -o $pngOut $dotOut 2>&1
+                $convExit = $LASTEXITCODE
+                if ($convExit -ne 0) {
+                    $msg = $convOut -join "`n"
+                    Write-Warning ("Graphviz conversion failed (exit {0}) for {1}: {2}" -f $convExit, $dotOut, $msg)
+                }
+                elseif ($Verbose) { Write-Host "Wrote: $pngOut" }
             }
-            elseif ($Verbose) { Write-Host "Wrote: $pngOut" }
         }
 
         $jsonOut = Join-Path $out.bdd_json "$base.json"

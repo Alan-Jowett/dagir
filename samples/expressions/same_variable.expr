@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 DagIR Contributors
+#
+# Expression with just constants - edge case for minimal BDD
+x0 AND x0

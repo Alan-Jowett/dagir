@@ -1,0 +1,4 @@
+digraph expression {
+  rankdir=TB;
+  "node000" [label = "variable_with_unusual$characters@123", fillcolor = "lightblue", name = "node000", style = "filled"];
+}
