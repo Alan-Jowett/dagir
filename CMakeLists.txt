@@ -290,7 +290,6 @@ if(DAGIR_SAMPLES AND DAGIR_BUILD_TESTS)
 
           set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/samples/expression_bdd_${_backend}/${_expr_name}.${_ext}")
           if(EXISTS ${_expected})
-            set(_out "${_sample_test_out_dir}/expression2bdd_${_expr_name}_${_backend}_${_bdd_impl}.${_ext}")
 
             # For BDD backends we support both teddy (TeDDy) and cudd (CUDD) when
             # the corresponding target is available. Use the library name as ARG1.
@@ -310,6 +309,8 @@ if(DAGIR_SAMPLES AND DAGIR_BUILD_TESTS)
             endif()
 
             foreach(_bdd_impl IN LISTS _bdd_arg_list)
+              set(_out "${_sample_test_out_dir}/expression2bdd_${_expr_name}_${_backend}_${_bdd_impl}.${_ext}")
+
               add_test(NAME sample_expression2bdd_${_expr_name}_${_backend}_${_bdd_impl}
                 COMMAND ${CMAKE_COMMAND}
                   -DPROG=$<TARGET_FILE:expression2bdd>
