@@ -1,11 +1,11 @@
 digraph bdd {
   rankdir=TB;
-  "node000" [label = "p", style = "filled", name = "node000", shape = "circle"];
-  "node001" [label = "q", style = "filled", name = "node001", shape = "circle"];
-  "node002" [label = "r", style = "filled", name = "node002", shape = "circle"];
-  "node003" [label = "s", style = "filled", name = "node003", shape = "circle"];
-  "node004" [label = "0", style = "filled", name = "node004", shape = "box", fillcolor = "lightgray"];
-  "node005" [label = "1", style = "filled", name = "node005", shape = "box", fillcolor = "lightgray"];
+  "node000" [label = "p", name = "node000", shape = "circle", style = "filled"];
+  "node001" [label = "q", name = "node001", shape = "circle", style = "filled"];
+  "node002" [label = "r", name = "node002", shape = "circle", style = "filled"];
+  "node003" [label = "s", name = "node003", shape = "circle", style = "filled"];
+  "node004" [label = "0", fillcolor = "lightgray", name = "node004", shape = "box", style = "filled"];
+  "node005" [label = "1", fillcolor = "lightgray", name = "node005", shape = "box", style = "filled"];
   "node000" -> "node001" [style = "dashed"];
   "node000" -> "node005" [style = "solid"];
   "node001" -> "node002" [style = "dashed"];

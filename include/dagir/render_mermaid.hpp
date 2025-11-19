@@ -90,10 +90,17 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
   // Mermaid requires `graph <dir>` where <dir> is TB, LR, etc.
   os << "graph " << rankdir << "\n";
 
-  // Emit title if provided
-  for (const auto& kv : g.global_attrs) {
-    if (kv.first == std::string(ir_attrs::k_graph_label)) {
-      os << "  title " << render_mermaid_detail::escape_mermaid(kv.second) << "\n";
+  // Emit title if provided (deterministic: check sorted keys)
+  if (!g.global_attrs.empty()) {
+    std::vector<std::string> gkeys;
+    gkeys.reserve(g.global_attrs.size());
+    std::transform(g.global_attrs.begin(), g.global_attrs.end(), std::back_inserter(gkeys),
+                   [](auto const& p) { return p.first; });
+    std::sort(gkeys.begin(), gkeys.end());
+    for (const auto& k : gkeys) {
+      if (k == std::string(ir_attrs::k_graph_label)) {
+        os << "  title " << render_mermaid_detail::escape_mermaid(g.global_attrs.at(k)) << "\n";
+      }
     }
   }
 
@@ -141,12 +148,10 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
         parts.push_back(
             std::format("stroke-width:{}", amap.at(std::string(ir_attrs::k_pen_width))));
       if (!parts.empty()) {
-        os << "  style " << node_name << " "
-           << std::format("{}", std::accumulate(std::next(parts.begin()), parts.end(), parts[0],
-                                                [](const std::string& a, const std::string& b) {
-                                                  return a + "," + b;
-                                                }))
-           << "\n";
+        std::sort(parts.begin(), parts.end());
+        os << "  style " << node_name << " " << parts[0];
+        for (size_t i = 1; i < parts.size(); ++i) os << "," << parts[i];
+        os << "\n";
       }
     }
   }
