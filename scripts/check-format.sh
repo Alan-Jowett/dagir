@@ -57,10 +57,10 @@ fi
 
 # Exclude generated expression outputs from checks
 if [ -n "$SPDX_FILES" ]; then
-  SPDX_FILES=$(printf '%s\n' "$SPDX_FILES" | grep -Ev '^(samples/expression_tree_|samples/expression_bdd_)' || true)
+  SPDX_FILES=$(printf '%s\n' "$SPDX_FILES" | grep -Ev '^(tests/regression_tests/expression_tree_|tests/regression_tests/expression_bdd_)' || true)
 fi
 if [ -n "$SRC_FILES" ]; then
-  SRC_FILES=$(printf '%s\n' "$SRC_FILES" | grep -Ev '^(samples/expression_tree_|samples/expression_bdd_)' || true)
+  SRC_FILES=$(printf '%s\n' "$SRC_FILES" | grep -Ev '^(tests/regression_tests/expression_tree_|tests/regression_tests/expression_bdd_)' || true)
 fi
 
 if [ -z "$SPDX_FILES" ]; then

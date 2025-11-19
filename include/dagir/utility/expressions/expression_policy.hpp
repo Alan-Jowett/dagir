@@ -19,9 +19,8 @@
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
 #include <dagir/node_id.hpp>
-
-#include "expression_ast.hpp"
-#include "expression_read_only_dag_view.hpp"
+#include <dagir/utility/expressions/expression_ast.hpp>
+#include <dagir/utility/expressions/expression_read_only_dag_view.hpp>
 
 namespace dagir {
 namespace utility {

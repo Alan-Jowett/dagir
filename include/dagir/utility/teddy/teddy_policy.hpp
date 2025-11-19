@@ -1,6 +1,6 @@
 /**
  * @file teddy_policy.hpp
- * @brief Node and edge attribute policies for TeDDy BDD samples.
+ * @brief Node and edge attribute policies for TeDDy BDD.
  *
  * @details
  * Provides `teddy_node_attributor` and `teddy_edge_attributor` used by the
@@ -18,8 +18,7 @@
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
 #include <dagir/node_id.hpp>
-
-#include "teddy_read_only_dag_view.hpp"
+#include <dagir/utility/teddy/teddy_read_only_dag_view.hpp>
 
 namespace dagir {
 namespace utility {

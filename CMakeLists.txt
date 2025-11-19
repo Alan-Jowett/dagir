@@ -39,22 +39,22 @@ endif()
 # -----------------------------
 # Options
 # -----------------------------
-# Default tests/samples ON when this is the top-level project, otherwise OFF.
+# Default tests/examples ON when this is the top-level project, otherwise OFF.
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(_dagir_default_build_tests ON)
-  set(_dagir_default_samples ON)
+  set(_dagir_default_examples ON)
 else()
   set(_dagir_default_build_tests OFF)
-  set(_dagir_default_samples OFF)
+  set(_dagir_default_examples OFF)
 endif()
 
 # Apple - TeDDy doesn't build correctly with Clang
 if (APPLE)
-  set(_dagir_default_samples OFF)
+  set(_dagir_default_examples OFF)
 endif()
 
 option(DAGIR_BUILD_TESTS "Build DagIR unit tests (downloads Catch2 via FetchContent if not found)" ${_dagir_default_build_tests})
-option(DAGIR_SAMPLES "Build DagIR sample code" ${_dagir_default_samples})
+option(DAGIR_EXAMPLES "Build DagIR sample code" ${_dagir_default_examples})
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 
 # Configure coverage flags
@@ -267,7 +267,7 @@ endif()
 # -----------------------------
 # Build sample
 # -----------------------------
-if(DAGIR_SAMPLES)
+if(DAGIR_EXAMPLES)
   # Fetch and patch the BDD libraries
 
   # Include our custom FetchAndPatch module
@@ -288,13 +288,13 @@ if(DAGIR_SAMPLES)
   )
 
 
-  # Auto-discover samples: each folder under `samples/` that contains a
+  # Auto-discover examples: each folder under `examples/` that contains a
   # `main.cpp` will produce an executable named after the folder.
   file(GLOB SAMPLE_MAIN_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "${CMAKE_CURRENT_SOURCE_DIR}/samples/*/main.cpp")
+    "${CMAKE_CURRENT_SOURCE_DIR}/examples/*/main.cpp")
 
   foreach(_main IN LISTS SAMPLE_MAIN_FILES)
-    # _main looks like "samples/<name>/main.cpp"
+    # _main looks like "examples/<name>/main.cpp"
     get_filename_component(_sample_dir ${_main} DIRECTORY)
     get_filename_component(_sample_name ${_sample_dir} NAME)
     string(REGEX REPLACE "[/\\]+" "_" _target_name ${_sample_name})
@@ -302,7 +302,6 @@ if(DAGIR_SAMPLES)
     add_executable(${_target_name} ${CMAKE_CURRENT_SOURCE_DIR}/${_main})
     target_compile_features(${_target_name} PRIVATE cxx_std_20)
     target_link_libraries(${_target_name} PRIVATE dagir::dagir)
-    target_include_directories(${_target_name} PRIVATE samples/include)
 
     # If external BDD libraries were fetched (e.g., TeDDy), link their CMake targets
     # into the sample so their include directories and compile options are available.
@@ -311,13 +310,6 @@ if(DAGIR_SAMPLES)
     endif()
     if(TARGET cudd::cudd)
       target_link_libraries(${_target_name} PRIVATE cudd::cudd)
-    endif()
-
-    # If the sample provides a local `include/` folder, add it as a PRIVATE
-    # include directory. Use an absolute path so includes resolve properly.
-    set(_sample_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/${_sample_dir}/include")
-    if(EXISTS ${_sample_include_dir})
-      target_include_directories(${_target_name} PRIVATE ${_sample_include_dir})
     endif()
 
     if(MSVC)
@@ -336,12 +328,12 @@ endif()
 # -----------------------------
 # Developer convenience targets
 # -----------------------------
-# If both samples and tests are enabled, add CTest tests that run the sample
+# If both examples and tests are enabled, add CTest tests that run the sample
 # executables over the expressions and compare their output to the expected
-# files under samples/expression_* directories.
-if(DAGIR_SAMPLES AND DAGIR_BUILD_TESTS)
+# files under tests/regression_tests/expression_* directories.
+if(DAGIR_EXAMPLES AND DAGIR_BUILD_TESTS)
   # Gather expressions
-  file(GLOB SAMPLE_EXPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/samples/expressions/*.expr")
+  file(GLOB SAMPLE_EXPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/tests/regression_tests/expressions/*.expr")
 
   if(SAMPLE_EXPRESSIONS)
     include(CTest)
@@ -362,14 +354,14 @@ if(DAGIR_SAMPLES AND DAGIR_BUILD_TESTS)
           set(_ext ${_backend})
         endif()
 
-        set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/samples/expression_tree_${_backend}/${_expr_name}.${_ext}")
+        set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/tests/regression_tests/expression_tree_${_backend}/${_expr_name}.${_ext}")
         if(EXISTS ${_expected})
           set(_out "${_sample_test_out_dir}/expression2tree_${_expr_name}_${_backend}.${_ext}")
 
           add_test(NAME sample_expression2tree_${_expr_name}_${_backend}
             COMMAND ${CMAKE_COMMAND}
               -DPROG=$<TARGET_FILE:expression2tree>
-              -DARG0=${CMAKE_CURRENT_SOURCE_DIR}/samples/expressions/${_expr_name}.expr
+              -DARG0=${CMAKE_CURRENT_SOURCE_DIR}//tests/regression_tests/expressions/${_expr_name}.expr
               -DARG1=${_backend}
                 -DEXPECTED=${_expected}
                 -DBINARY_OUT=${_out}
@@ -391,7 +383,7 @@ if(DAGIR_SAMPLES AND DAGIR_BUILD_TESTS)
             set(_ext ${_backend})
           endif()
 
-          set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/samples/expression_bdd_${_backend}/${_expr_name}.${_ext}")
+          set(_expected "${CMAKE_CURRENT_SOURCE_DIR}/tests/regression_tests/expression_bdd_${_backend}/${_expr_name}.${_ext}")
           if(EXISTS ${_expected})
 
             # For BDD backends we support both teddy (TeDDy) and cudd (CUDD) when
@@ -417,7 +409,7 @@ if(DAGIR_SAMPLES AND DAGIR_BUILD_TESTS)
               add_test(NAME sample_expression2bdd_${_expr_name}_${_backend}_${_bdd_impl}
                 COMMAND ${CMAKE_COMMAND}
                   -DPROG=$<TARGET_FILE:expression2bdd>
-                  -DARG0=${CMAKE_CURRENT_SOURCE_DIR}/samples/expressions/${_expr_name}.expr
+                  -DARG0=${CMAKE_CURRENT_SOURCE_DIR}/tests/regression_tests/expressions/${_expr_name}.expr
                   -DARG1=${_bdd_impl}
                   -DARG2=${_backend}
                     -DEXPECTED=${_expected}

@@ -1,6 +1,6 @@
 /**
  * @file cudd_policy.hpp
- * @brief Node and edge attribute policies for CUDD BDD samples.
+ * @brief Node and edge attribute policies for CUDD BDD.
  *
  * @details
  * Provides `cudd_node_attributor` and `cudd_edge_attributor` used by
@@ -21,8 +21,7 @@
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
 #include <dagir/node_id.hpp>
-
-#include "cudd_read_only_dag_view.hpp"
+#include <dagir/utility/cudd/cudd_read_only_dag_view.hpp>
 
 namespace dagir {
 namespace utility {

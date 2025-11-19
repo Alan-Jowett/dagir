@@ -29,7 +29,7 @@ if ($All) {
 # Exclude generated expression outputs (created by scripts/process_expressions.ps1)
 $all_files = $all_files | Where-Object {
   $p = $_ -replace '\\','/'
-  -not ($p -match '^(samples/expression_tree_|samples/expression_bdd_)')
+  -not ($p -match '^(tests/regression_tests/expression_tree_|tests/regression_tests/expression_bdd_)')
 }
 
 if (-not $all_files -or (@($all_files)).Count -eq 0) {
