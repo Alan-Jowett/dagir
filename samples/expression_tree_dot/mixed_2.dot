@@ -1,16 +1,16 @@
 digraph expression {
   rankdir=TB;
-  "node1" [label = "AND", fillcolor = "lightgreen", style = "filled", name = "node1"];
-  "node2" [label = "XOR", fillcolor = "lightpink", style = "filled", name = "node2"];
-  "node3" [label = "OR", fillcolor = "lightcoral", style = "filled", name = "node3"];
-  "node4" [label = "x", fillcolor = "lightblue", style = "filled", name = "node4"];
-  "node5" [label = "y", fillcolor = "lightblue", style = "filled", name = "node5"];
-  "node6" [label = "u", fillcolor = "lightblue", style = "filled", name = "node6"];
-  "node7" [label = "v", fillcolor = "lightblue", style = "filled", name = "node7"];
-  "node1" -> "node2" [label = "L"];
-  "node1" -> "node3" [label = "R"];
-  "node2" -> "node4" [label = "L"];
-  "node2" -> "node5" [label = "R"];
-  "node3" -> "node6" [label = "L"];
-  "node3" -> "node7" [label = "R"];
+  "node000" [label = "AND", fillcolor = "lightgreen", style = "filled", name = "node000"];
+  "node001" [label = "XOR", fillcolor = "lightpink", style = "filled", name = "node001"];
+  "node002" [label = "OR", fillcolor = "lightcoral", style = "filled", name = "node002"];
+  "node003" [label = "x", fillcolor = "lightblue", style = "filled", name = "node003"];
+  "node004" [label = "y", fillcolor = "lightblue", style = "filled", name = "node004"];
+  "node005" [label = "u", fillcolor = "lightblue", style = "filled", name = "node005"];
+  "node006" [label = "v", fillcolor = "lightblue", style = "filled", name = "node006"];
+  "node000" -> "node001" [label = "L"];
+  "node000" -> "node002" [label = "R"];
+  "node001" -> "node003" [label = "L"];
+  "node001" -> "node004" [label = "R"];
+  "node002" -> "node005" [label = "L"];
+  "node002" -> "node006" [label = "R"];
 }

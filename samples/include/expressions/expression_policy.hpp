@@ -18,6 +18,9 @@
 #include <dagir/concepts/node_attributor.hpp>
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
+#include <format>
+#include <mutex>
+#include <unordered_map>
 
 #include "expression_ast.hpp"
 #include "expression_read_only_dag_view.hpp"
@@ -34,6 +37,18 @@ namespace utility {
  */
 struct expression_node_attributor {
   using view_t = expression_read_only_dag_view;  // forward declaration use-case
+
+  static std::string make_node_id(std::uint64_t key) {
+    static std::mutex m;
+    static std::unordered_map<std::uint64_t, int> map;
+    static int next = 0;
+    std::scoped_lock lk(m);
+    auto it = map.find(key);
+    if (it != map.end()) return std::format("node{:03}", it->second);
+    int id = next++;
+    map.emplace(key, id);
+    return std::format("node{:03}", id);
+  }
 
   dagir::ir_attr_map operator()(const typename expression_read_only_dag_view::handle& h) const {
     dagir::ir_attr_map out;
@@ -60,6 +75,9 @@ struct expression_node_attributor {
       out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
     }
 
+    // Always expose a unique `name` attribute so renderers can use stable
+    // unique node ids while keeping the human-visible `label` untouched.
+    out[std::string{"name"}] = make_node_id(h.stable_key());
     return out;
   }
 

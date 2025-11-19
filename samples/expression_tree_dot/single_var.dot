@@ -1,4 +1,4 @@
 digraph expression {
   rankdir=TB;
-  "node1" [label = "z", fillcolor = "lightblue", style = "filled", name = "node1"];
+  "node000" [label = "z", fillcolor = "lightblue", style = "filled", name = "node000"];
 }

@@ -1,5 +1,5 @@
 ```mermaid
 graph TB
-  node1["z"]
-  style node1 fill:lightblue
+  node000["z"]
+  style node000 fill:lightblue
 ```

@@ -27,8 +27,23 @@ using ir_attr_map = std::unordered_map<std::string, std::string>;
  * @brief A node in the renderer-neutral IR.
  */
 struct ir_node {
+  /**
+   * @brief Numeric identifier for this node.
+   *
+   * This id is used by renderers and consumers as a stable numeric handle
+   * for building edges and for deterministic ordering when no explicit
+   * `name` attribute is present.
+   */
   std::uint64_t id;
+
   // cppcheck-suppress unusedStructMember
+  /**
+   * @brief Map of renderer-neutral attributes for the node.
+   *
+   * Keys should generally be chosen from `dagir::ir_attrs` (for example
+   * `dagir::ir_attrs::k_label`) but arbitrary string keys are allowed for
+   * downstream consumers.
+   */
   [[maybe_unused]] ir_attr_map attributes;  ///< Node-specific attributes.
 };
 
@@ -52,9 +67,27 @@ inline bool operator<(ir_node const& a, ir_node const& b) {
  * @brief An edge in the renderer-neutral IR.
  */
 struct ir_edge {
+  /**
+   * @brief Numeric id of the source node.
+   *
+   * This references an `ir_node::id` value in the graph's `nodes` vector.
+   */
   std::uint64_t source;
+
+  /**
+   * @brief Numeric id of the target (destination) node.
+   *
+   * This references an `ir_node::id` value in the graph's `nodes` vector.
+   */
   std::uint64_t target;
+
   // cppcheck-suppress unusedStructMember
+  /**
+   * @brief Map of renderer-neutral attributes for the edge.
+   *
+   * Typical keys include `dagir::ir_attrs::k_label` for an edge label and
+   * `dagir::ir_attrs::k_style` for visual styling hints.
+   */
   [[maybe_unused]] ir_attr_map attributes;
 };
 
@@ -74,10 +107,29 @@ inline bool operator<(ir_edge const& a, ir_edge const& b) {
  */
 struct ir_graph {
   // cppcheck-suppress unusedStructMember
+  /**
+   * @brief All nodes present in the graph.
+   *
+   * Renderers use this vector to enumerate node identifiers and attributes.
+   */
   [[maybe_unused]] std::vector<ir_node> nodes;
+
   // cppcheck-suppress unusedStructMember
+  /**
+   * @brief All directed edges in the graph.
+   *
+   * Each edge references nodes via `source` and `target` numeric ids.
+   */
   [[maybe_unused]] std::vector<ir_edge> edges;
+
   // cppcheck-suppress unusedStructMember
+  /**
+   * @brief Global graph-level attributes.
+   *
+   * Backends may map known keys (for example `dagir::ir_attrs::k_graph_label`)
+   * to renderer-specific properties; arbitrary metadata may also be stored
+   * here for downstream consumers.
+   */
   [[maybe_unused]] ir_attr_map global_attrs;
 };
 

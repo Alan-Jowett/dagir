@@ -1,11 +1,11 @@
 ```mermaid
 graph TB
-  node1["AND"]
-  style node1 fill:lightgreen
-  node2["a"]
-  style node2 fill:lightblue
-  node3["b"]
-  style node3 fill:lightblue
-  node1 -- "L" --> node2
-  node1 -- "R" --> node3
+  node000["AND"]
+  style node000 fill:lightgreen
+  node001["a"]
+  style node001 fill:lightblue
+  node002["b"]
+  style node002 fill:lightblue
+  node000 -- "L" --> node001
+  node000 -- "R" --> node002
 ```

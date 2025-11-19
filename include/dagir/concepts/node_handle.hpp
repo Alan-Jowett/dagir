@@ -15,6 +15,8 @@ namespace dagir::concepts {
 /**
  * @brief Opaque, cheap handle to a node in a foreign DAG.
  *
+ * @tparam H Candidate handle type being tested.
+ *
  * A type models ::dagir::concepts::node_handle when:
  *  - It is std::copyable
  *  - It exposes stable_key() returning a std::uint64_t suitable for memoization

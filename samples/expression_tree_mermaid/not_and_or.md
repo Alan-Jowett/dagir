@@ -1,23 +1,23 @@
 ```mermaid
 graph TB
-  node1["OR"]
-  style node1 fill:lightcoral
-  node2["NOT"]
-  style node2 fill:yellow
-  node3["AND"]
-  style node3 fill:lightgreen
-  node4["x"]
-  style node4 fill:lightblue
-  node5["y"]
-  style node5 fill:lightblue
-  node6["NOT"]
-  style node6 fill:yellow
-  node7["z"]
-  style node7 fill:lightblue
-  node1 -- "L" --> node2
-  node1 -- "R" --> node3
-  node2 --> node4
-  node3 -- "L" --> node5
-  node3 -- "R" --> node6
-  node6 --> node7
+  node000["OR"]
+  style node000 fill:lightcoral
+  node001["NOT"]
+  style node001 fill:yellow
+  node002["AND"]
+  style node002 fill:lightgreen
+  node003["x"]
+  style node003 fill:lightblue
+  node004["y"]
+  style node004 fill:lightblue
+  node005["NOT"]
+  style node005 fill:yellow
+  node006["z"]
+  style node006 fill:lightblue
+  node000 -- "L" --> node001
+  node000 -- "R" --> node002
+  node001 --> node003
+  node002 -- "L" --> node004
+  node002 -- "R" --> node005
+  node005 --> node006
 ```

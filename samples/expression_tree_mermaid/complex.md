@@ -1,32 +1,32 @@
 ```mermaid
 graph TB
-  node1["OR"]
-  style node1 fill:lightcoral
-  node2["NOT"]
-  style node2 fill:yellow
-  node3["e"]
-  style node3 fill:lightblue
-  node4["AND"]
-  style node4 fill:lightgreen
-  node5["a"]
-  style node5 fill:lightblue
-  node6["OR"]
-  style node6 fill:lightcoral
-  node7["b"]
-  style node7 fill:lightblue
-  node8["XOR"]
-  style node8 fill:lightpink
-  node9["c"]
-  style node9 fill:lightblue
-  node10["d"]
-  style node10 fill:lightblue
-  node1 -- "L" --> node2
-  node1 -- "R" --> node3
-  node2 --> node4
-  node4 -- "L" --> node5
-  node4 -- "R" --> node6
-  node6 -- "L" --> node7
-  node6 -- "R" --> node8
-  node8 -- "L" --> node9
-  node8 -- "R" --> node10
+  node000["OR"]
+  style node000 fill:lightcoral
+  node001["NOT"]
+  style node001 fill:yellow
+  node002["e"]
+  style node002 fill:lightblue
+  node003["AND"]
+  style node003 fill:lightgreen
+  node004["a"]
+  style node004 fill:lightblue
+  node005["OR"]
+  style node005 fill:lightcoral
+  node006["b"]
+  style node006 fill:lightblue
+  node007["XOR"]
+  style node007 fill:lightpink
+  node008["c"]
+  style node008 fill:lightblue
+  node009["d"]
+  style node009 fill:lightblue
+  node000 -- "L" --> node001
+  node000 -- "R" --> node002
+  node001 --> node003
+  node003 -- "L" --> node004
+  node003 -- "R" --> node005
+  node005 -- "L" --> node006
+  node005 -- "R" --> node007
+  node007 -- "L" --> node008
+  node007 -- "R" --> node009
 ```

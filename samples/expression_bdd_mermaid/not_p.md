@@ -1,10 +1,10 @@
 ```mermaid
 graph TB
-  node2["1"]
-  style node2 fill:lightgray
-  node3["0"]
-  style node3 fill:lightgray
-  p("p")
-  p --> node2
-  p --> node3
+  node000("p")
+  node001["1"]
+  style node001 fill:lightgray
+  node002["0"]
+  style node002 fill:lightgray
+  node000 --> node001
+  node000 --> node002
 ```
