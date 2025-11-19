@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 DagIR Contributors
+#
 # 6-Queens Problem as Binary Decision Diagram (Extreme Stress Test)
 # Variables: q_r_c represents a queen at row r, column c (1-indexed)
 # This is the 6x6 board variant of the classic N-Queens problem
@@ -9,20 +12,68 @@
 # Warning: This will generate a very large BDD (thousands of nodes)
 
 # Row constraints: exactly one queen per row
-((q_1_1 XOR q_1_2) XOR (q_1_3 XOR q_1_4) XOR (q_1_5 XOR q_1_6)) AND
-((q_2_1 XOR q_2_2) XOR (q_2_3 XOR q_2_4) XOR (q_2_5 XOR q_2_6)) AND
-((q_3_1 XOR q_3_2) XOR (q_3_3 XOR q_3_4) XOR (q_3_5 XOR q_3_6)) AND
-((q_4_1 XOR q_4_2) XOR (q_4_3 XOR q_4_4) XOR (q_4_5 XOR q_4_6)) AND
-((q_5_1 XOR q_5_2) XOR (q_5_3 XOR q_5_4) XOR (q_5_5 XOR q_5_6)) AND
-((q_6_1 XOR q_6_2) XOR (q_6_3 XOR q_6_4) XOR (q_6_5 XOR q_6_6)) AND
+# Each row: at-least-one (OR) AND at-most-one (pairwise NOT (qi AND qj))
+( (q_1_1 OR q_1_2 OR q_1_3 OR q_1_4 OR q_1_5 OR q_1_6) AND
+	(NOT (q_1_1 AND q_1_2) AND NOT (q_1_1 AND q_1_3) AND NOT (q_1_1 AND q_1_4) AND NOT (q_1_1 AND q_1_5) AND NOT (q_1_1 AND q_1_6) AND
+	 NOT (q_1_2 AND q_1_3) AND NOT (q_1_2 AND q_1_4) AND NOT (q_1_2 AND q_1_5) AND NOT (q_1_2 AND q_1_6) AND NOT (q_1_3 AND q_1_4) AND NOT (q_1_3 AND q_1_5) AND NOT (q_1_3 AND q_1_6) AND
+	 NOT (q_1_4 AND q_1_5) AND NOT (q_1_4 AND q_1_6) AND NOT (q_1_5 AND q_1_6) ) AND
+
+	(q_2_1 OR q_2_2 OR q_2_3 OR q_2_4 OR q_2_5 OR q_2_6) AND
+	(NOT (q_2_1 AND q_2_2) AND NOT (q_2_1 AND q_2_3) AND NOT (q_2_1 AND q_2_4) AND NOT (q_2_1 AND q_2_5) AND NOT (q_2_1 AND q_2_6) AND
+	 NOT (q_2_2 AND q_2_3) AND NOT (q_2_2 AND q_2_4) AND NOT (q_2_2 AND q_2_5) AND NOT (q_2_2 AND q_2_6) AND NOT (q_2_3 AND q_2_4) AND NOT (q_2_3 AND q_2_5) AND NOT (q_2_3 AND q_2_6) AND
+	 NOT (q_2_4 AND q_2_5) AND NOT (q_2_4 AND q_2_6) AND NOT (q_2_5 AND q_2_6) ) AND
+
+	(q_3_1 OR q_3_2 OR q_3_3 OR q_3_4 OR q_3_5 OR q_3_6) AND
+	(NOT (q_3_1 AND q_3_2) AND NOT (q_3_1 AND q_3_3) AND NOT (q_3_1 AND q_3_4) AND NOT (q_3_1 AND q_3_5) AND NOT (q_3_1 AND q_3_6) AND
+	 NOT (q_3_2 AND q_3_3) AND NOT (q_3_2 AND q_3_4) AND NOT (q_3_2 AND q_3_5) AND NOT (q_3_2 AND q_3_6) AND NOT (q_3_3 AND q_3_4) AND NOT (q_3_3 AND q_3_5) AND NOT (q_3_3 AND q_3_6) AND
+	 NOT (q_3_4 AND q_3_5) AND NOT (q_3_4 AND q_3_6) AND NOT (q_3_5 AND q_3_6) ) AND
+
+	(q_4_1 OR q_4_2 OR q_4_3 OR q_4_4 OR q_4_5 OR q_4_6) AND
+	(NOT (q_4_1 AND q_4_2) AND NOT (q_4_1 AND q_4_3) AND NOT (q_4_1 AND q_4_4) AND NOT (q_4_1 AND q_4_5) AND NOT (q_4_1 AND q_4_6) AND
+	 NOT (q_4_2 AND q_4_3) AND NOT (q_4_2 AND q_4_4) AND NOT (q_4_2 AND q_4_5) AND NOT (q_4_2 AND q_4_6) AND NOT (q_4_3 AND q_4_4) AND NOT (q_4_3 AND q_4_5) AND NOT (q_4_3 AND q_4_6) AND
+	 NOT (q_4_4 AND q_4_5) AND NOT (q_4_4 AND q_4_6) AND NOT (q_4_5 AND q_4_6) ) AND
+
+	(q_5_1 OR q_5_2 OR q_5_3 OR q_5_4 OR q_5_5 OR q_5_6) AND
+	(NOT (q_5_1 AND q_5_2) AND NOT (q_5_1 AND q_5_3) AND NOT (q_5_1 AND q_5_4) AND NOT (q_5_1 AND q_5_5) AND NOT (q_5_1 AND q_5_6) AND
+	 NOT (q_5_2 AND q_5_3) AND NOT (q_5_2 AND q_5_4) AND NOT (q_5_2 AND q_5_5) AND NOT (q_5_2 AND q_5_6) AND NOT (q_5_3 AND q_5_4) AND NOT (q_5_3 AND q_5_5) AND NOT (q_5_3 AND q_5_6) AND
+	 NOT (q_5_4 AND q_5_5) AND NOT (q_5_4 AND q_5_6) AND NOT (q_5_5 AND q_5_6) ) AND
+
+	(q_6_1 OR q_6_2 OR q_6_3 OR q_6_4 OR q_6_5 OR q_6_6) AND
+	(NOT (q_6_1 AND q_6_2) AND NOT (q_6_1 AND q_6_3) AND NOT (q_6_1 AND q_6_4) AND NOT (q_6_1 AND q_6_5) AND NOT (q_6_1 AND q_6_6) AND
+	 NOT (q_6_2 AND q_6_3) AND NOT (q_6_2 AND q_6_4) AND NOT (q_6_2 AND q_6_5) AND NOT (q_6_2 AND q_6_6) AND NOT (q_6_3 AND q_6_4) AND NOT (q_6_3 AND q_6_5) AND NOT (q_6_3 AND q_6_6) AND
+	 NOT (q_6_4 AND q_6_5) AND NOT (q_6_4 AND q_6_6) AND NOT (q_6_5 AND q_6_6) )
 
 # Column constraints: exactly one queen per column
-((q_1_1 XOR q_2_1) XOR (q_3_1 XOR q_4_1) XOR (q_5_1 XOR q_6_1)) AND
-((q_1_2 XOR q_2_2) XOR (q_3_2 XOR q_4_2) XOR (q_5_2 XOR q_6_2)) AND
-((q_1_3 XOR q_2_3) XOR (q_3_3 XOR q_4_3) XOR (q_5_3 XOR q_6_3)) AND
-((q_1_4 XOR q_2_4) XOR (q_3_4 XOR q_4_4) XOR (q_5_4 XOR q_6_4)) AND
-((q_1_5 XOR q_2_5) XOR (q_3_5 XOR q_4_5) XOR (q_5_5 XOR q_6_5)) AND
-((q_1_6 XOR q_2_6) XOR (q_3_6 XOR q_4_6) XOR (q_5_6 XOR q_6_6)) AND
+# Each column: at-least-one (OR) AND at-most-one (pairwise NOT (qi AND qj))
+( (q_1_1 OR q_2_1 OR q_3_1 OR q_4_1 OR q_5_1 OR q_6_1) AND
+	(NOT (q_1_1 AND q_2_1) AND NOT (q_1_1 AND q_3_1) AND NOT (q_1_1 AND q_4_1) AND NOT (q_1_1 AND q_5_1) AND NOT (q_1_1 AND q_6_1) AND
+	 NOT (q_2_1 AND q_3_1) AND NOT (q_2_1 AND q_4_1) AND NOT (q_2_1 AND q_5_1) AND NOT (q_2_1 AND q_6_1) AND NOT (q_3_1 AND q_4_1) AND NOT (q_3_1 AND q_5_1) AND NOT (q_3_1 AND q_6_1) AND
+	 NOT (q_4_1 AND q_5_1) AND NOT (q_4_1 AND q_6_1) AND NOT (q_5_1 AND q_6_1) ) AND
+
+	(q_1_2 OR q_2_2 OR q_3_2 OR q_4_2 OR q_5_2 OR q_6_2) AND
+	(NOT (q_1_2 AND q_2_2) AND NOT (q_1_2 AND q_3_2) AND NOT (q_1_2 AND q_4_2) AND NOT (q_1_2 AND q_5_2) AND NOT (q_1_2 AND q_6_2) AND
+	 NOT (q_2_2 AND q_3_2) AND NOT (q_2_2 AND q_4_2) AND NOT (q_2_2 AND q_5_2) AND NOT (q_2_2 AND q_6_2) AND NOT (q_3_2 AND q_4_2) AND NOT (q_3_2 AND q_5_2) AND NOT (q_3_2 AND q_6_2) AND
+	 NOT (q_4_2 AND q_5_2) AND NOT (q_4_2 AND q_6_2) AND NOT (q_5_2 AND q_6_2) ) AND
+
+	(q_1_3 OR q_2_3 OR q_3_3 OR q_4_3 OR q_5_3 OR q_6_3) AND
+	(NOT (q_1_3 AND q_2_3) AND NOT (q_1_3 AND q_3_3) AND NOT (q_1_3 AND q_4_3) AND NOT (q_1_3 AND q_5_3) AND NOT (q_1_3 AND q_6_3) AND
+	 NOT (q_2_3 AND q_3_3) AND NOT (q_2_3 AND q_4_3) AND NOT (q_2_3 AND q_5_3) AND NOT (q_2_3 AND q_6_3) AND NOT (q_3_3 AND q_4_3) AND NOT (q_3_3 AND q_5_3) AND NOT (q_3_3 AND q_6_3) AND
+	 NOT (q_4_3 AND q_5_3) AND NOT (q_4_3 AND q_6_3) AND NOT (q_5_3 AND q_6_3) ) AND
+
+	(q_1_4 OR q_2_4 OR q_3_4 OR q_4_4 OR q_5_4 OR q_6_4) AND
+	(NOT (q_1_4 AND q_2_4) AND NOT (q_1_4 AND q_3_4) AND NOT (q_1_4 AND q_4_4) AND NOT (q_1_4 AND q_5_4) AND NOT (q_1_4 AND q_6_4) AND
+	 NOT (q_2_4 AND q_3_4) AND NOT (q_2_4 AND q_4_4) AND NOT (q_2_4 AND q_5_4) AND NOT (q_2_4 AND q_6_4) AND NOT (q_3_4 AND q_4_4) AND NOT (q_3_4 AND q_5_4) AND NOT (q_3_4 AND q_6_4) AND
+	 NOT (q_4_4 AND q_5_4) AND NOT (q_4_4 AND q_6_4) AND NOT (q_5_4 AND q_6_4) ) AND
+
+	(q_1_5 OR q_2_5 OR q_3_5 OR q_4_5 OR q_5_5 OR q_6_5) AND
+	(NOT (q_1_5 AND q_2_5) AND NOT (q_1_5 AND q_3_5) AND NOT (q_1_5 AND q_4_5) AND NOT (q_1_5 AND q_5_5) AND NOT (q_1_5 AND q_6_5) AND
+	 NOT (q_2_5 AND q_3_5) AND NOT (q_2_5 AND q_4_5) AND NOT (q_2_5 AND q_5_5) AND NOT (q_2_5 AND q_6_5) AND NOT (q_3_5 AND q_4_5) AND NOT (q_3_5 AND q_5_5) AND NOT (q_3_5 AND q_6_5) AND
+	 NOT (q_4_5 AND q_5_5) AND NOT (q_4_5 AND q_6_5) AND NOT (q_5_5 AND q_6_5) ) AND
+
+	(q_1_6 OR q_2_6 OR q_3_6 OR q_4_6 OR q_5_6 OR q_6_6) AND
+	(NOT (q_1_6 AND q_2_6) AND NOT (q_1_6 AND q_3_6) AND NOT (q_1_6 AND q_4_6) AND NOT (q_1_6 AND q_5_6) AND NOT (q_1_6 AND q_6_6) AND
+	 NOT (q_2_6 AND q_3_6) AND NOT (q_2_6 AND q_4_6) AND NOT (q_2_6 AND q_5_6) AND NOT (q_2_6 AND q_6_6) AND NOT (q_3_6 AND q_4_6) AND NOT (q_3_6 AND q_5_6) AND NOT (q_3_6 AND q_6_6) AND
+	 NOT (q_4_6 AND q_5_6) AND NOT (q_4_6 AND q_6_6) AND NOT (q_5_6 AND q_6_6) )
 
 # Main diagonal constraints: at most one queen per main diagonal
 (NOT (q_1_1 AND q_2_2) AND NOT (q_1_1 AND q_3_3) AND NOT (q_1_1 AND q_4_4) AND NOT (q_1_1 AND q_5_5) AND NOT (q_1_1 AND q_6_6) AND
