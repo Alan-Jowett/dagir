@@ -251,7 +251,7 @@ jobs:
           --suppress=unmatchedSuppression \
           -I include/ \
           --template='[{file}:{line}]: ({severity}) {message}' \
-          src/ 2>&1 | grep -v '(information)' || {
+          include/dagir/ 2>&1 | grep -v '(information)' || {
             echo "❌ cppcheck found issues in the code"
             echo "ℹ️  Run 'cppcheck --enable=warning,style,performance,portability --std=c++20 -I include/ src/' locally to see details"
             exit 1
