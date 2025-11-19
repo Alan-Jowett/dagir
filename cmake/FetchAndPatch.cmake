@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# SPDX-FileCopyrightText: Copyright (c) 2025 Alan Jowett
+# SPDX-FileCopyrightText: Copyright (c) 2025 DagIR Contributors
 
 # Set policy to allow FetchContent_Populate until we migrate to modern approach
 if(POLICY CMP0169)

@@ -52,6 +52,13 @@ namespace dagir {
  * type; for adapters that do not, `noop_guard` provides a trivial replacement.
  */
 struct noop_guard {
+  /**
+   * @brief Construct a noop_guard.
+   *
+   * This type intentionally does nothing; it exists to satisfy APIs that
+   * expect a scoped guard object from `start_guard(handle)` when the
+   * underlying adapter does not require pinning.
+   */
   noop_guard() = default;
   ~noop_guard() = default;
   noop_guard(const noop_guard&) = delete;
@@ -81,7 +88,18 @@ consteval bool models_read_only_view() {
  */
 template <concepts::node_handle H>
 struct basic_edge {
+  /**
+   * @brief Child handle stored by this edge wrapper.
+   *
+   * `basic_edge` is a minimal helper that satisfies `edge_ref` by
+   * providing a `target()` accessor returning this handle.
+   */
   H to;
+
+  /**
+   * @brief Return the handle stored in this edge wrapper.
+   * @return const H& reference to the child handle
+   */
   constexpr const H& target() const noexcept { return to; }
 };
 

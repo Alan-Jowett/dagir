@@ -1,0 +1,22 @@
+digraph expression {
+  rankdir=TB;
+  "node000" [label = "OR", fillcolor = "lightcoral", name = "node000", style = "filled"];
+  "node001" [label = "NOT", fillcolor = "yellow", name = "node001", style = "filled"];
+  "node002" [label = "e", fillcolor = "lightblue", name = "node002", style = "filled"];
+  "node003" [label = "AND", fillcolor = "lightgreen", name = "node003", style = "filled"];
+  "node004" [label = "a", fillcolor = "lightblue", name = "node004", style = "filled"];
+  "node005" [label = "OR", fillcolor = "lightcoral", name = "node005", style = "filled"];
+  "node006" [label = "b", fillcolor = "lightblue", name = "node006", style = "filled"];
+  "node007" [label = "XOR", fillcolor = "lightpink", name = "node007", style = "filled"];
+  "node008" [label = "c", fillcolor = "lightblue", name = "node008", style = "filled"];
+  "node009" [label = "d", fillcolor = "lightblue", name = "node009", style = "filled"];
+  "node000" -> "node001" [label = "L"];
+  "node000" -> "node002" [label = "R"];
+  "node001" -> "node003";
+  "node003" -> "node004" [label = "L"];
+  "node003" -> "node005" [label = "R"];
+  "node005" -> "node006" [label = "L"];
+  "node005" -> "node007" [label = "R"];
+  "node007" -> "node008" [label = "L"];
+  "node007" -> "node009" [label = "R"];
+}

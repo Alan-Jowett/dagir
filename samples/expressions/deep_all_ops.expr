@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Alan Jowett
+# Copyright (c) 2025 DagIR Contributors
 #
 # Deep expression exercising AND, OR, NOT, and XOR with nested grouping
 # One expression per file; variables use varied names to increase coverage

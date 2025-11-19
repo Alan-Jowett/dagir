@@ -26,6 +26,12 @@ if ($All) {
   $all_files = ($staged + $modified) | Where-Object { $_ -ne '' } | Sort-Object -Unique
 }
 
+# Exclude generated expression outputs (created by scripts/process_expressions.ps1)
+$all_files = $all_files | Where-Object {
+  $p = $_ -replace '\\','/'
+  -not ($p -match '^(samples/expression_tree_|samples/expression_bdd_)')
+}
+
 if (-not $all_files -or (@($all_files)).Count -eq 0) {
   if ($All) { Write-Output "No files found in repository." } else { Write-Output "No changes to check - OK" }
   exit 0

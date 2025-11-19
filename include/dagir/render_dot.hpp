@@ -115,12 +115,19 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     os << "  rankdir=TB;\n";  // default top-to-bottom layout
   }
 
-  // First, emit global graph attributes (map known keys)
-  for (const auto& kv : g.global_attrs) {
-    if (kv.first == std::string(ir_attrs::k_graph_label)) {
-      os << "  label=\"" << render_dot_detail::escape_dot(kv.second) << "\";\n";
-    } else {
-      os << "  " << kv.first << "=\"" << render_dot_detail::escape_dot(kv.second) << "\";\n";
+  // First, emit global graph attributes (map known keys) in lexicographic order
+  if (!g.global_attrs.empty()) {
+    std::vector<std::string> gkeys;
+    gkeys.reserve(g.global_attrs.size());
+    for (const auto& kv : g.global_attrs) gkeys.push_back(kv.first);
+    std::sort(gkeys.begin(), gkeys.end());
+    for (const auto& k : gkeys) {
+      const auto& v = g.global_attrs.at(k);
+      if (k == std::string(ir_attrs::k_graph_label)) {
+        os << "  label=\"" << render_dot_detail::escape_dot(v) << "\";\n";
+      } else {
+        os << "  " << k << "=\"" << render_dot_detail::escape_dot(v) << "\";\n";
+      }
     }
   }
 
@@ -158,12 +165,19 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
       local[std::string(ir_attrs::k_style)] = "filled";
     }
 
-    // Emit node using the possibly-updated local map.
+    // Emit node using the possibly-updated local map. Emit attributes in
+    // lexicographic order for deterministic output. Label is emitted first.
     os << "  " << node_name << " [";
     os << "label = \"" << render_dot_detail::escape_dot(label) << "\"";
-    for (const auto& kv : local) {
-      if (kv.first == std::string(ir_attrs::k_label)) continue;
-      os << ", " << kv.first << " = \"" << render_dot_detail::escape_dot(kv.second) << "\"";
+    if (!local.empty()) {
+      std::vector<std::string> keys;
+      keys.reserve(local.size());
+      for (const auto& kv : local) keys.push_back(kv.first);
+      std::sort(keys.begin(), keys.end());
+      for (const auto& k : keys) {
+        if (k == std::string(ir_attrs::k_label)) continue;
+        os << ", " << k << " = \"" << render_dot_detail::escape_dot(local.at(k)) << "\"";
+      }
     }
     os << "];\n";
   }
@@ -184,11 +198,17 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
            << "\"";
         first = false;
       }
-      for (const auto& kv : amap) {
-        if (kv.first == std::string(ir_attrs::k_label)) continue;
-        if (!first) os << ", ";
-        first = false;
-        os << kv.first << " = \"" << render_dot_detail::escape_dot(kv.second) << "\"";
+      if (!amap.empty()) {
+        std::vector<std::string> keys;
+        keys.reserve(amap.size());
+        for (const auto& kv : amap) keys.push_back(kv.first);
+        std::sort(keys.begin(), keys.end());
+        for (const auto& k : keys) {
+          if (k == std::string(ir_attrs::k_label)) continue;
+          if (!first) os << ", ";
+          first = false;
+          os << k << " = \"" << render_dot_detail::escape_dot(amap.at(k)) << "\"";
+        }
       }
       os << "]";
     }

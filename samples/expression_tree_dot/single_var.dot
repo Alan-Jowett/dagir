@@ -1,0 +1,4 @@
+digraph expression {
+  rankdir=TB;
+  "node000" [label = "z", fillcolor = "lightblue", name = "node000", style = "filled"];
+}

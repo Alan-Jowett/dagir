@@ -15,9 +15,9 @@ Existing graph libraries assume you own the graph. DagIR is different:
 ---
 
 ## ✅ Features
- **Concepts**: `external_dag_view`, `node_handle`, `edge_ref`.
+ **Concepts**: `read_only_dag_view`, `node_handle`, `edge_ref`.
    - `kahn_topological_order(view)` – Kahn’s algorithm.
-  - `postorder_fold(view, root, combine)` – N-ary fold with memoization.
+  - `postorder_fold(view, combiner)` – N-ary fold with memoization (returns map from node `stable_key()` to result).
    - `ir_graph` with nodes, edges, attributes.
 - **Renderers**:
   - DOT (Graphviz)
@@ -60,8 +60,8 @@ Add `include/dagir` to your include path.
 ## 🛠 Roadmap
 - [x] Core concepts and algorithms
 - [x] DOT renderer
-- [ ] Mermaid renderer
-- [ ] JSON renderer
+- [x] Mermaid renderer
+- [x] JSON renderer
 - [ ] Parallel traversal
 - [ ] Layout integration (Graphviz or drag)
 

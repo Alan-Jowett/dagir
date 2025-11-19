@@ -20,6 +20,7 @@
 #include <dagir/concepts/node_attributor.hpp>
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
+#include <dagir/node_id.hpp>
 
 #include "cudd_read_only_dag_view.hpp"
 
@@ -28,6 +29,8 @@ namespace utility {
 
 struct cudd_node_attributor {
   using view_t = cudd_read_only_dag_view;
+
+  // Use shared helper: dagir::utility::make_node_id(key)
 
   dagir::ir_attr_map operator()(const typename cudd_read_only_dag_view::handle& h) const {
     dagir::ir_attr_map out;
@@ -63,9 +66,11 @@ struct cudd_node_attributor {
       if (idx >= 0 && static_cast<size_t>(idx) < names->size()) {
         const std::string nm = (*names)[static_cast<size_t>(idx)];
         out[std::string{dagir::ir_attrs::k_label}] = nm;
-        out.emplace(std::string{"name"}, nm);
       }
     }
+
+    // Assign unique node id attribute based on stable key
+    out[std::string{"name"}] = dagir::utility::make_node_id(h.stable_key());
 
     return out;
   }
