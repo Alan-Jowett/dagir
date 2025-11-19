@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: MIT
   Copyright (c) 2025 DagIR contributors -->
+[![CI/CD Pipeline](https://github.com/Alan-Jowett/dagir/actions/workflows/main.yml/badge.svg)](https://github.com/Alan-Jowett/dagir/actions/workflows/main.yml)
+[![Code Coverage](https://github.com/Alan-Jowett/dagir/actions/workflows/coverage.yml/badge.svg)](https://github.com/Alan-Jowett/dagir/actions/workflows/coverage.yml)
+[![Coverage Status](https://coveralls.io/repos/github/Alan-Jowett/dagir/badge.svg?branch=main)](https://coveralls.io/github/Alan-Jowett/dagir?branch=main)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 # DagIR
 **A header-only C++20 library for external DAG traversal, IR generation, and multi-backend rendering.**
 
