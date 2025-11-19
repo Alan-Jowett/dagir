@@ -5,6 +5,11 @@
   "homepage": "https://github.com/Alan-Jowett/dagir",
   "license": "MIT",
   "default-features": [],
-  "features": {},
+  "features": {
+    "samples": {
+      "description": "Install example/sample programs",
+      "description-url": "https://github.com/Alan-Jowett/dagir/tree/main/samples"
+    }
+  },
   "dependencies": []
 }

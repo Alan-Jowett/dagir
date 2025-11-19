@@ -36,6 +36,21 @@ endif()
 file(WRITE "${CURRENT_PACKAGES_DIR}/lib/cmake/DagIR/DagIRConfig.cmake"
   "include(\"${CMAKE_CURRENT_LIST_DIR}/DagIRTargets.cmake\")\n"
 )
+
+# Optionally install samples when the "samples" feature is enabled.
+if(VCPKG_FEATURE_FLAGS)
+  list(FIND VCPKG_FEATURE_FLAGS "samples" _has_samples)
+else()
+  # Older vcpkg versions expose selected features via the FEATURES variable
+  if(DEFINED FEATURES)
+    list(FIND FEATURES "samples" _has_samples)
+  endif()
+endif()
+
+if(NOT _has_samples EQUAL -1)
+  message(STATUS "vcpkg: installing samples because 'samples' feature is enabled")
+  file(COPY "${SOURCE_PATH}/samples" DESTINATION "${CURRENT_PACKAGES_DIR}/share/dagir/")
+endif()
 include(vcpkg_common_functions)
 
 vcpkg_from_sourceforge(
