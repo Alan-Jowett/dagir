@@ -1,6 +1,7 @@
 include(vcpkg_common_functions)
 
-# Fetch source from GitHub. Update REF to a released tag when publishing.
+# Fetch source from GitHub. Update REF and SHA512 to the desired release tag before
+# submitting the port upstream into vcpkg.
 vcpkg_from_github(
   OUT_SOURCE_PATH SOURCE_PATH
   REPO Alan-Jowett/dagir
@@ -8,7 +9,8 @@ vcpkg_from_github(
   SHA512 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 )
 
-# Configure CMake to install headers only; disable tests/samples so the build is minimal.
+# Configure and install. DagIR is header-only so we disable tests and samples
+# to keep the build minimal inside vcpkg.
 vcpkg_configure_cmake(
   SOURCE_PATH ${SOURCE_PATH}
   PREFER_NINJA
@@ -21,12 +23,10 @@ vcpkg_configure_cmake(
 
 vcpkg_install_cmake()
 
-# Ensure package config is present so consumers can `find_package(DagIR CONFIG)`
+# Provide a minimal CMake package config if upstream did not install one.
 set(_targets_file "${CURRENT_PACKAGES_DIR}/lib/cmake/DagIR/DagIRTargets.cmake")
 if(NOT EXISTS "${_targets_file}")
-  # Create a minimal targets file that defines an INTERFACE library
-  file(WRITE "${CURRENT_PACKAGES_DIR}/lib/cmake/DagIR/DagIRTargets.cmake"
-    "add_library(dagir::dagir INTERFACE)\n"
+  file(WRITE "${_targets_file}"
     "add_library(dagir INTERFACE)\n"
     "target_include_directories(dagir INTERFACE \"$<INSTALL_INTERFACE:include>\")\n"
     "add_library(dagir::dagir ALIAS dagir)\n"
