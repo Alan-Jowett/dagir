@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: MIT
+# © DagIR Contributors. All rights reserved.
+# This GitHub Actions workflow builds DagIR with lcov code coverage enabled,
+# runs the unit tests, collects coverage data, and uploads it to Codecov.
 name: Coverage (lcov)
 
 on:
