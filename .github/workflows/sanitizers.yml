@@ -1,4 +1,3 @@
-```yaml
 # SPDX-License-Identifier: MIT
 # © DagIR Contributors. All rights reserved.
 # This GitHub Actions workflow builds DagIR with AddressSanitizer (ASAN) and
@@ -47,17 +46,15 @@ jobs:
       - name: Build
         run: |
           cd build
-          cmake --build . -- -j
+          cmake --build . --
 
       - name: Run tests
         run: |
           cd build
-          ctest --output-on-failure -j || true
+          ctest --output-on-failure || true
 
       - name: Fail if sanitizer found problems
         if: always()
         run: |
           # ctest above may succeed even when sanitizers print errors; rely on test logs for now
           echo "If sanitizers reported issues the job should be examined manually."
-
-```

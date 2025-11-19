@@ -33,12 +33,12 @@ jobs:
       - name: Build
         run: |
           cd build
-          cmake --build . -- -j
+          cmake --build . -- 
 
       - name: Run tests
         run: |
           cd build
-          ctest --output-on-failure -j || true
+          ctest --output-on-failure || true
 
       - name: Generate lcov
         run: |
