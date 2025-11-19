@@ -26,7 +26,32 @@ Existing graph libraries assume you own the graph. DagIR is different:
 | Boost.Graph | Owning containers | General graph algorithms & data structures | None (use external tools)
 | Lemon | Owning containers | Network/graph algorithms, high performance | None
 
----
+```mermaid
+flowchart TD
+  subgraph External
+    T[TeDDy]
+    C[CUDD]
+    A[Expression AST]
+  end
+
+  T --> TA[TeDDy Adapter]
+  C --> CA[CUDD Adapter]
+  A --> AA[AST Adapter]
+
+  TA --> IR[DagIR IR]
+  CA --> IR
+  AA --> IR
+
+  subgraph Renderers
+    DOT[DOT]
+    MER[Mermaid]
+    JSON[JSON]
+  end
+
+  IR --> DOT
+  IR --> MER
+  IR --> JSON
+```
 
 ## ✅ Features
  **Concepts**: `read_only_dag_view`, `node_handle`, `edge_ref`.
