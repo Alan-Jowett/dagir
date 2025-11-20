@@ -14,8 +14,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
+#include <dagir/sugiyama.hpp>
 #include <format>
 #include <limits>
 #include <ostream>
@@ -75,7 +77,7 @@ inline void render_svg(std::ostream& os, const ir_graph& g, std::string_view tit
   const double node_w = 70.0;  // width -> rx ~30
   const double node_h = 36.0;  // height -> ry ~18
   const double h_gap = 24.0;
-  const double v_gap = 28.0;
+  const double v_gap = 28.0 * 1.75;  // increase vertical gap by ~75%
   const double margin = 8.0;
 
   const size_t N = g.nodes.size();
@@ -227,32 +229,8 @@ inline void render_svg(std::ostream& os, const ir_graph& g, std::string_view tit
     }
   }
 
-  // Now that svg_w may have been updated, emit the SVG header, title and defs.
-  os << std::format(
-      "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{}\" height=\"{}\" viewBox=\"0 0 {} "
-      "{}\">\n",
-      static_cast<int>(std::ceil(svg_w)), static_cast<int>(std::ceil(svg_h)),
-      static_cast<int>(std::ceil(svg_w)), static_cast<int>(std::ceil(svg_h)));
-
-  // Title
-  if (!g.global_attrs.empty()) {
-    auto it = g.global_attrs.find(std::string(ir_attrs::k_graph_label));
-    if (it != g.global_attrs.end()) {
-      os << "  <text x=\"" << (svg_w / 2.0) << "\" y=\"16\" text-anchor=\"middle\">"
-         << render_svg_detail::escape_xml(it->second) << "</text>\n";
-    }
-  } else {
-    os << "  <text x=\"" << (svg_w / 2.0) << "\" y=\"16\" text-anchor=\"middle\">"
-       << render_svg_detail::escape_xml(title) << "</text>\n";
-  }
-
-  // arrow marker
-  os << "  <defs>\n";
-  os << "    <marker id=\"dagir-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"10\" "
-        "refY=\"5\" orient=\"auto\">\n";
-  os << "      <path d=\"M0,0 L10,5 L0,10 z\" fill=\"black\" />\n";
-  os << "    </marker>\n";
-  os << "  </defs>\n";
+  // SVG header, title and defs will be emitted after layout so the final
+  // `svg_w`/`svg_h` values are reflected in the output viewBox.
 
   // Build adjacency for edges
   std::vector<std::pair<std::uint64_t, std::uint64_t>> edges;
@@ -520,8 +498,154 @@ inline void render_svg(std::ostream& os, const ir_graph& g, std::string_view tit
   }
 
   std::unordered_map<std::uint64_t, std::pair<double, double>> centers = pos;
+  // Allow runtime toggle between classic renderer layout and the new
+  // Sugiyama layout. Set environment variable `DAGIR_SVG_LAYOUT=classic`
+  // to keep the previous behavior.
+  const char* dagir_svg_layout_env = std::getenv("DAGIR_SVG_LAYOUT");
+  bool use_sugiyama = true;
+  if (dagir_svg_layout_env && std::string(dagir_svg_layout_env) == "classic") use_sugiyama = false;
+
+  // Use minimal in-repo Sugiyama layout for node placement when enabled.
+  if (use_sugiyama) {
+    dagir::sugiyama_options opts;
+    opts.node_dist = h_gap;  // reuse renderer constants
+    opts.layer_dist = v_gap;
+    auto coords = dagir::sugiyama_layout_compute(g, opts);
+    // coords.x/y are indexed by node index (g.nodes order).
+    // Remap sugiyama coordinates into the renderer's available drawing area.
+    // This also expands `svg_w` when necessary to ensure a minimum horizontal
+    // spacing between node centers in the same rank so nodes don't overlap.
+    double sug_left_center = margin + half_node_w;
+    double sug_right_center = margin + half_node_w + available_w;
+
+    // Compute per-rank counts to decide required horizontal span
+    std::unordered_map<int, std::size_t> per_rank_count_sug;
+    auto rank_index_of_index = [&](size_t idx) -> int {
+      int r = -1;
+      if (idx < g.nodes.size()) {
+        const auto& amap = g.nodes[idx].attributes;
+        try {
+          r = std::stoi(
+              render_svg_detail::lookup_or(amap, std::string_view(ir_attrs::k_rank), "-1"));
+        } catch (...) {
+          r = -1;
+        }
+      }
+      if (r < 0) return levels - 1;
+      if (!has_reachable) return 0;
+      return r - min_rank;
+    };
+    for (size_t i = 0; i < coords.x.size() && i < g.nodes.size(); ++i) {
+      int ridx = rank_index_of_index(i);
+      per_rank_count_sug[ridx] += 1;
+    }
+    const std::size_t max_per_rank_sug =
+        std::accumulate(per_rank_count_sug.begin(), per_rank_count_sug.end(), std::size_t{0},
+                        [](std::size_t acc, const auto& kv) { return std::max(acc, kv.second); });
+
+    if (max_per_rank_sug > 1) {
+      const double required_span = min_center_step * static_cast<double>(max_per_rank_sug - 1);
+      const double current_span = sug_right_center - sug_left_center;
+      if (required_span > current_span) {
+        const double extra = required_span - current_span;
+        svg_w += extra;
+        // recompute drawing extents
+        area_w = svg_w - 2.0 * margin;
+        available_w = std::max(1.0, area_w - 2.0 * half_node_w);
+        sug_right_center = margin + half_node_w + available_w;
+      }
+    }
+
+    // Per-rank placement: respect Sugiyama ordering but place nodes in
+    // centered blocks per rank to enforce minimum spacing without
+    // expanding too much horizontally. Before final placement perform a
+    // top-down pass that orders nodes in each rank by the average X of
+    // their parents so children are centered under their parents.
+    // Anchor Y coordinates to the renderer's `rank_y` to increase
+    // vertical separation between ranks.
+    std::unordered_map<int, std::vector<std::pair<double, size_t>>> sug_by_rank;
+    for (size_t i = 0; i < coords.x.size() && i < g.nodes.size(); ++i) {
+      int ridx = rank_index_of_index(i);
+      sug_by_rank[ridx].emplace_back(coords.x[i], i);
+    }
+
+    // Compute adjacency map from node index to parent indices for averaging
+    std::unordered_map<size_t, std::vector<size_t>> parents_of_index;
+    std::unordered_map<std::uint64_t, size_t> id_to_index;
+    for (size_t i = 0; i < g.nodes.size(); ++i) id_to_index[g.nodes[i].id] = i;
+    for (const auto& e : g.edges) {
+      auto it_s = id_to_index.find(e.source);
+      auto it_t = id_to_index.find(e.target);
+      if (it_s != id_to_index.end() && it_t != id_to_index.end()) {
+        parents_of_index[it_t->second].push_back(it_s->second);
+      }
+    }
+
+    // (Removed top-down child-centering pass)
+
+    const double min_step = node_w * (4.0 / 3.0);
+    for (auto& kv : sug_by_rank) {
+      int ridx = kv.first;
+      auto& vec = kv.second;
+      if (vec.empty()) continue;
+      // sort by sugiyama X to preserve relative ordering
+      std::sort(vec.begin(), vec.end(),
+                [](const auto& a, const auto& b) { return a.first < b.first; });
+      const size_t m = vec.size();
+      double span = sug_right_center - sug_left_center;
+      double step = (m <= 1) ? 0.0 : (span / static_cast<double>(m - 1));
+      bool enforce_min = (span >= min_step * static_cast<double>(m - 1));
+      double start;
+      if (m == 1) {
+        start = sug_left_center + span * 0.5;
+        centers[g.nodes[vec[0].second].id] = {start, rank_y[ridx]};
+      } else {
+        if (enforce_min) {
+          step = min_step;
+          double block_width = step * static_cast<double>(m - 1);
+          start = sug_left_center + (span - block_width) / 2.0;
+        } else {
+          // distribute evenly across span
+          start = sug_left_center;
+        }
+        for (size_t i = 0; i < m; ++i) {
+          double nx = start + step * static_cast<double>(i);
+          centers[g.nodes[vec[i].second].id] = {nx, rank_y[ridx]};
+        }
+      }
+    }
+  }
   std::unordered_map<std::uint64_t, std::string> elem_id;
   for (const auto& n : g.nodes) elem_id[n.id] = std::format("dagir-{}", n.id);
+
+  // Now that layout is finalized (centers computed and svg_w/svg_h possibly
+  // adjusted), emit the SVG header, title and defs so the viewBox matches.
+  os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  os << std::format(
+      "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{}\" height=\"{}\" viewBox=\"0 0 {} "
+      "{}\">\n",
+      static_cast<int>(std::ceil(svg_w)), static_cast<int>(std::ceil(svg_h)),
+      static_cast<int>(std::ceil(svg_w)), static_cast<int>(std::ceil(svg_h)));
+
+  // Title
+  if (!g.global_attrs.empty()) {
+    auto it = g.global_attrs.find(std::string(ir_attrs::k_graph_label));
+    if (it != g.global_attrs.end()) {
+      os << "  <text x=\"" << (svg_w / 2.0) << "\" y=\"16\" text-anchor=\"middle\">"
+         << render_svg_detail::escape_xml(it->second) << "</text>\n";
+    }
+  } else {
+    os << "  <text x=\"" << (svg_w / 2.0) << "\" y=\"16\" text-anchor=\"middle\">"
+       << render_svg_detail::escape_xml(title) << "</text>\n";
+  }
+
+  // arrow marker
+  os << "  <defs>\n";
+  os << "    <marker id=\"dagir-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"10\" "
+        "refY=\"5\" orient=\"auto\">\n";
+  os << "      <path d=\"M0,0 L10,5 L0,10 z\" fill=\"black\" />\n";
+  os << "    </marker>\n";
+  os << "  </defs>\n";
 
   // Render edges first so nodes appear in front
   for (const auto& e : g.edges) {
@@ -549,10 +673,56 @@ inline void render_svg(std::ostream& os, const ir_graph& g, std::string_view tit
     const double ny = dy / len;
     const double half_x = node_w / 2.0;
     const double half_y = node_h / 2.0;
-    const double denom_nx = std::abs(nx) < 1e-9 ? 1e9 : std::abs(nx);
-    const double denom_ny = std::abs(ny) < 1e-9 ? 1e9 : std::abs(ny);
-    const double t_source = std::min(half_x / denom_nx, half_y / denom_ny);
-    const double t_target = std::min(half_x / denom_nx, half_y / denom_ny);
+    auto compute_t_rect = [&](double nx, double ny, double hx, double hy) {
+      const double denom_nx = std::abs(nx) < 1e-9 ? 1e9 : std::abs(nx);
+      const double denom_ny = std::abs(ny) < 1e-9 ? 1e9 : std::abs(ny);
+      return std::min(hx / denom_nx, hy / denom_ny);
+    };
+    auto compute_t_ellipse = [&](double nx, double ny, double rx, double ry) {
+      // Solve (rx*nx*t)^2 + (ry*ny*t)^2 = 1  => t = 1 / sqrt((rx*nx)^2 + (ry*ny)^2)
+      const double a = (rx * nx);
+      const double b = (ry * ny);
+      const double denom = std::sqrt(a * a + b * b);
+      return (denom < 1e-12) ? 0.0 : (1.0 / denom);
+    };
+
+    // determine shapes for source and target
+    const auto& s_attrs =
+        g.nodes
+            .at(std::distance(g.nodes.begin(),
+                              std::find_if(g.nodes.begin(), g.nodes.end(),
+                                           [&](const auto& n) { return n.id == e.source; })))
+            .attributes;
+    const auto& t_attrs =
+        g.nodes
+            .at(std::distance(g.nodes.begin(),
+                              std::find_if(g.nodes.begin(), g.nodes.end(),
+                                           [&](const auto& n) { return n.id == e.target; })))
+            .attributes;
+    const std::string s_shape =
+        render_svg_detail::lookup_or(s_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
+    const std::string t_shape =
+        render_svg_detail::lookup_or(t_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
+
+    double t_source = 0.0;
+    double t_target = 0.0;
+    if (s_shape == "circle") {
+      const double r = std::max(node_w, node_h) / 2.0;
+      t_source = compute_t_ellipse(nx, ny, r, r);
+    } else if (s_shape == "ellipse") {
+      t_source = compute_t_ellipse(nx, ny, half_x, half_y);
+    } else {
+      // rectangle-like shapes
+      t_source = compute_t_rect(nx, ny, half_x, half_y);
+    }
+    if (t_shape == "circle") {
+      const double r = std::max(node_w, node_h) / 2.0;
+      t_target = compute_t_ellipse(-nx, -ny, r, r);
+    } else if (t_shape == "ellipse") {
+      t_target = compute_t_ellipse(-nx, -ny, half_x, half_y);
+    } else {
+      t_target = compute_t_rect(-nx, -ny, half_x, half_y);
+    }
     const double x1 = sx + nx * t_source;
     const double y1 = sy + ny * t_source;
     const double x2 = tx - nx * t_target;
