@@ -5,6 +5,7 @@
  * Usage: expression2bdd <expr_file> <library> <backend>
  *   library: teddy
  *   backend: dot | json | mermaid
+ *   backend: svg
  *
  * SPDX-License-Identifier: MIT
  */
@@ -14,6 +15,7 @@
 #include <dagir/render_dot.hpp>
 #include <dagir/render_json.hpp>
 #include <dagir/render_mermaid.hpp>
+#include <dagir/render_svg.hpp>
 #include <iostream>
 #include <set>
 #include <span>
@@ -147,6 +149,8 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
     std::cout << "```mermaid\n";
     dagir::render_mermaid(std::cout, ir, "bdd");
     std::cout << "```\n";
+  } else if (backend == "svg") {
+    dagir::render_svg(std::cout, ir, "bdd");
   } else {
     std::cerr << "Unknown backend: " << backend << "\n";
     throw std::runtime_error("Unknown backend");
