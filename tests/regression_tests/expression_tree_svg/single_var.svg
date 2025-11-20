@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="156" height="118" viewBox="0 0 156 118">
+  <text x="78" y="16" text-anchor="middle">expression</text>
+  <defs>
+    <marker id="dagir-arrow" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="black" />
+    </marker>
+  </defs>
+  <g id="dagir-2179678500224">
+    <ellipse cx="112.0" cy="71.0" rx="35.0" ry="18.0" fill="lightblue" stroke="#000000" stroke-width="1" />
+    <text x="112.0" y="71.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">z</text>
+  </g>
+</svg>

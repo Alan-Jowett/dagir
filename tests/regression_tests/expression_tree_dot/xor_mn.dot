@@ -1,8 +1,8 @@
 digraph expression {
   rankdir=TB;
-  "node000" [label = "XOR", fillcolor = "lightpink", name = "node000", style = "filled"];
-  "node001" [label = "m", fillcolor = "lightblue", name = "node001", style = "filled"];
-  "node002" [label = "n", fillcolor = "lightblue", name = "node002", style = "filled"];
+  "node000" [label = "XOR", fillcolor = "lightpink", name = "node000", rank = "0", style = "filled"];
+  "node001" [label = "m", fillcolor = "lightblue", name = "node001", rank = "1", style = "filled"];
+  "node002" [label = "n", fillcolor = "lightblue", name = "node002", rank = "1", style = "filled"];
   "node000" -> "node001" [label = "L"];
   "node000" -> "node002" [label = "R"];
 }

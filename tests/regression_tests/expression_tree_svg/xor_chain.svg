@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="344" height="268" viewBox="0 0 344 268">
+  <text x="172" y="16" text-anchor="middle">expression</text>
+  <defs>
+    <marker id="dagir-arrow" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="black" />
+    </marker>
+  </defs>
+  <line x1="266.0" y1="59.6" x2="160.3" y2="88.4" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <text x="213.2" y="68.0" text-anchor="middle" font-size="10">L</text>
+  <line x1="270.1" y1="68.0" x2="249.5" y2="80.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <text x="259.8" y="68.0" text-anchor="middle" font-size="10">R</text>
+  <line x1="125.3" y1="98.0" x2="125.3" y2="146.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <text x="125.3" y="116.0" text-anchor="middle" font-size="10">L</text>
+  <line x1="160.3" y1="116.0" x2="183.7" y2="128.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <text x="172.0" y="116.0" text-anchor="middle" font-size="10">R</text>
+  <line x1="125.3" y1="146.0" x2="125.3" y2="194.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <text x="125.3" y="164.0" text-anchor="middle" font-size="10">L</text>
+  <line x1="160.3" y1="164.0" x2="183.7" y2="176.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <text x="172.0" y="164.0" text-anchor="middle" font-size="10">R</text>
+  <line x1="160.3" y1="212.0" x2="183.7" y2="224.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <text x="172.0" y="212.0" text-anchor="middle" font-size="10">L</text>
+  <line x1="125.3" y1="194.0" x2="125.3" y2="242.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <text x="125.3" y="212.0" text-anchor="middle" font-size="10">R</text>
+  <g id="dagir-2821245663632">
+    <ellipse cx="301.0" cy="50.0" rx="35.0" ry="18.0" fill="lightpink" stroke="#000000" stroke-width="1" />
+    <text x="301.0" y="50.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">XOR</text>
+  </g>
+  <g id="dagir-2821245662192">
+    <ellipse cx="125.3" cy="98.0" rx="35.0" ry="18.0" fill="lightpink" stroke="#000000" stroke-width="1" />
+    <text x="125.3" y="98.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">XOR</text>
+  </g>
+  <g id="dagir-2821245662720">
+    <ellipse cx="218.7" cy="98.0" rx="35.0" ry="18.0" fill="lightblue" stroke="#000000" stroke-width="1" />
+    <text x="218.7" y="98.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">e</text>
+  </g>
+  <g id="dagir-2821245662672">
+    <ellipse cx="125.3" cy="146.0" rx="35.0" ry="18.0" fill="lightpink" stroke="#000000" stroke-width="1" />
+    <text x="125.3" y="146.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">XOR</text>
+  </g>
+  <g id="dagir-2821245662288">
+    <ellipse cx="218.7" cy="146.0" rx="35.0" ry="18.0" fill="lightblue" stroke="#000000" stroke-width="1" />
+    <text x="218.7" y="146.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">d</text>
+  </g>
+  <g id="dagir-2821245663536">
+    <ellipse cx="125.3" cy="194.0" rx="35.0" ry="18.0" fill="lightpink" stroke="#000000" stroke-width="1" />
+    <text x="125.3" y="194.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">XOR</text>
+  </g>
+  <g id="dagir-2821245663920">
+    <ellipse cx="218.7" cy="194.0" rx="35.0" ry="18.0" fill="lightblue" stroke="#000000" stroke-width="1" />
+    <text x="218.7" y="194.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">c</text>
+  </g>
+  <g id="dagir-2821245664064">
+    <ellipse cx="218.7" cy="242.0" rx="35.0" ry="18.0" fill="lightblue" stroke="#000000" stroke-width="1" />
+    <text x="218.7" y="242.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">a</text>
+  </g>
+  <g id="dagir-2821245663200">
+    <ellipse cx="125.3" cy="242.0" rx="35.0" ry="18.0" fill="lightblue" stroke="#000000" stroke-width="1" />
+    <text x="125.3" y="242.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">b</text>
+  </g>
+</svg>

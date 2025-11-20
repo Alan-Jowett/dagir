@@ -166,6 +166,16 @@ inline constexpr std::string_view k_width{"width"};
 inline constexpr std::string_view k_height{"height"};
 
 /**
+ * @brief Shortest-hop distance from graph roots.
+ *
+ * Interpretation: an integer encoded as a string representing the minimal
+ * number of edges from any root to this node. Backends may use this for
+ * level-based layout, coloring, or filtering. Unreachable nodes may be
+ * represented with `-1`.
+ */
+inline constexpr std::string_view k_rank{"rank"};
+
+/**
  * @brief Grouping key for layout engines.
  *
  * Interpretation: arbitrary string used to group nodes together for layout

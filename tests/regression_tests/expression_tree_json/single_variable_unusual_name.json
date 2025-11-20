@@ -1,1 +1,1 @@
-{"nodes": [{"id": "node000", "label": "variable_with_unusual$characters@123", "attributes": {"fillcolor": "lightblue", "label": "variable_with_unusual$characters@123", "name": "node000"}}], "edges": []}
+{"nodes": [{"id": "node000", "label": "variable_with_unusual$characters@123", "attributes": {"fillcolor": "lightblue", "label": "variable_with_unusual$characters@123", "name": "node000", "rank": 0}}], "edges": []}

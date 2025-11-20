@@ -1,1 +1,1 @@
-{"nodes": [{"id": "node000", "label": "z", "attributes": {"fillcolor": "lightblue", "label": "z", "name": "node000"}}], "edges": []}
+{"nodes": [{"id": "node000", "label": "z", "attributes": {"fillcolor": "lightblue", "label": "z", "name": "node000", "rank": 0}}], "edges": []}

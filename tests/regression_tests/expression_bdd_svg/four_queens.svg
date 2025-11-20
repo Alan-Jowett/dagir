@@ -1,0 +1,574 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="844" viewBox="0 0 1020 844">
+  <text x="509.667" y="16" text-anchor="middle">bdd</text>
+  <defs>
+    <marker id="dagir-arrow" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="black" />
+    </marker>
+  </defs>
+  <line x1="121.6" y1="54.5" x2="428.0" y2="93.5" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="121.6" y1="53.6" x2="521.3" y2="94.4" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="463.0" y1="98.0" x2="463.0" y2="146.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="428.0" y1="116.0" x2="404.7" y2="128.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="556.3" y1="98.0" x2="556.3" y2="146.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="116.0" x2="614.7" y2="128.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="498.0" y1="155.0" x2="614.7" y2="185.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="498.0" y1="164.0" x2="521.3" y2="176.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="404.7" y1="164.0" x2="428.0" y2="176.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="369.7" y1="146.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="521.3" y1="155.0" x2="404.7" y2="185.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="556.3" y1="146.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="614.7" y1="212.0" x2="591.3" y2="224.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="194.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="521.3" y1="212.0" x2="498.0" y2="224.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="176.0" x2="614.7" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="498.0" y1="203.0" x2="614.7" y2="233.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="498.0" y1="185.0" x2="614.7" y2="155.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="369.7" y1="194.0" x2="369.7" y2="242.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="404.7" y1="188.0" x2="614.7" y2="152.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="251.0" x2="708.0" y2="281.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="260.0" x2="614.7" y2="272.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="463.0" y1="242.0" x2="463.0" y2="290.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="498.0" y1="224.0" x2="614.7" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="614.7" y1="260.0" x2="591.3" y2="272.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="242.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="369.7" y1="242.0" x2="369.7" y2="290.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="334.7" y1="260.0" x2="311.3" y2="272.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="708.0" y1="302.0" x2="638.0" y2="326.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="731.3" y1="272.0" x2="661.3" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="614.7" y1="302.0" x2="544.7" y2="326.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="667.2" y1="308.0" x2="678.8" y2="320.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="428.0" y1="302.0" x2="358.0" y2="326.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="486.3" y1="272.0" x2="626.3" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="297.2" x2="754.7" y2="330.8" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="568.0" y1="272.0" x2="638.0" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="387.2" y1="308.0" x2="398.8" y2="320.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="404.7" y1="272.0" x2="614.7" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="258.8" y1="308.0" x2="247.2" y2="320.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="311.3" y1="276.5" x2="614.7" y2="159.5" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="585.5" y1="356.0" x2="573.8" y2="368.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="607.4" y1="320.0" x2="645.3" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="544.7" y1="345.2" x2="708.0" y2="378.8" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="522.8" y1="320.0" x2="636.5" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="731.3" y1="350.0" x2="801.3" y2="374.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="692.0" y1="320.0" x2="654.0" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="305.5" y1="356.0" x2="293.8" y2="368.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="353.6" y1="320.0" x2="619.0" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="754.7" y1="350.0" x2="684.7" y2="374.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="776.5" y1="320.0" x2="662.8" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="433.8" y1="356.0" x2="445.5" y2="368.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="438.2" y1="320.0" x2="627.8" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="212.2" y1="356.0" x2="200.5" y2="368.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="264.7" y1="350.0" x2="334.7" y2="374.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="395.0" x2="708.0" y2="425.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="563.3" y1="368.0" x2="642.7" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="708.0" y1="404.0" x2="684.7" y2="416.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="736.0" y1="368.0" x2="656.7" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="836.3" y1="386.0" x2="836.3" y2="434.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="822.3" y1="368.0" x2="663.7" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="276.3" y1="386.0" x2="276.3" y2="434.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="304.3" y1="368.0" x2="621.7" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="614.7" y1="392.0" x2="404.7" y2="428.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="386.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="428.0" y1="392.0" x2="218.0" y2="428.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="477.0" y1="368.0" x2="635.7" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="218.0" y1="390.5" x2="521.3" y2="429.5" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="218.0" y1="368.0" x2="614.7" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="404.7" y1="404.0" x2="428.0" y2="416.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="390.7" y1="368.0" x2="628.7" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="778.0" y1="441.2" x2="941.3" y2="474.8" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="737.2" y1="416.0" x2="655.5" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="614.7" y1="438.0" x2="264.7" y2="478.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="434.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="853.8" y1="452.0" x2="865.5" y2="464.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="824.7" y1="416.0" x2="661.3" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="311.3" y1="441.2" x2="474.7" y2="474.8" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="299.7" y1="416.0" x2="626.3" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="404.7" y1="441.2" x2="568.0" y2="474.8" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="334.7" y1="439.1" x2="78.0" y2="476.9" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="218.0" y1="446.0" x2="288.0" y2="470.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="165.5" y1="452.0" x2="153.8" y2="464.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="446.0" x2="661.3" y2="470.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="441.2" x2="754.7" y2="474.8" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="445.5" y1="452.0" x2="433.8" y2="464.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="474.7" y1="416.0" x2="638.0" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="941.3" y1="500.0" x2="918.0" y2="512.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="958.8" y1="464.0" x2="667.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="194.7" y1="491.0" x2="78.0" y2="521.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="252.2" y1="464.0" x2="627.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="848.0" y1="500.0" x2="824.7" y2="512.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="870.5" y1="464.0" x2="662.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="509.7" y1="482.0" x2="509.7" y2="530.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="544.7" y1="485.6" x2="941.3" y2="526.4" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="638.0" y1="500.0" x2="661.3" y2="512.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="605.5" y1="464.0" x2="647.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="78.0" y1="500.0" x2="101.3" y2="512.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="78.0" y1="488.0" x2="288.0" y2="524.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="323.0" y1="482.0" x2="323.0" y2="530.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="340.5" y1="464.0" x2="632.2" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="171.3" y1="500.0" x2="194.7" y2="512.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="163.8" y1="464.0" x2="622.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="661.3" y1="488.0" x2="451.3" y2="524.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="693.8" y1="464.0" x2="652.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="789.7" y1="482.0" x2="789.7" y2="530.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="782.2" y1="464.0" x2="657.2" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="451.3" y1="491.0" x2="568.0" y2="521.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="428.8" y1="464.0" x2="637.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="848.0" y1="534.0" x2="498.0" y2="574.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="848.0" y1="542.0" x2="778.0" y2="566.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="60.5" y1="548.0" x2="72.2" y2="560.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="78.0" y1="542.0" x2="148.0" y2="566.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="544.7" y1="537.2" x2="708.0" y2="570.8" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="516.2" y1="512.0" x2="643.1" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="941.3" y1="542.0" x2="871.3" y2="566.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="958.8" y1="548.0" x2="947.2" y2="560.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="678.8" y1="548.0" x2="667.2" y2="560.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="694.1" y1="512.0" x2="651.9" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="153.8" y1="548.0" x2="165.5" y2="560.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="160.4" y1="512.0" x2="625.6" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="358.0" y1="537.2" x2="521.3" y2="570.8" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="338.3" y1="512.0" x2="634.4" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="247.2" y1="548.0" x2="258.8" y2="560.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="249.4" y1="512.0" x2="630.0" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="398.8" y1="548.0" x2="387.2" y2="560.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="427.3" y1="512.0" x2="638.7" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="824.7" y1="542.0" x2="894.7" y2="566.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="783.1" y1="512.0" x2="656.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="568.0" y1="534.0" x2="218.0" y2="574.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="605.2" y1="512.0" x2="647.5" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="428.0" y1="587.0" x2="311.3" y2="617.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="470.8" y1="560.0" x2="641.9" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="124.7" y1="587.0" x2="241.3" y2="617.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="113.0" y1="560.0" x2="626.3" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="708.0" y1="596.0" x2="684.7" y2="608.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="739.1" y1="560.0" x2="653.6" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="801.3" y1="584.0" x2="591.3" y2="620.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="828.6" y1="560.0" x2="657.4" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="614.7" y1="584.0" x2="404.7" y2="620.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="578.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="591.3" y1="587.0" x2="708.0" y2="617.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="560.2" y1="560.0" x2="645.8" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="311.3" y1="587.0" x2="428.0" y2="617.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="291.9" y1="560.0" x2="634.1" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="404.7" y1="596.0" x2="428.0" y2="608.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="381.3" y1="560.0" x2="638.0" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="894.7" y1="587.0" x2="778.0" y2="617.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="918.0" y1="560.0" x2="661.3" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="218.0" y1="581.6" x2="614.7" y2="622.4" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="202.4" y1="560.0" x2="630.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="311.3" y1="644.0" x2="334.7" y2="656.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="290.3" y1="608.0" x2="635.7" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="521.3" y1="644.0" x2="498.0" y2="656.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="559.8" y1="608.0" x2="646.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="334.7" y1="644.0" x2="311.3" y2="656.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="380.2" y1="608.0" x2="639.2" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="498.0" y1="635.0" x2="614.7" y2="665.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="470.0" y1="608.0" x2="642.7" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="743.0" y1="626.0" x2="743.0" y2="674.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="739.5" y1="608.0" x2="653.2" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="614.7" y1="644.0" x2="591.3" y2="656.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="626.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="369.7" y1="674.0" x2="369.7" y2="722.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="379.2" y1="656.0" x2="640.1" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="498.0" y1="692.0" x2="521.3" y2="704.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="469.4" y1="656.0" x2="643.3" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="311.3" y1="683.0" x2="428.0" y2="713.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="289.1" y1="656.0" x2="636.9" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="674.0" x2="649.7" y2="722.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="674.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="708.0" y1="692.0" x2="684.7" y2="704.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="739.8" y1="656.0" x2="652.8" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="521.3" y1="692.0" x2="498.0" y2="704.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="559.5" y1="656.0" x2="646.5" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="404.7" y1="731.0" x2="521.3" y2="761.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="378.4" y1="704.0" x2="640.9" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="556.3" y1="722.0" x2="556.3" y2="770.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="559.2" y1="704.0" x2="646.8" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="614.7" y1="731.0" x2="498.0" y2="761.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="649.7" y1="722.0" x2="649.7" y2="146.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="463.0" y1="722.0" x2="463.0" y2="770.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="468.8" y1="704.0" x2="643.8" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="521.3" y1="782.7" x2="459.2" y2="805.3" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="559.0" y1="752.0" x2="647.0" y2="164.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="448.5" y1="788.0" x2="438.8" y2="800.0" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="468.4" y1="752.0" x2="644.3" y2="164.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <g id="dagir-2105623220272">
+    <circle cx="86.6" cy="50.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="86.6" y="50.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_1</text>
+  </g>
+  <g id="dagir-2105623220176">
+    <circle cx="463.0" cy="98.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="98.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_2</text>
+  </g>
+  <g id="dagir-2105623220224">
+    <circle cx="556.3" cy="98.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="98.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_2</text>
+  </g>
+  <g id="dagir-2105623219264">
+    <circle cx="463.0" cy="146.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="146.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_3</text>
+  </g>
+  <g id="dagir-2105623220128">
+    <circle cx="369.7" cy="146.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="146.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_3</text>
+  </g>
+  <g id="dagir-2105623219792">
+    <circle cx="556.3" cy="146.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="146.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_3</text>
+  </g>
+  <g id="dagir-2105623218928">
+    <circle cx="649.7" cy="194.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="194.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_4</text>
+  </g>
+  <g id="dagir-2105623219216">
+    <circle cx="556.3" cy="194.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="194.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_4</text>
+  </g>
+  <g id="dagir-2105623220080">
+    <circle cx="463.0" cy="194.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="194.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_4</text>
+  </g>
+  <g id="dagir-2105623217824">
+    <circle cx="369.7" cy="194.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="194.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_1_4</text>
+  </g>
+  <g id="dagir-2105623218880">
+    <circle cx="556.3" cy="242.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="242.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_1</text>
+  </g>
+  <g id="dagir-2105623219168">
+    <circle cx="463.0" cy="242.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="242.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_1</text>
+  </g>
+  <g id="dagir-2105623220032">
+    <circle cx="649.7" cy="242.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="242.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_1</text>
+  </g>
+  <g id="dagir-2105623217776">
+    <circle cx="369.7" cy="242.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="242.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_1</text>
+  </g>
+  <g id="dagir-2105623218832">
+    <circle cx="743.0" cy="290.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="743.0" y="290.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_2</text>
+  </g>
+  <g id="dagir-2105623215952">
+    <circle cx="649.7" cy="290.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="290.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_2</text>
+  </g>
+  <g id="dagir-2105623219120">
+    <circle cx="463.0" cy="290.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="290.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_2</text>
+  </g>
+  <g id="dagir-2105623216864">
+    <circle cx="556.3" cy="290.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="290.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_2</text>
+  </g>
+  <g id="dagir-2105623212304">
+    <circle cx="369.7" cy="290.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="290.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_2</text>
+  </g>
+  <g id="dagir-2105623217728">
+    <circle cx="276.3" cy="290.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="276.3" y="290.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_2</text>
+  </g>
+  <g id="dagir-2105623215376">
+    <circle cx="603.0" cy="338.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="603.0" y="338.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_3</text>
+  </g>
+  <g id="dagir-2105623215760">
+    <circle cx="509.7" cy="338.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="509.7" y="338.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_3</text>
+  </g>
+  <g id="dagir-2105623215904">
+    <circle cx="696.3" cy="338.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="696.3" y="338.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_3</text>
+  </g>
+  <g id="dagir-2105623219072">
+    <circle cx="323.0" cy="338.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="323.0" y="338.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_3</text>
+  </g>
+  <g id="dagir-2105623216816">
+    <circle cx="789.7" cy="338.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="789.7" y="338.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_3</text>
+  </g>
+  <g id="dagir-2105623211296">
+    <circle cx="416.3" cy="338.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="416.3" y="338.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_3</text>
+  </g>
+  <g id="dagir-2105623217680">
+    <circle cx="229.7" cy="338.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="229.7" y="338.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_3</text>
+  </g>
+  <g id="dagir-2105623215328">
+    <circle cx="556.3" cy="386.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="386.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_4</text>
+  </g>
+  <g id="dagir-2105623215712">
+    <circle cx="743.0" cy="386.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="743.0" y="386.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_4</text>
+  </g>
+  <g id="dagir-2105623215856">
+    <circle cx="836.3" cy="386.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="836.3" y="386.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_4</text>
+  </g>
+  <g id="dagir-2105623219024">
+    <circle cx="276.3" cy="386.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="276.3" y="386.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_4</text>
+  </g>
+  <g id="dagir-2105623216768">
+    <circle cx="649.7" cy="386.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="386.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_4</text>
+  </g>
+  <g id="dagir-2105623206208">
+    <circle cx="463.0" cy="386.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="386.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_4</text>
+  </g>
+  <g id="dagir-2105623205296">
+    <circle cx="183.0" cy="386.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="183.0" y="386.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_4</text>
+  </g>
+  <g id="dagir-2105623217632">
+    <circle cx="369.7" cy="386.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="386.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_2_4</text>
+  </g>
+  <g id="dagir-2105623215280">
+    <circle cx="743.0" cy="434.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="743.0" y="434.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_1</text>
+  </g>
+  <g id="dagir-2105623215664">
+    <circle cx="649.7" cy="434.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="434.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_1</text>
+  </g>
+  <g id="dagir-2105623215808">
+    <circle cx="836.3" cy="434.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="836.3" y="434.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_1</text>
+  </g>
+  <g id="dagir-2105623218976">
+    <circle cx="276.3" cy="434.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="276.3" y="434.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_1</text>
+  </g>
+  <g id="dagir-2105623216720">
+    <circle cx="369.7" cy="434.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="434.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_1</text>
+  </g>
+  <g id="dagir-2105623206160">
+    <circle cx="183.0" cy="434.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="183.0" y="434.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_1</text>
+  </g>
+  <g id="dagir-2105623205248">
+    <circle cx="556.3" cy="434.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="434.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_1</text>
+  </g>
+  <g id="dagir-2105623217008">
+    <circle cx="463.0" cy="434.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="434.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_1</text>
+  </g>
+  <g id="dagir-2105623215232">
+    <circle cx="976.3" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="976.3" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623215616">
+    <circle cx="229.7" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="229.7" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623203328">
+    <circle cx="883.0" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="883.0" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623203088">
+    <circle cx="509.7" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="509.7" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623216672">
+    <circle cx="603.0" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="603.0" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623210816">
+    <circle cx="43.0" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="43.0" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623206064">
+    <circle cx="323.0" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="323.0" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623206112">
+    <circle cx="136.3" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="136.3" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623205152">
+    <circle cx="696.3" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="696.3" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623205200">
+    <circle cx="789.7" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="789.7" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623205392">
+    <circle cx="416.3" cy="482.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="416.3" y="482.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_2</text>
+  </g>
+  <g id="dagir-2105623194352">
+    <circle cx="883.0" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="883.0" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623195888">
+    <circle cx="43.0" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="43.0" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623202608">
+    <circle cx="509.7" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="509.7" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623196224">
+    <circle cx="976.3" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="976.3" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623210288">
+    <circle cx="696.3" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="696.3" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623210192">
+    <circle cx="136.3" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="136.3" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623202320">
+    <circle cx="323.0" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="323.0" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623202224">
+    <circle cx="229.7" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="229.7" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623201600">
+    <circle cx="416.3" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="416.3" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623201696">
+    <circle cx="789.7" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="789.7" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623201984">
+    <circle cx="603.0" cy="530.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="603.0" y="530.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_3</text>
+  </g>
+  <g id="dagir-2105623194160">
+    <circle cx="463.0" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623195264">
+    <circle cx="89.7" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="89.7" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623194304">
+    <circle cx="743.0" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="743.0" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623194640">
+    <circle cx="836.3" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="836.3" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623195024">
+    <circle cx="649.7" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623195408">
+    <circle cx="556.3" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623194928">
+    <circle cx="276.3" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="276.3" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623193296">
+    <circle cx="369.7" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623194496">
+    <circle cx="929.7" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="929.7" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623195216">
+    <circle cx="183.0" cy="578.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="183.0" y="578.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_3_4</text>
+  </g>
+  <g id="dagir-2105623194112">
+    <circle cx="276.3" cy="626.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="276.3" y="626.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_1</text>
+  </g>
+  <g id="dagir-2105623194592">
+    <circle cx="556.3" cy="626.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="626.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_1</text>
+  </g>
+  <g id="dagir-2105623193872">
+    <circle cx="369.7" cy="626.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="626.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_1</text>
+  </g>
+  <g id="dagir-2105623193248">
+    <circle cx="463.0" cy="626.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="626.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_1</text>
+  </g>
+  <g id="dagir-2105623194448">
+    <circle cx="743.0" cy="626.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="743.0" y="626.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_1</text>
+  </g>
+  <g id="dagir-2105623194256">
+    <circle cx="649.7" cy="626.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="626.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_1</text>
+  </g>
+  <g id="dagir-2105623194064">
+    <circle cx="369.7" cy="674.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="674.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_2</text>
+  </g>
+  <g id="dagir-2105623194544">
+    <circle cx="463.0" cy="674.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="674.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_2</text>
+  </g>
+  <g id="dagir-2105623193824">
+    <circle cx="276.3" cy="674.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="276.3" y="674.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_2</text>
+  </g>
+  <g id="dagir-2105623193200">
+    <circle cx="649.7" cy="674.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="674.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_2</text>
+  </g>
+  <g id="dagir-2105623194400">
+    <circle cx="743.0" cy="674.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="743.0" y="674.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_2</text>
+  </g>
+  <g id="dagir-2105623194208">
+    <circle cx="556.3" cy="674.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="674.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_2</text>
+  </g>
+  <g id="dagir-2105623193584">
+    <circle cx="369.7" cy="722.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="369.7" y="722.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_3</text>
+  </g>
+  <g id="dagir-2105623193344">
+    <circle cx="556.3" cy="722.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="722.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_3</text>
+  </g>
+  <g id="dagir-2105623193152">
+    <circle cx="649.7" cy="722.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="722.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_3</text>
+  </g>
+  <g id="dagir-2105623193776">
+    <circle cx="463.0" cy="722.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="722.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_3</text>
+  </g>
+  <g id="dagir-2105623184992">
+    <circle cx="556.3" cy="770.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="556.3" y="770.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_4</text>
+  </g>
+  <g id="dagir-2105623185040">
+    <circle cx="463.0" cy="770.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="463.0" y="770.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">q_4_4</text>
+  </g>
+  <g id="dagir-2105623181968">
+    <rect x="389.2" y="800.0" width="70.0" height="36.0" rx="6" ry="6" fill="lightgray" stroke="#000000" stroke-width="1" />
+    <text x="424.2" y="818.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">1</text>
+  </g>
+  <g id="dagir-2105623181920">
+    <rect x="614.7" y="128.0" width="70.0" height="36.0" rx="6" ry="6" fill="lightgray" stroke="#000000" stroke-width="1" />
+    <text x="649.7" y="146.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">0</text>
+  </g>
+</svg>

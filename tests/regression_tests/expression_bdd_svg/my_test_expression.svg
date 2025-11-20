@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="246" viewBox="0 0 250 246">
+  <text x="125" y="16" text-anchor="middle">bdd</text>
+  <defs>
+    <marker id="dagir-arrow" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="black" />
+    </marker>
+  </defs>
+  <line x1="195.8" y1="68.0" x2="182.9" y2="88.7" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="172.0" y1="65.4" x2="113.3" y2="91.3" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="152.6" y1="124.7" x2="130.8" y2="145.3" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="171.7" y1="106.7" x2="78.3" y2="106.7" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <line x1="101.2" y1="145.3" x2="89.0" y2="124.7" stroke="#000000" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#dagir-arrow)" />
+  <line x1="89.9" y1="181.3" x2="64.9" y2="202.0" stroke="#000000" stroke-width="1" marker-end="url(#dagir-arrow)" />
+  <g id="dagir-2245057678320">
+    <circle cx="207.0" cy="50.0" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="207.0" y="50.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">a</text>
+  </g>
+  <g id="dagir-2245057678272">
+    <circle cx="171.7" cy="106.7" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="171.7" y="106.7" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">b</text>
+  </g>
+  <g id="dagir-2245057678224">
+    <circle cx="111.8" cy="163.3" r="35.0" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <text x="111.8" y="163.3" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">c</text>
+  </g>
+  <g id="dagir-2245057677888">
+    <rect x="43.3" y="88.7" width="70.0" height="36.0" rx="6" ry="6" fill="lightgray" stroke="#000000" stroke-width="1" />
+    <text x="78.3" y="106.7" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">0</text>
+  </g>
+  <g id="dagir-2245057677936">
+    <rect x="8.0" y="202.0" width="70.0" height="36.0" rx="6" ry="6" fill="lightgray" stroke="#000000" stroke-width="1" />
+    <text x="43.0" y="220.0" text-anchor="middle" alignment-baseline="middle" font-family="sans-serif" font-size="12">1</text>
+  </g>
+</svg>
