@@ -103,10 +103,15 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
     std::transform(g.global_attrs.begin(), g.global_attrs.end(), std::back_inserter(gkeys),
                    [](auto const& p) { return p.first; });
     std::sort(gkeys.begin(), gkeys.end());
+    bool found_title = false;
     for (const auto& k : gkeys) {
       if (k == std::string(ir_attrs::k_graph_label)) {
         os << "  title " << render_mermaid_detail::escape_mermaid(g.global_attrs.at(k)) << "\n";
+        found_title = true;
       }
+    }
+    if (found_title) {
+      os << render_mermaid_detail::escape_mermaid(std::string(graph_name)) << "\n";
     }
   }
 
