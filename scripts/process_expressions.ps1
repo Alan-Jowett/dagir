@@ -52,9 +52,11 @@ $out = [ordered]@{
     tree_dot     = Join-Path $repoRoot "tests\regression_tests\expression_tree_dot"
     tree_json    = Join-Path $repoRoot "tests\regression_tests\expression_tree_json"
     tree_mermaid = Join-Path $repoRoot "tests\regression_tests\expression_tree_mermaid"
+    tree_svg     = Join-Path $repoRoot "tests\regression_tests\expression_tree_svg"
     bdd_dot      = Join-Path $repoRoot "tests\regression_tests\expression_bdd_dot"
     bdd_json     = Join-Path $repoRoot "tests\regression_tests\expression_bdd_json"
     bdd_mermaid  = Join-Path $repoRoot "tests\regression_tests\expression_bdd_mermaid"
+    bdd_svg      = Join-Path $repoRoot "tests\regression_tests\expression_bdd_svg"
 }
 
 foreach ($d in $out.Values) {
@@ -185,6 +187,9 @@ foreach ($f in $exprFiles) {
         $mmdExt = if ($StripMermaidFences) { '.mmd' } else { '.md' }
         $mmdOut = Join-Path $out.tree_mermaid "$base$mmdExt"
         Run-And-Save -exe $treeExe -arguments @($f.FullName,'mermaid') -outfile $mmdOut -stripMermaid:$StripMermaidFences
+        # SVG output
+        $svgOut = Join-Path $out.tree_svg "$base.svg"
+        Run-And-Save -exe $treeExe -arguments @($f.FullName,'svg') -outfile $svgOut
     }
 
     # expression2bdd outputs (use provided Library)
@@ -215,6 +220,9 @@ foreach ($f in $exprFiles) {
         $mmdExt = if ($StripMermaidFences) { '.mmd' } else { '.md' }
         $mmdOut = Join-Path $out.bdd_mermaid "$base$mmdExt"
         Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'mermaid') -outfile $mmdOut -stripMermaid:$StripMermaidFences
+        # SVG output
+        $svgOut = Join-Path $out.bdd_svg "$base.svg"
+        Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'svg') -outfile $svgOut
     }
 }
 
