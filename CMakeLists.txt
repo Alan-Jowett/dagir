@@ -269,7 +269,10 @@ if(DAGIR_BUILD_TESTS)
       endif()
     else()
       if(DAGIR_STRICT_WARNINGS)
-        target_compile_options(dagir_tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
+        # Treat warnings as errors, but suppress array-bounds being promoted
+        # to errors since libstdc++/inlined std headers can trigger
+        # -Warray-bounds false-positives under aggressive analysis.
+        target_compile_options(dagir_tests PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-error=array-bounds)
       else()
         target_compile_options(dagir_tests PRIVATE -Wall -Wextra -Wpedantic)
       endif()
@@ -350,7 +353,9 @@ if(DAGIR_EXAMPLES)
       endif()
     else()
       if(DAGIR_STRICT_WARNINGS)
-        target_compile_options(${_target_name} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+        # See note above for tests: avoid failing on library array-bounds
+        # diagnostics that originate from standard headers or inlined code.
+        target_compile_options(${_target_name} PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-error=array-bounds)
       else()
         target_compile_options(${_target_name} PRIVATE -Wall -Wextra -Wpedantic)
       endif()
