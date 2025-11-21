@@ -145,6 +145,43 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
     graph.nodes.push_back(std::move(n));
   }
 
+  // Compute shortest-hop distance (rank) from any root using BFS.
+  // The read-only view exposes `roots()` and `children(handle)`; perform
+  // a multi-source BFS from the root handles to compute minimal hops.
+  std::unordered_map<key_t, int> rank_map;
+  std::deque<H> q;
+  // initialize
+  for (auto const& r : view.roots()) {
+    key_t rk = r.stable_key();
+    rank_map[rk] = 0;
+    q.push_back(r);
+  }
+
+  while (!q.empty()) {
+    H cur = q.front();
+    q.pop_front();
+    int cur_rank = rank_map[cur.stable_key()];
+    for (auto const& child_like : view.children(cur)) {
+      H child = build_ir_extract_child<H>(child_like);
+      key_t ck = child.stable_key();
+      if (!rank_map.count(ck)) {
+        rank_map[ck] = cur_rank + 1;
+        q.push_back(child);
+      }
+    }
+  }
+
+  // Attach rank attribute to nodes (as string) if computed. Use key 'rank'.
+  for (auto& n : graph.nodes) {
+    auto it = rank_map.find(n.id);
+    if (it != rank_map.end()) {
+      n.attributes[std::string(ir_attrs::k_rank)] = std::to_string(it->second);
+    } else {
+      // unreachable from roots: record as -1
+      n.attributes[std::string(ir_attrs::k_rank)] = std::string("-1");
+    }
+  }
+
   // Now collect edges; reserve approximate size by summing child counts
   // Reserve an approximate size for edges by summing child counts using
   // standard algorithms. Using std::accumulate makes the intent clearer

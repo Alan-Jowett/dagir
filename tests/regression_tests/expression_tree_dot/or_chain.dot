@@ -1,12 +1,12 @@
 digraph expression {
   rankdir=TB;
-  "node000" [label = "OR", fillcolor = "lightcoral", name = "node000", style = "filled"];
-  "node001" [label = "OR", fillcolor = "lightcoral", name = "node001", style = "filled"];
-  "node002" [label = "s", fillcolor = "lightblue", name = "node002", style = "filled"];
-  "node003" [label = "OR", fillcolor = "lightcoral", name = "node003", style = "filled"];
-  "node004" [label = "r", fillcolor = "lightblue", name = "node004", style = "filled"];
-  "node005" [label = "p", fillcolor = "lightblue", name = "node005", style = "filled"];
-  "node006" [label = "q", fillcolor = "lightblue", name = "node006", style = "filled"];
+  "node000" [label = "OR", fillcolor = "lightcoral", name = "node000", rank = "0", style = "filled"];
+  "node001" [label = "OR", fillcolor = "lightcoral", name = "node001", rank = "1", style = "filled"];
+  "node002" [label = "s", fillcolor = "lightblue", name = "node002", rank = "1", style = "filled"];
+  "node003" [label = "OR", fillcolor = "lightcoral", name = "node003", rank = "2", style = "filled"];
+  "node004" [label = "r", fillcolor = "lightblue", name = "node004", rank = "2", style = "filled"];
+  "node005" [label = "p", fillcolor = "lightblue", name = "node005", rank = "3", style = "filled"];
+  "node006" [label = "q", fillcolor = "lightblue", name = "node006", rank = "3", style = "filled"];
   "node000" -> "node001" [label = "L"];
   "node000" -> "node002" [label = "R"];
   "node001" -> "node003" [label = "L"];

@@ -1,6 +1,6 @@
 digraph expression {
   rankdir=TB;
-  "node000" [label = "NOT", fillcolor = "yellow", name = "node000", style = "filled"];
-  "node001" [label = "p", fillcolor = "lightblue", name = "node001", style = "filled"];
+  "node000" [label = "NOT", fillcolor = "yellow", name = "node000", rank = "0", style = "filled"];
+  "node001" [label = "p", fillcolor = "lightblue", name = "node001", rank = "1", style = "filled"];
   "node000" -> "node001";
 }

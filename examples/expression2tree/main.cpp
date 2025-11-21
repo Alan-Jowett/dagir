@@ -11,6 +11,7 @@
 #include <dagir/render_dot.hpp>
 #include <dagir/render_json.hpp>
 #include <dagir/render_mermaid.hpp>
+#include <dagir/render_svg.hpp>
 #include <exception>
 #include <iostream>
 #include <string>
@@ -26,7 +27,7 @@ int main(int argc, char** argv) {
 
   if (argc < 2 || argc > 3) {
     std::cerr << "Usage: " << argv[0] << " <expression_file> [backend]\n"
-              << "Supported backends: dot, json, mermaid (default: dot)\n";
+              << "Supported backends: dot, json, mermaid, svg (default: dot)\n";
     return 1;
   }
 
@@ -56,6 +57,8 @@ int main(int argc, char** argv) {
       os << "```mermaid\n";
       dagir::render_mermaid(os, ir, "expression");
       os << "```\n";
+    } else if (backend == "svg") {
+      dagir::render_svg(os, ir, "expression");
     } else {
       std::cerr << "Unknown backend: " << backend << "\n";
       std::cerr << "Supported backends: dot, json, mermaid\n";

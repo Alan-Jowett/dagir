@@ -1,8 +1,8 @@
 digraph bdd {
   rankdir=TB;
-  "node000" [label = "variable_with_unusual$characters@123", name = "node000", shape = "circle", style = "filled"];
-  "node001" [label = "0", fillcolor = "lightgray", name = "node001", shape = "box", style = "filled"];
-  "node002" [label = "1", fillcolor = "lightgray", name = "node002", shape = "box", style = "filled"];
+  "node000" [label = "variable_with_unusual$characters@123", name = "node000", rank = "0", shape = "circle", style = "filled"];
+  "node001" [label = "0", fillcolor = "lightgray", name = "node001", rank = "1", shape = "box", style = "filled"];
+  "node002" [label = "1", fillcolor = "lightgray", name = "node002", rank = "1", shape = "box", style = "filled"];
   "node000" -> "node001" [style = "dashed"];
   "node000" -> "node002" [style = "solid"];
 }
