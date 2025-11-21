@@ -566,18 +566,18 @@ inline void emit_svg_output(
         return (denom < eps) ? 0.0 : (1.0 / denom);
       };
 
-      const auto& s_attrs =
-          graph
-              .at(std::distance(graph.begin(),
-                                std::find_if(graph.begin(), graph.end(),
-                                             [&](const auto& n) { return n.id == e.source; })))
-              .attributes;
-      const auto& t_attrs =
-          graph
-              .at(std::distance(graph.begin(),
-                                std::find_if(graph.begin(), graph.end(),
-                                             [&](const auto& n) { return n.id == e.target; })))
-              .attributes;
+        const auto& s_attrs =
+          graph.nodes
+            .at(std::distance(graph.nodes.begin(),
+                    std::find_if(graph.nodes.begin(), graph.nodes.end(),
+                           [&](const auto& n) { return n.id == e.source; })))
+            .attributes;
+        const auto& t_attrs =
+          graph.nodes
+            .at(std::distance(graph.nodes.begin(),
+                    std::find_if(graph.nodes.begin(), graph.nodes.end(),
+                           [&](const auto& n) { return n.id == e.target; })))
+            .attributes;
       const std::string s_shape = lookup_or(s_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
       const std::string t_shape = lookup_or(t_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
 
@@ -765,17 +765,18 @@ inline void emit_svg_output(
     os << std::format(
         "    <marker id=\"{}\" viewBox=\"0 0 8 6\" markerWidth=\"8\" markerHeight=\"6\" refX=\"8\" "
         "refY=\"3\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\n",
-    auto marker_segments = render_edges(os, g, st, centers, marker_id_for_style);
-    if (amap.count(std::string(ir_attrs::k_label))) {
-      const double lx = (x1 + x2) / 2.0;
-      const double ly = (y1 + y2) / 2.0;
-      os << std::format(
-          "  <text x=\"{:.1f}\" y=\"{:.1f}\" text-anchor=\"middle\" alignment-baseline=\"middle\" "
-          "font-size=\"10\">{}</text>\n",
-          lx, ly, render_svg_detail::escape_xml(amap.at(std::string(ir_attrs::k_label))));
-    }
+        m.first);
+    const auto col = render_svg_detail::escape_xml(m.second);
+    os << std::format("      <path d=\"M0 0 L8 3 L0 6 z\" fill=\"{}\" stroke=\"{}\" />\n", col,
+                      col);
+    os << "    </marker>\n";
   }
+  os << "  </defs>\n";
 
+  // Render edges and collect marker segments
+  auto marker_segments = render_edges(os, g, st, centers, marker_id_for_style);
+
+  // Render nodes
   render_nodes(os, g, st, centers);
 
   for (const auto& seg : marker_segments) os << seg;
