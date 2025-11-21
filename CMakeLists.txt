@@ -263,7 +263,9 @@ if(DAGIR_BUILD_TESTS)
     # enabled, also treat warnings as errors for our controlled targets only.
     if(MSVC)
       if(DAGIR_STRICT_WARNINGS)
-        target_compile_options(dagir_tests PRIVATE /W4 /WX /wd4996 /permissive-)
+        # Treat warnings as errors for our code, but silence external headers
+        # so system/third-party includes don't become fatal.
+        target_compile_options(dagir_tests PRIVATE /W4 /WX /external:W0 /wd4996 /permissive-)
       else()
         target_compile_options(dagir_tests PRIVATE /W4 /wd4996 /permissive-)
       endif()
@@ -347,7 +349,9 @@ if(DAGIR_EXAMPLES)
 
     if(MSVC)
       if(DAGIR_STRICT_WARNINGS)
-        target_compile_options(${_target_name} PRIVATE /W4 /WX /wd4996 /permissive-)
+        # Keep /WX for our code but use /external:W0 to avoid failing on
+        # warnings coming from system headers or fetched libraries.
+        target_compile_options(${_target_name} PRIVATE /W4 /WX /external:W0 /wd4996 /permissive-)
       else()
         target_compile_options(${_target_name} PRIVATE /W4 /wd4996 /permissive-)
       endif()
