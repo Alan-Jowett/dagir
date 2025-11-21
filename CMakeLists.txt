@@ -248,6 +248,8 @@ if(DAGIR_BUILD_TESTS)
 
   if(DAGIR_TEST_SOURCES)
     add_executable(dagir_tests ${DAGIR_TEST_SOURCES})
+    # Add a compilation-only test to enforce header cleanliness under Werror
+    list(APPEND DAGIR_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/werror_compile_check.cpp")
     target_compile_features(dagir_tests PRIVATE cxx_std_20)
     target_link_libraries(dagir_tests PRIVATE
       dagir::dagir
@@ -255,9 +257,9 @@ if(DAGIR_BUILD_TESTS)
 
     # Cross-platform warning levels for tests (non-fatal if unsupported).
     if(MSVC)
-      target_compile_options(dagir_tests PRIVATE /W4 /wd4996 /permissive-)
+      target_compile_options(dagir_tests PRIVATE /W4 /WX /wd4996 /permissive-)
     else()
-      target_compile_options(dagir_tests PRIVATE -Wall -Wextra -Wpedantic)
+      target_compile_options(dagir_tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 
     # On macOS make sure executables can find dependent dylibs via rpath if needed
@@ -357,7 +359,7 @@ if(DAGIR_EXAMPLES AND DAGIR_BUILD_TESTS)
     file(MAKE_DIRECTORY ${_sample_test_out_dir})
 
     # expression2tree: backends and expected extensions
-    set(_tree_backends dot json mermaid)
+    set(_tree_backends dot json mermaid svg)
 
     foreach(_expr IN LISTS SAMPLE_EXPRESSIONS)
       get_filename_component(_expr_name ${_expr} NAME_WE)
@@ -386,7 +388,7 @@ if(DAGIR_EXAMPLES AND DAGIR_BUILD_TESTS)
     endforeach()
 
     # expression2bdd: use teddy library to match the expected outputs
-    set(_bdd_backends dot json mermaid)
+    set(_bdd_backends dot json mermaid svg)
 
     foreach(_expr IN LISTS SAMPLE_EXPRESSIONS)
       get_filename_component(_expr_name ${_expr} NAME_WE)

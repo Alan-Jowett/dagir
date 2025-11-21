@@ -148,7 +148,7 @@ std::vector<long_edge> find_long_edges(const ir_graph& g, const hierarchy& h) {
 int crossing_number(const hierarchy& h, const ir_graph& g, int layer_idx, std::size_t pos_u,
                     std::size_t pos_v, const std::vector<int>& pos_in_layer) {
   // pos_in_layer maps node -> index in its layer
-  int count = 0;
+  std::size_t count = 0;
   auto const& layer = h.layers[layer_idx];
   std::size_t u = layer[pos_u];
   std::size_t v = layer[pos_v];
@@ -173,7 +173,7 @@ int crossing_number(const hierarchy& h, const ir_graph& g, int layer_idx, std::s
     count += std::count_if(in_adj[v].begin(), in_adj[v].end(),
                            [&](int in_v) { return pos_in_layer[in_v] < pos_in_layer[in_u]; });
   }
-  return count;
+  return static_cast<int>(count);
 }
 
 // Barycentric reordering + transpose
