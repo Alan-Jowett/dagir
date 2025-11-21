@@ -106,7 +106,7 @@ struct expression_edge_attributor {
         out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
       else if (p_xor->right && p_xor->right.get() == child.ptr)
         out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
-    } else if (auto p_not = std::get_if<my_not>(parent.ptr)) {
+    } else if (std::get_if<my_not>(parent.ptr)) {
       // Unary operator: do not emit edge labels for NOT -- leave edges unlabeled
       (void)child;
     } else if (std::get_if<my_variable>(parent.ptr)) {
