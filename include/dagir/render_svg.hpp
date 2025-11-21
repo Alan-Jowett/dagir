@@ -585,10 +585,12 @@ inline void emit_svg_output(
       return std::min(hx / ax, hy / ay);
     };
     auto compute_t_ellipse = [&](double nx, double ny, double rx, double ry) {
-      const double a = (rx * nx);
-      const double b = (ry * ny);
-      const double denom = std::sqrt(a * a + b * b);
-      return (denom < 1e-12) ? 0.0 : (1.0 / denom);
+      // For an axis-aligned ellipse (rx,ry) and a direction vector (nx,ny)
+      // we solve t in (t*nx/rx)^2 + (t*ny/ry)^2 = 1 ->
+      // t = 1 / sqrt((nx^2)/(rx^2) + (ny^2)/(ry^2)).
+      const double eps = 1e-12;
+      const double denom = std::sqrt((nx * nx) / (rx * rx) + (ny * ny) / (ry * ry));
+      return (denom < eps) ? 0.0 : (1.0 / denom);
     };
 
     const auto& s_attrs =
