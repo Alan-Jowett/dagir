@@ -178,7 +178,21 @@ target_include_directories(dagir
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
-# Consumers can layer their own warnings; remain neutral here.
+# By default enforce a strict warning level and treat warnings as errors for
+# project targets that consume the `dagir` INTERFACE target. This makes
+# builds fail fast on warnings across MSVC/GNU/Clang toolchains. Users can
+# disable this behavior with `-DDAGIR_STRICT_WARNINGS=OFF` when configuring.
+option(DAGIR_STRICT_WARNINGS "Enable /W4 and treat warnings as errors" ON)
+
+if(DAGIR_STRICT_WARNINGS)
+  if(MSVC)
+    # /W4: high warning level, /WX: treat warnings as errors
+    target_compile_options(dagir INTERFACE /W4 /WX /wd4996 /permissive-)
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # -Wall -Wextra -Wpedantic for broad warnings, -Werror to make them fatal
+    target_compile_options(dagir INTERFACE -Wall -Wextra -Wpedantic -Werror)
+  endif()
+endif()
 
 # -----------------------------
 # Install (headers only)
