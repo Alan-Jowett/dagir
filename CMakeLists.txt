@@ -158,6 +158,8 @@ if(ENABLE_MSAN AND ENABLE_TSAN)
     message(FATAL_ERROR "MemorySanitizer and ThreadSanitizer cannot be used together")
 endif()
 
+# Option to treat all warnings as errors (can be disabled by downstream projects)
+option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
 
 # Install developer convenience scripts (pre-commit hook) only for the top-level project
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
@@ -177,6 +179,19 @@ target_include_directories(dagir
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
+
+# Apply warnings-as-errors to consumers of the DagIR interface library when
+# the option is enabled. This avoids forcing fetched subprojects or CMake's
+# internal try_compile checks to inherit /WX or -Werror globally.
+if(WARNINGS_AS_ERRORS)
+  # Enforce warnings-as-errors for project-owned test targets only.
+  # We avoid propagating /WX or -Werror via the `dagir` INTERFACE target because
+  # that forces downstream consumers and fetched third-party template-heavy
+  # code (e.g. TeDDy/CUDD) to build with Werror which can break examples.
+  # Individual consumers can opt into -Werror themselves by checking the
+  # `WARNINGS_AS_ERRORS` option when integrating this project.
+  message(STATUS "WARNINGS_AS_ERRORS=ON: tests will be built with warnings-as-errors")
+endif()
 
 # Consumers can layer their own warnings; remain neutral here.
 

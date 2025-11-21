@@ -17,8 +17,8 @@ namespace dagir {
 struct sugiyama_options {
   bool use_dummy_nodes = true;
   unsigned transpose_iters = 10;
-  float node_dist = 24.0f;   // default horizontal gap
-  float layer_dist = 24.0f;  // default vertical gap
+  double node_dist = 24.0;   // default horizontal gap
+  double layer_dist = 24.0;  // default vertical gap
 };
 
 // hierarchy produced from graph and optional rank attribute
@@ -145,13 +145,13 @@ std::vector<long_edge> find_long_edges(const ir_graph& g, const hierarchy& h) {
 }
 
 // Count crossings between two nodes u and v on same layer given positions mapping
-int crossing_number(const hierarchy& h, const ir_graph& g, int layer_idx, int pos_u, int pos_v,
-                    const std::vector<int>& pos_in_layer) {
+int crossing_number(const hierarchy& h, const ir_graph& g, int layer_idx, std::size_t pos_u,
+                    std::size_t pos_v, const std::vector<int>& pos_in_layer) {
   // pos_in_layer maps node -> index in its layer
   int count = 0;
   auto const& layer = h.layers[layer_idx];
-  int u = layer[pos_u];
-  int v = layer[pos_v];
+  std::size_t u = layer[pos_u];
+  std::size_t v = layer[pos_v];
   // build id->index map
   int n = (int)g.nodes.size();
   std::unordered_map<std::uint64_t, int> id2idx;
@@ -166,14 +166,12 @@ int crossing_number(const hierarchy& h, const ir_graph& g, int layer_idx, int po
     in_adj[ti].push_back(si);
   }
   for (auto out_u : out_adj[u]) {
-    for (auto out_v : out_adj[v]) {
-      if (pos_in_layer[out_v] < pos_in_layer[out_u]) ++count;
-    }
+    count += std::count_if(out_adj[v].begin(), out_adj[v].end(),
+                           [&](int out_v) { return pos_in_layer[out_v] < pos_in_layer[out_u]; });
   }
   for (auto in_u : in_adj[u]) {
-    for (auto in_v : in_adj[v]) {
-      if (pos_in_layer[in_v] < pos_in_layer[in_u]) ++count;
-    }
+    count += std::count_if(in_adj[v].begin(), in_adj[v].end(),
+                           [&](int in_v) { return pos_in_layer[in_v] < pos_in_layer[in_u]; });
   }
   return count;
 }
@@ -206,10 +204,10 @@ void barycentric_reorder(hierarchy& h, const ir_graph& g, unsigned transpose_ite
     if (pass == 0) {
       for (int li = 1; li < L; ++li) {
         // compute barycenters from incoming neighbors
-        std::vector<std::pair<float, std::size_t>> arr;
+        std::vector<std::pair<double, std::size_t>> arr;
         arr.reserve(h.layers[li].size());
         for (auto u : h.layers[li]) {
-          float sum = 0;
+          double sum = 0;
           int cnt = 0;
           for (auto p : in_adj[u]) {
             if (pos_in_layer[p] >= 0) {
@@ -217,20 +215,21 @@ void barycentric_reorder(hierarchy& h, const ir_graph& g, unsigned transpose_ite
               ++cnt;
             }
           }
-          float w = (cnt == 0) ? (float)pos_in_layer[u] : sum / (float)cnt;
+          double w =
+              (cnt == 0) ? static_cast<double>(pos_in_layer[u]) : sum / static_cast<double>(cnt);
           arr.push_back({w, u});
         }
         std::stable_sort(arr.begin(), arr.end(),
-                         [](auto& a, auto& b) { return a.first < b.first; });
+                         [](const auto& a, const auto& b) { return a.first < b.first; });
         for (int i = 0; i < (int)arr.size(); ++i) h.layers[li][i] = arr[i].second;
         update_pos();
       }
     } else {
       for (int li = L - 2; li >= 0; --li) {
-        std::vector<std::pair<float, std::size_t>> arr;
+        std::vector<std::pair<double, std::size_t>> arr;
         arr.reserve(h.layers[li].size());
         for (auto u : h.layers[li]) {
-          float sum = 0;
+          double sum = 0;
           int cnt = 0;
           for (auto p : out_adj[u]) {
             if (pos_in_layer[p] >= 0) {
@@ -238,11 +237,12 @@ void barycentric_reorder(hierarchy& h, const ir_graph& g, unsigned transpose_ite
               ++cnt;
             }
           }
-          float w = (cnt == 0) ? (float)pos_in_layer[u] : sum / (float)cnt;
+          double w =
+              (cnt == 0) ? static_cast<double>(pos_in_layer[u]) : sum / static_cast<double>(cnt);
           arr.push_back({w, u});
         }
         std::stable_sort(arr.begin(), arr.end(),
-                         [](auto& a, auto& b) { return a.first < b.first; });
+                         [](const auto& a, const auto& b) { return a.first < b.first; });
         for (int i = 0; i < (int)arr.size(); ++i) h.layers[li][i] = arr[i].second;
         update_pos();
       }
@@ -256,11 +256,13 @@ void barycentric_reorder(hierarchy& h, const ir_graph& g, unsigned transpose_ite
       update_pos();
       auto& layer = h.layers[li];
       for (int i = 0; i + 1 < (int)layer.size(); ++i) {
-        int oldc = crossing_number(h, g, li, i, i + 1, pos_in_layer);
+        int oldc = crossing_number(h, g, li, static_cast<std::size_t>(i),
+                                   static_cast<std::size_t>(i + 1), pos_in_layer);
         // swap and test
         std::swap(layer[i], layer[i + 1]);
         update_pos();
-        int newc = crossing_number(h, g, li, i, i + 1, pos_in_layer);
+        int newc = crossing_number(h, g, li, static_cast<std::size_t>(i),
+                                   static_cast<std::size_t>(i + 1), pos_in_layer);
         if (newc < oldc) {
           improved = true;
         } else {
@@ -274,32 +276,33 @@ void barycentric_reorder(hierarchy& h, const ir_graph& g, unsigned transpose_ite
 }
 
 // Simple positioning: place nodes per layer left-to-right with equal spacing; center nodes by layer
+// Simple positioning: place nodes per layer left-to-right with equal spacing; center nodes by layer
 struct coords {
-  std::vector<float> x;  // by node id
-  std::vector<float> y;  // by node id
+  std::vector<double> x;  // by node id
+  std::vector<double> y;  // by node id
 };
 
 coords simple_positioning(const hierarchy& h, const ir_graph& g, const sugiyama_options& opt) {
   int n = (int)g.nodes.size();
   coords c;
-  c.x.assign(n, 0.0f);
-  c.y.assign(n, 0.0f);
-  float y = 0.0f;
+  c.x.assign(n, 0.0);
+  c.y.assign(n, 0.0);
+  double y = 0.0;
   for (int li = 0; li < (int)h.layers.size(); ++li) {
     auto const& layer = h.layers[li];
-    float x = 0.0f;
+    double x = 0.0;
     for (int i = 0; i < (int)layer.size(); ++i) {
-      int u = layer[i];
+      std::size_t u = layer[i];
       c.x[u] = x;
       c.y[u] = y;
       x += opt.node_dist;
     }
     // center layer by subtracting half-width
     if (!layer.empty()) {
-      float minx = c.x[layer.front()];
-      float maxx = c.x[layer.back()];
-      float mid = (minx + maxx) / 2.0f;
-      float shift = -mid;
+      double minx = c.x[layer.front()];
+      double maxx = c.x[layer.back()];
+      double mid = (minx + maxx) / 2.0;
+      double shift = -mid;
       for (auto u : layer) c.x[u] += shift;
     }
     y += opt.layer_dist;
@@ -311,6 +314,7 @@ coords simple_positioning(const hierarchy& h, const ir_graph& g, const sugiyama_
 coords sugiyama_layout_compute(const ir_graph& g, const sugiyama_options& opt = {}) {
   auto h = build_hierarchy(g);
   auto long_edges = find_long_edges(g, h);
+  (void)long_edges;
   barycentric_reorder(h, g, opt.transpose_iters);
   auto c = simple_positioning(h, g, opt);
   // note: we don't handle routing or dummy node expansion here; renderer can use coords for node

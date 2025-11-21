@@ -226,7 +226,7 @@ inline RenderState create_initial_state(const ir_graph& g, std::string_view /*ti
  * transposition passes. Produces final `centers` map of node id -> x,y.
  */
 inline std::unordered_map<std::uint64_t, std::pair<double, double>> resolve_overlaps_and_ordering(
-    RenderState& st, const ir_graph& g) {
+    RenderState& st) {
   // Build by_rank grouping
   for (auto id : st.ids) {
     int r = st.rank_val[id];
@@ -506,8 +506,8 @@ inline void emit_svg_output(
     std::string_view title) {
   // Helper: build marker id map and marker list from edge styles
   auto build_markers = [&](const ir_graph& graph,
-                          std::unordered_map<std::string, std::string>& out_map,
-                          std::vector<std::pair<std::string, std::string>>& out_markers) {
+                           std::unordered_map<std::string, std::string>& out_map,
+                           std::vector<std::pair<std::string, std::string>>& out_markers) {
     int marker_ctr = 0;
     for (const auto& e : graph.edges) {
       const auto& amap = e.attributes;
@@ -523,9 +523,7 @@ inline void emit_svg_output(
   };
 
   // Helper: render edges (writes base lines, collects marker segments)
-  auto render_edges = [&](std::ostream& os_inner,
-                          const ir_graph& graph,
-                          const RenderState& state,
+  auto render_edges = [&](std::ostream& os_inner, const ir_graph& graph, const RenderState& state,
                           const std::unordered_map<std::uint64_t, std::pair<double, double>>& ctrs,
                           const std::unordered_map<std::string, std::string>& marker_id_for_style)
       -> std::vector<std::string> {
@@ -566,20 +564,22 @@ inline void emit_svg_output(
         return (denom < eps) ? 0.0 : (1.0 / denom);
       };
 
-        const auto& s_attrs =
+      const auto& s_attrs =
           graph.nodes
-            .at(std::distance(graph.nodes.begin(),
-                    std::find_if(graph.nodes.begin(), graph.nodes.end(),
-                           [&](const auto& n) { return n.id == e.source; })))
-            .attributes;
-        const auto& t_attrs =
+              .at(std::distance(graph.nodes.begin(),
+                                std::find_if(graph.nodes.begin(), graph.nodes.end(),
+                                             [&](const auto& n) { return n.id == e.source; })))
+              .attributes;
+      const auto& t_attrs =
           graph.nodes
-            .at(std::distance(graph.nodes.begin(),
-                    std::find_if(graph.nodes.begin(), graph.nodes.end(),
-                           [&](const auto& n) { return n.id == e.target; })))
-            .attributes;
-      const std::string s_shape = lookup_or(s_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
-      const std::string t_shape = lookup_or(t_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
+              .at(std::distance(graph.nodes.begin(),
+                                std::find_if(graph.nodes.begin(), graph.nodes.end(),
+                                             [&](const auto& n) { return n.id == e.target; })))
+              .attributes;
+      const std::string s_shape =
+          lookup_or(s_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
+      const std::string t_shape =
+          lookup_or(t_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
 
       double t_source = 0.0;
       double t_target = 0.0;
@@ -622,8 +622,8 @@ inline void emit_svg_output(
       os_inner << std::format(
           "  <line x1=\"{:.1f}\" y1=\"{:.1f}\" x2=\"{:.1f}\" y2=\"{:.1f}\" stroke=\"{}\" "
           "stroke-width=\"{}\" color=\"{}\"{} />\n",
-          x1, y1, x2, y2, render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw),
-          render_svg_detail::escape_xml(stroke), dash_attr);
+          x1, y1, x2, y2, render_svg_detail::escape_xml(stroke),
+          render_svg_detail::escape_xml(penw), render_svg_detail::escape_xml(stroke), dash_attr);
 
       if (!marker_ref.empty()) {
         const double marker_len = 8.0;
@@ -642,7 +642,8 @@ inline void emit_svg_output(
         const double lx = (x1 + x2) / 2.0;
         const double ly = (y1 + y2) / 2.0;
         os_inner << std::format(
-            "  <text x=\"{:.1f}\" y=\"{:.1f}\" text-anchor=\"middle\" alignment-baseline=\"middle\" "
+            "  <text x=\"{:.1f}\" y=\"{:.1f}\" text-anchor=\"middle\" "
+            "alignment-baseline=\"middle\" "
             "font-size=\"10\">{}</text>\n",
             lx, ly, render_svg_detail::escape_xml(amap.at(std::string(ir_attrs::k_label))));
       }
@@ -651,10 +652,9 @@ inline void emit_svg_output(
   };
 
   // Helper: render nodes group
-  auto render_nodes = [&](std::ostream& os_inner,
-                          const ir_graph& graph,
-                          const RenderState& state,
-                          const std::unordered_map<std::uint64_t, std::pair<double, double>>& ctrs) {
+  auto render_nodes = [&](std::ostream& os_inner, const ir_graph& graph, const RenderState& state,
+                          const std::unordered_map<std::uint64_t, std::pair<double, double>>&
+                              ctrs) {
     for (const auto& n : graph.nodes) {
       const auto cid = n.id;
       const double cx = ctrs.at(cid).first;
@@ -725,10 +725,12 @@ inline void emit_svg_output(
             render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
       }
 
-      const std::string label =
-          amap.count(std::string(ir_attrs::k_label)) ? amap.at(std::string(ir_attrs::k_label)) : name;
+      const std::string label = amap.count(std::string(ir_attrs::k_label))
+                                    ? amap.at(std::string(ir_attrs::k_label))
+                                    : name;
       os_inner << std::format(
-          "    <text x=\"{:.1f}\" y=\"{:.1f}\" text-anchor=\"middle\" alignment-baseline=\"middle\" "
+          "    <text x=\"{:.1f}\" y=\"{:.1f}\" text-anchor=\"middle\" "
+          "alignment-baseline=\"middle\" "
           "font-family=\"{}\" font-size=\"{}\">{}</text>\n",
           cx, cy, render_svg_detail::escape_xml(fontname), render_svg_detail::escape_xml(fontsize),
           render_svg_detail::escape_xml(label));
@@ -794,7 +796,7 @@ inline void render_svg(std::ostream& os, const ir_graph& g, std::string_view tit
   auto st = render_svg_detail::create_initial_state(g, title);
 
   // Resolve ordering, overlaps and compute preliminary centers.
-  auto centers = render_svg_detail::resolve_overlaps_and_ordering(st, g);
+  auto centers = render_svg_detail::resolve_overlaps_and_ordering(st);
 
   // Apply the Sugiyama layout which may override centers
   // and expand horizontal extents to avoid overlaps.
