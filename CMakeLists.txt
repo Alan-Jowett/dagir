@@ -187,10 +187,13 @@ option(DAGIR_STRICT_WARNINGS "Enable /W4 and treat warnings as errors" ON)
 if(DAGIR_STRICT_WARNINGS)
   if(MSVC)
     # /W4: high warning level, /WX: treat warnings as errors
-    target_compile_options(dagir INTERFACE /W4 /WX /wd4996 /permissive-)
+    # Don't force /WX on external subprojects; apply warning level on INTERFACE
+    # so consumers get warnings, but keep treating warnings-as-errors scoped to
+    # targets we control (tests/examples) below.
+    target_compile_options(dagir INTERFACE /W4 /wd4996 /permissive-)
   elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # -Wall -Wextra -Wpedantic for broad warnings, -Werror to make them fatal
-    target_compile_options(dagir INTERFACE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(dagir INTERFACE -Wall -Wextra -Wpedantic)
   endif()
 endif()
 
@@ -230,6 +233,10 @@ if(DAGIR_BUILD_TESTS)
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git
       GIT_TAG        v3.6.0   # pin to a known version
     )
+    # Ensure Catch2 doesn't enable -Werror for its targets when built as a
+    # subproject; prefer the project-wide policy to avoid failing on
+    # third-party warnings.
+    set(CATCH_ENABLE_WERROR OFF CACHE BOOL "Disable Catch2 Werror when fetched" FORCE)
     # Work around shallow clone timestamp issues on older CMake/Windows machines.
     cmake_policy(PUSH)
     if(POLICY CMP0135)
@@ -252,11 +259,20 @@ if(DAGIR_BUILD_TESTS)
       dagir::dagir
       Catch2::Catch2WithMain)
 
-    # Cross-platform warning levels for tests (non-fatal if unsupported).
+    # Cross-platform warning levels for tests. When strict warnings are
+    # enabled, also treat warnings as errors for our controlled targets only.
     if(MSVC)
-      target_compile_options(dagir_tests PRIVATE /W4 /wd4996 /permissive-)
+      if(DAGIR_STRICT_WARNINGS)
+        target_compile_options(dagir_tests PRIVATE /W4 /WX /wd4996 /permissive-)
+      else()
+        target_compile_options(dagir_tests PRIVATE /W4 /wd4996 /permissive-)
+      endif()
     else()
-      target_compile_options(dagir_tests PRIVATE -Wall -Wextra -Wpedantic)
+      if(DAGIR_STRICT_WARNINGS)
+        target_compile_options(dagir_tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
+      else()
+        target_compile_options(dagir_tests PRIVATE -Wall -Wextra -Wpedantic)
+      endif()
     endif()
 
     # On macOS make sure executables can find dependent dylibs via rpath if needed
@@ -327,9 +343,17 @@ if(DAGIR_EXAMPLES)
     endif()
 
     if(MSVC)
-      target_compile_options(${_target_name} PRIVATE /W4 /wd4996 /permissive-)
+      if(DAGIR_STRICT_WARNINGS)
+        target_compile_options(${_target_name} PRIVATE /W4 /WX /wd4996 /permissive-)
+      else()
+        target_compile_options(${_target_name} PRIVATE /W4 /wd4996 /permissive-)
+      endif()
     else()
-      target_compile_options(${_target_name} PRIVATE -Wall -Wextra -Wpedantic)
+      if(DAGIR_STRICT_WARNINGS)
+        target_compile_options(${_target_name} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+      else()
+        target_compile_options(${_target_name} PRIVATE -Wall -Wextra -Wpedantic)
+      endif()
     endif()
 
     set_target_properties(${_target_name} PROPERTIES
