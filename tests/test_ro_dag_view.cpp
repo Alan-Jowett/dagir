@@ -14,7 +14,14 @@
  * SPDX-License-Identifier: MIT
  */
 
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 #include <catch2/catch_test_macros.hpp>
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 #include "mock_dag.hpp"
 
