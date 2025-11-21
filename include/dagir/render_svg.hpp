@@ -504,21 +504,242 @@ inline void emit_svg_output(
     std::ostream& os, const ir_graph& g, RenderState& st,
     const std::unordered_map<std::uint64_t, std::pair<double, double>>& centers,
     std::string_view title) {
+  // Helper: build marker id map and marker list from edge styles
+  auto build_markers = [&](const ir_graph& graph,
+                          std::unordered_map<std::string, std::string>& out_map,
+                          std::vector<std::pair<std::string, std::string>>& out_markers) {
+    int marker_ctr = 0;
+    for (const auto& e : graph.edges) {
+      const auto& amap = e.attributes;
+      const std::string stroke = lookup_or(amap, std::string_view(ir_attrs::k_color), "#000000");
+      const std::string penw = lookup_or(amap, std::string_view(ir_attrs::k_pen_width), "1");
+      const std::string key = stroke + "|" + penw;
+      if (out_map.find(key) == out_map.end()) {
+        const std::string id = std::format("dagir-arrow-{}", marker_ctr++);
+        out_map[key] = id;
+        out_markers.emplace_back(id, stroke);
+      }
+    }
+  };
+
+  // Helper: render edges (writes base lines, collects marker segments)
+  auto render_edges = [&](std::ostream& os_inner,
+                          const ir_graph& graph,
+                          const RenderState& state,
+                          const std::unordered_map<std::uint64_t, std::pair<double, double>>& ctrs,
+                          const std::unordered_map<std::string, std::string>& marker_id_for_style)
+      -> std::vector<std::string> {
+    std::vector<std::string> marker_segments;
+    for (const auto& e : graph.edges) {
+      const auto s_it = ctrs.find(e.source);
+      const auto t_it = ctrs.find(e.target);
+      if (s_it == ctrs.end() || t_it == ctrs.end()) continue;
+      double sx = s_it->second.first;
+      double sy = s_it->second.second;
+      double tx = t_it->second.first;
+      double ty = t_it->second.second;
+
+      const auto& amap = e.attributes;
+      const std::string stroke = lookup_or(amap, std::string_view(ir_attrs::k_color), "#000000");
+      const std::string penw = lookup_or(amap, std::string_view(ir_attrs::k_pen_width), "1");
+
+      const double dx = tx - sx;
+      const double dy = ty - sy;
+      double len = std::sqrt(dx * dx + dy * dy);
+      if (len < 1e-6) continue;
+      const double nx = dx / len;
+      const double ny = dy / len;
+      const double half_x = state.node_w / 2.0;
+      const double half_y = state.node_h / 2.0;
+      auto compute_t_rect = [&](double nxv, double nyv, double hx, double hy) {
+        const double epsv = 1e-9;
+        const double ax = std::abs(nxv);
+        const double ay = std::abs(nyv);
+        if (ax < epsv && ay < epsv) return 0.0;
+        if (ax < epsv) return hy / ay;
+        if (ay < epsv) return hx / ax;
+        return std::min(hx / ax, hy / ay);
+      };
+      auto compute_t_ellipse = [&](double nxv, double nyv, double rx, double ry) {
+        const double eps = 1e-12;
+        const double denom = std::sqrt((nxv * nxv) / (rx * rx) + (nyv * nyv) / (ry * ry));
+        return (denom < eps) ? 0.0 : (1.0 / denom);
+      };
+
+      const auto& s_attrs =
+          graph
+              .at(std::distance(graph.begin(),
+                                std::find_if(graph.begin(), graph.end(),
+                                             [&](const auto& n) { return n.id == e.source; })))
+              .attributes;
+      const auto& t_attrs =
+          graph
+              .at(std::distance(graph.begin(),
+                                std::find_if(graph.begin(), graph.end(),
+                                             [&](const auto& n) { return n.id == e.target; })))
+              .attributes;
+      const std::string s_shape = lookup_or(s_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
+      const std::string t_shape = lookup_or(t_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
+
+      double t_source = 0.0;
+      double t_target = 0.0;
+      if (s_shape == "circle") {
+        const double r = std::max(state.node_w, state.node_h) / 2.0;
+        t_source = compute_t_ellipse(nx, ny, r, r);
+      } else if (s_shape == "ellipse") {
+        t_source = compute_t_ellipse(nx, ny, half_x, half_y);
+      } else {
+        t_source = compute_t_rect(nx, ny, half_x, half_y);
+      }
+      if (t_shape == "circle") {
+        const double r = std::max(state.node_w, state.node_h) / 2.0;
+        t_target = compute_t_ellipse(-nx, -ny, r, r);
+      } else if (t_shape == "ellipse") {
+        t_target = compute_t_ellipse(-nx, -ny, half_x, half_y);
+      } else {
+        t_target = compute_t_rect(-nx, -ny, half_x, half_y);
+      }
+      const double x1 = sx + nx * t_source;
+      const double y1 = sy + ny * t_source;
+      const double x2 = tx - nx * t_target;
+      const double y2 = ty - ny * t_target;
+
+      const std::string style = lookup_or(amap, std::string_view(ir_attrs::k_style), "");
+      std::string dash_attr;
+      if (!style.empty()) {
+        if (style.find("dotted") != std::string::npos)
+          dash_attr = " stroke-dasharray=\"2,3\"";
+        else if (style.find("dashed") != std::string::npos)
+          dash_attr = " stroke-dasharray=\"6,4\"";
+      }
+
+      const std::string key = render_svg_detail::escape_xml(stroke) + std::string("|") +
+                              render_svg_detail::escape_xml(penw);
+      std::string marker_ref = "";
+      auto mit = marker_id_for_style.find(key);
+      if (mit != marker_id_for_style.end()) marker_ref = mit->second;
+
+      os_inner << std::format(
+          "  <line x1=\"{:.1f}\" y1=\"{:.1f}\" x2=\"{:.1f}\" y2=\"{:.1f}\" stroke=\"{}\" "
+          "stroke-width=\"{}\" color=\"{}\"{} />\n",
+          x1, y1, x2, y2, render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw),
+          render_svg_detail::escape_xml(stroke), dash_attr);
+
+      if (!marker_ref.empty()) {
+        const double marker_len = 8.0;
+        const double sx_marker = x2 - nx * marker_len;
+        const double sy_marker = y2 - ny * marker_len;
+        const std::string seg = std::format(
+            "  <line x1=\"{:.1f}\" y1=\"{:.1f}\" x2=\"{:.1f}\" y2=\"{:.1f}\" stroke=\"{}\" "
+            "stroke-width=\"{}\" color=\"{}\"{} marker-end=\"url(#{})\" />\n",
+            sx_marker, sy_marker, x2, y2, render_svg_detail::escape_xml(stroke),
+            render_svg_detail::escape_xml(penw), render_svg_detail::escape_xml(stroke), dash_attr,
+            marker_ref);
+        marker_segments.push_back(seg);
+      }
+
+      if (amap.count(std::string(ir_attrs::k_label))) {
+        const double lx = (x1 + x2) / 2.0;
+        const double ly = (y1 + y2) / 2.0;
+        os_inner << std::format(
+            "  <text x=\"{:.1f}\" y=\"{:.1f}\" text-anchor=\"middle\" alignment-baseline=\"middle\" "
+            "font-size=\"10\">{}</text>\n",
+            lx, ly, render_svg_detail::escape_xml(amap.at(std::string(ir_attrs::k_label))));
+      }
+    }
+    return marker_segments;
+  };
+
+  // Helper: render nodes group
+  auto render_nodes = [&](std::ostream& os_inner,
+                          const ir_graph& graph,
+                          const RenderState& state,
+                          const std::unordered_map<std::uint64_t, std::pair<double, double>>& ctrs) {
+    for (const auto& n : graph.nodes) {
+      const auto cid = n.id;
+      const double cx = ctrs.at(cid).first;
+      const double cy = ctrs.at(cid).second;
+      const double x = cx - state.node_w / 2.0;
+      const double y = cy - state.node_h / 2.0;
+
+      const auto& amap = n.attributes;
+      const std::string name = amap.count("name") ? amap.at("name") : std::format("n{}", n.id);
+      const std::string id_safe = state.elem_id.at(cid);
+
+      const std::string fill = lookup_or(amap, std::string_view(ir_attrs::k_fill_color), "#ffffff");
+      const std::string stroke = lookup_or(amap, std::string_view(ir_attrs::k_color), "#000000");
+      const std::string penw = lookup_or(amap, std::string_view(ir_attrs::k_pen_width), "1");
+      const std::string fontsize = lookup_or(amap, std::string_view(ir_attrs::k_font_size), "12");
+      const std::string fontname =
+          lookup_or(amap, std::string_view(ir_attrs::k_font_name), "sans-serif");
+
+      os_inner << std::format("  <g id=\"{}\">\n", id_safe);
+      const std::string shape = lookup_or(amap, std::string_view(ir_attrs::k_shape), "ellipse");
+      if (shape == "box") {
+        os_inner << std::format(
+            "    <rect x=\"{:.1f}\" y=\"{:.1f}\" width=\"{:.1f}\" height=\"{:.1f}\" rx=\"6\" "
+            "ry=\"6\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
+            x, y, state.node_w, state.node_h, render_svg_detail::escape_xml(fill),
+            render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
+      } else if (shape == "circle") {
+        const double r = std::max(state.node_w, state.node_h) / 2.0;
+        os_inner << std::format(
+            "    <circle cx=\"{:.1f}\" cy=\"{:.1f}\" r=\"{:.1f}\" fill=\"{}\" stroke=\"{}\" "
+            "stroke-width=\"{}\" />\n",
+            cx, cy, r, render_svg_detail::escape_xml(fill), render_svg_detail::escape_xml(stroke),
+            render_svg_detail::escape_xml(penw));
+      } else if (shape == "ellipse") {
+        os_inner << std::format(
+            "    <ellipse cx=\"{:.1f}\" cy=\"{:.1f}\" rx=\"{:.1f}\" ry=\"{:.1f}\" fill=\"{}\" "
+            "stroke=\"{}\" stroke-width=\"{}\" />\n",
+            cx, cy, state.node_w / 2.0, state.node_h / 2.0, render_svg_detail::escape_xml(fill),
+            render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
+      } else if (shape == "stadium") {
+        const double rxv = state.node_h / 2.0;
+        os_inner << std::format(
+            "    <rect x=\"{:.1f}\" y=\"{:.1f}\" width=\"{:.1f}\" height=\"{:.1f}\" rx=\"{:.1f}\" "
+            "ry=\"{:.1f}\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
+            x, y, state.node_w, state.node_h, rxv, rxv, render_svg_detail::escape_xml(fill),
+            render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
+      } else if (shape == "diamond") {
+        const double hx = state.node_w / 2.0;
+        const double hy = state.node_h / 2.0;
+        const double x1 = cx;
+        const double y1 = cy - hy;
+        const double x2 = cx + hx;
+        const double y2 = cy;
+        const double x3 = cx;
+        const double y3 = cy + hy;
+        const double x4 = cx - hx;
+        const double y4 = cy;
+        os_inner << std::format(
+            "    <polygon points=\"{:.1f},{:.1f} {:.1f},{:.1f} {:.1f},{:.1f} {:.1f},{:.1f}\" "
+            "fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
+            x1, y1, x2, y2, x3, y3, x4, y4, render_svg_detail::escape_xml(fill),
+            render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
+      } else {
+        os_inner << std::format(
+            "    <rect x=\"{:.1f}\" y=\"{:.1f}\" width=\"{:.1f}\" height=\"{:.1f}\" rx=\"6\" "
+            "ry=\"6\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
+            x, y, state.node_w, state.node_h, render_svg_detail::escape_xml(fill),
+            render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
+      }
+
+      const std::string label =
+          amap.count(std::string(ir_attrs::k_label)) ? amap.at(std::string(ir_attrs::k_label)) : name;
+      os_inner << std::format(
+          "    <text x=\"{:.1f}\" y=\"{:.1f}\" text-anchor=\"middle\" alignment-baseline=\"middle\" "
+          "font-family=\"{}\" font-size=\"{}\">{}</text>\n",
+          cx, cy, render_svg_detail::escape_xml(fontname), render_svg_detail::escape_xml(fontsize),
+          render_svg_detail::escape_xml(label));
+      os_inner << "  </g>\n";
+    }
+  };
+
   // Build marker defs
   std::unordered_map<std::string, std::string> marker_id_for_style;
   std::vector<std::pair<std::string, std::string>> markers;
-  int marker_ctr = 0;
-  for (const auto& e : g.edges) {
-    const auto& amap = e.attributes;
-    const std::string stroke = lookup_or(amap, std::string_view(ir_attrs::k_color), "#000000");
-    const std::string penw = lookup_or(amap, std::string_view(ir_attrs::k_pen_width), "1");
-    const std::string key = stroke + "|" + penw;
-    if (marker_id_for_style.find(key) == marker_id_for_style.end()) {
-      const std::string id = std::format("dagir-arrow-{}", marker_ctr++);
-      marker_id_for_style[key] = id;
-      markers.emplace_back(id, stroke);
-    }
-  }
+  build_markers(g, marker_id_for_style, markers);
 
   os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   os << std::format(
@@ -544,127 +765,7 @@ inline void emit_svg_output(
     os << std::format(
         "    <marker id=\"{}\" viewBox=\"0 0 8 6\" markerWidth=\"8\" markerHeight=\"6\" refX=\"8\" "
         "refY=\"3\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\n",
-        m.first);
-    const auto col = render_svg_detail::escape_xml(m.second);
-    os << std::format("      <path d=\"M0 0 L8 3 L0 6 z\" fill=\"{}\" stroke=\"{}\" />\n", col,
-                      col);
-    os << "    </marker>\n";
-  }
-  os << "  </defs>\n";
-
-  // Render edges and collect marker segments
-  std::vector<std::string> marker_segments;
-  for (const auto& e : g.edges) {
-    const auto s_it = centers.find(e.source);
-    const auto t_it = centers.find(e.target);
-    if (s_it == centers.end() || t_it == centers.end()) continue;
-    double sx = s_it->second.first;
-    double sy = s_it->second.second;
-    double tx = t_it->second.first;
-    double ty = t_it->second.second;
-
-    const auto& amap = e.attributes;
-    const std::string stroke = lookup_or(amap, std::string_view(ir_attrs::k_color), "#000000");
-    const std::string penw = lookup_or(amap, std::string_view(ir_attrs::k_pen_width), "1");
-
-    const double dx = tx - sx;
-    const double dy = ty - sy;
-    double len = std::sqrt(dx * dx + dy * dy);
-    if (len < 1e-6) continue;
-    const double nx = dx / len;
-    const double ny = dy / len;
-    const double half_x = st.node_w / 2.0;
-    const double half_y = st.node_h / 2.0;
-    auto compute_t_rect = [&](double nx, double ny, double hx, double hy) {
-      const double epsv = 1e-9;
-      const double ax = std::abs(nx);
-      const double ay = std::abs(ny);
-      if (ax < epsv && ay < epsv) return 0.0;
-      if (ax < epsv) return hy / ay;
-      if (ay < epsv) return hx / ax;
-      return std::min(hx / ax, hy / ay);
-    };
-    auto compute_t_ellipse = [&](double nx, double ny, double rx, double ry) {
-      // For an axis-aligned ellipse (rx,ry) and a direction vector (nx,ny)
-      // we solve t in (t*nx/rx)^2 + (t*ny/ry)^2 = 1 ->
-      // t = 1 / sqrt((nx^2)/(rx^2) + (ny^2)/(ry^2)).
-      const double eps = 1e-12;
-      const double denom = std::sqrt((nx * nx) / (rx * rx) + (ny * ny) / (ry * ry));
-      return (denom < eps) ? 0.0 : (1.0 / denom);
-    };
-
-    const auto& s_attrs =
-        g.nodes
-            .at(std::distance(g.nodes.begin(),
-                              std::find_if(g.nodes.begin(), g.nodes.end(),
-                                           [&](const auto& n) { return n.id == e.source; })))
-            .attributes;
-    const auto& t_attrs =
-        g.nodes
-            .at(std::distance(g.nodes.begin(),
-                              std::find_if(g.nodes.begin(), g.nodes.end(),
-                                           [&](const auto& n) { return n.id == e.target; })))
-            .attributes;
-    const std::string s_shape = lookup_or(s_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
-    const std::string t_shape = lookup_or(t_attrs, std::string_view(ir_attrs::k_shape), "ellipse");
-
-    double t_source = 0.0;
-    double t_target = 0.0;
-    if (s_shape == "circle") {
-      const double r = std::max(st.node_w, st.node_h) / 2.0;
-      t_source = compute_t_ellipse(nx, ny, r, r);
-    } else if (s_shape == "ellipse") {
-      t_source = compute_t_ellipse(nx, ny, half_x, half_y);
-    } else {
-      t_source = compute_t_rect(nx, ny, half_x, half_y);
-    }
-    if (t_shape == "circle") {
-      const double r = std::max(st.node_w, st.node_h) / 2.0;
-      t_target = compute_t_ellipse(-nx, -ny, r, r);
-    } else if (t_shape == "ellipse") {
-      t_target = compute_t_ellipse(-nx, -ny, half_x, half_y);
-    } else {
-      t_target = compute_t_rect(-nx, -ny, half_x, half_y);
-    }
-    const double x1 = sx + nx * t_source;
-    const double y1 = sy + ny * t_source;
-    const double x2 = tx - nx * t_target;
-    const double y2 = ty - ny * t_target;
-
-    const std::string style = lookup_or(amap, std::string_view(ir_attrs::k_style), "");
-    std::string dash_attr;
-    if (!style.empty()) {
-      if (style.find("dotted") != std::string::npos)
-        dash_attr = " stroke-dasharray=\"2,3\"";
-      else if (style.find("dashed") != std::string::npos)
-        dash_attr = " stroke-dasharray=\"6,4\"";
-    }
-
-    const std::string key = render_svg_detail::escape_xml(stroke) + std::string("|") +
-                            render_svg_detail::escape_xml(penw);
-    std::string marker_ref = "";
-    auto mit = marker_id_for_style.find(key);
-    if (mit != marker_id_for_style.end()) marker_ref = mit->second;
-
-    os << std::format(
-        "  <line x1=\"{:.1f}\" y1=\"{:.1f}\" x2=\"{:.1f}\" y2=\"{:.1f}\" stroke=\"{}\" "
-        "stroke-width=\"{}\" color=\"{}\"{} />\n",
-        x1, y1, x2, y2, render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw),
-        render_svg_detail::escape_xml(stroke), dash_attr);
-
-    if (!marker_ref.empty()) {
-      const double marker_len = 8.0;
-      const double sx_marker = x2 - nx * marker_len;
-      const double sy_marker = y2 - ny * marker_len;
-      const std::string seg = std::format(
-          "  <line x1=\"{:.1f}\" y1=\"{:.1f}\" x2=\"{:.1f}\" y2=\"{:.1f}\" stroke=\"{}\" "
-          "stroke-width=\"{}\" color=\"{}\"{} marker-end=\"url(#{})\" />\n",
-          sx_marker, sy_marker, x2, y2, render_svg_detail::escape_xml(stroke),
-          render_svg_detail::escape_xml(penw), render_svg_detail::escape_xml(stroke), dash_attr,
-          marker_ref);
-      marker_segments.push_back(seg);
-    }
-
+    auto marker_segments = render_edges(os, g, st, centers, marker_id_for_style);
     if (amap.count(std::string(ir_attrs::k_label))) {
       const double lx = (x1 + x2) / 2.0;
       const double ly = (y1 + y2) / 2.0;
@@ -675,86 +776,7 @@ inline void emit_svg_output(
     }
   }
 
-  // Render nodes
-  for (const auto& n : g.nodes) {
-    const auto cid = n.id;
-    const double cx = centers.at(cid).first;
-    const double cy = centers.at(cid).second;
-    const double x = cx - st.node_w / 2.0;
-    const double y = cy - st.node_h / 2.0;
-
-    const auto& amap = n.attributes;
-    const std::string name = amap.count("name") ? amap.at("name") : std::format("n{}", n.id);
-    const std::string id_safe = st.elem_id[cid];
-
-    const std::string fill = lookup_or(amap, std::string_view(ir_attrs::k_fill_color), "#ffffff");
-    const std::string stroke = lookup_or(amap, std::string_view(ir_attrs::k_color), "#000000");
-    const std::string penw = lookup_or(amap, std::string_view(ir_attrs::k_pen_width), "1");
-    const std::string fontsize = lookup_or(amap, std::string_view(ir_attrs::k_font_size), "12");
-    const std::string fontname =
-        lookup_or(amap, std::string_view(ir_attrs::k_font_name), "sans-serif");
-
-    os << std::format("  <g id=\"{}\">\n", id_safe);
-    const std::string shape = lookup_or(amap, std::string_view(ir_attrs::k_shape), "ellipse");
-    if (shape == "box") {
-      os << std::format(
-          "    <rect x=\"{:.1f}\" y=\"{:.1f}\" width=\"{:.1f}\" height=\"{:.1f}\" rx=\"6\" "
-          "ry=\"6\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
-          x, y, st.node_w, st.node_h, render_svg_detail::escape_xml(fill),
-          render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
-    } else if (shape == "circle") {
-      const double r = std::max(st.node_w, st.node_h) / 2.0;
-      os << std::format(
-          "    <circle cx=\"{:.1f}\" cy=\"{:.1f}\" r=\"{:.1f}\" fill=\"{}\" stroke=\"{}\" "
-          "stroke-width=\"{}\" />\n",
-          cx, cy, r, render_svg_detail::escape_xml(fill), render_svg_detail::escape_xml(stroke),
-          render_svg_detail::escape_xml(penw));
-    } else if (shape == "ellipse") {
-      os << std::format(
-          "    <ellipse cx=\"{:.1f}\" cy=\"{:.1f}\" rx=\"{:.1f}\" ry=\"{:.1f}\" fill=\"{}\" "
-          "stroke=\"{}\" stroke-width=\"{}\" />\n",
-          cx, cy, st.node_w / 2.0, st.node_h / 2.0, render_svg_detail::escape_xml(fill),
-          render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
-    } else if (shape == "stadium") {
-      const double rxv = st.node_h / 2.0;
-      os << std::format(
-          "    <rect x=\"{:.1f}\" y=\"{:.1f}\" width=\"{:.1f}\" height=\"{:.1f}\" rx=\"{:.1f}\" "
-          "ry=\"{:.1f}\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
-          x, y, st.node_w, st.node_h, rxv, rxv, render_svg_detail::escape_xml(fill),
-          render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
-    } else if (shape == "diamond") {
-      const double hx = st.node_w / 2.0;
-      const double hy = st.node_h / 2.0;
-      const double x1 = cx;
-      const double y1 = cy - hy;
-      const double x2 = cx + hx;
-      const double y2 = cy;
-      const double x3 = cx;
-      const double y3 = cy + hy;
-      const double x4 = cx - hx;
-      const double y4 = cy;
-      os << std::format(
-          "    <polygon points=\"{:.1f},{:.1f} {:.1f},{:.1f} {:.1f},{:.1f} {:.1f},{:.1f}\" "
-          "fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
-          x1, y1, x2, y2, x3, y3, x4, y4, render_svg_detail::escape_xml(fill),
-          render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
-    } else {
-      os << std::format(
-          "    <rect x=\"{:.1f}\" y=\"{:.1f}\" width=\"{:.1f}\" height=\"{:.1f}\" rx=\"6\" "
-          "ry=\"6\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" />\n",
-          x, y, st.node_w, st.node_h, render_svg_detail::escape_xml(fill),
-          render_svg_detail::escape_xml(stroke), render_svg_detail::escape_xml(penw));
-    }
-
-    const std::string label =
-        amap.count(std::string(ir_attrs::k_label)) ? amap.at(std::string(ir_attrs::k_label)) : name;
-    os << std::format(
-        "    <text x=\"{:.1f}\" y=\"{:.1f}\" text-anchor=\"middle\" alignment-baseline=\"middle\" "
-        "font-family=\"{}\" font-size=\"{}\">{}</text>\n",
-        cx, cy, render_svg_detail::escape_xml(fontname), render_svg_detail::escape_xml(fontsize),
-        render_svg_detail::escape_xml(label));
-    os << "  </g>\n";
-  }
+  render_nodes(os, g, st, centers);
 
   for (const auto& seg : marker_segments) os << seg;
   os << "</svg>\n";
