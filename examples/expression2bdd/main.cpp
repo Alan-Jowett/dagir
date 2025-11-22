@@ -49,7 +49,7 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
   dagir::ir_graph ir = in_ir;  // make a local copy we can reorder
 
   auto node_print_name = [&](const dagir::ir_node& n) {
-    auto it = n.attributes.find("name");
+    auto it = n.attributes.find(dagir::ir_attrs::k_id);
     if (it != n.attributes.end()) return it->second;
     return std::to_string(n.id);
   };
@@ -57,8 +57,8 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
   // Sort nodes by printable name ('name' attribute if present, otherwise id)
   std::sort(
       ir.nodes.begin(), ir.nodes.end(), [&](const dagir::ir_node& a, const dagir::ir_node& b) {
-        auto a_it = a.attributes.find("name");
-        auto b_it = b.attributes.find("name");
+        auto a_it = a.attributes.find(dagir::ir_attrs::k_id);
+        auto b_it = b.attributes.find(dagir::ir_attrs::k_id);
         std::string a_name = (a_it != a.attributes.end()) ? a_it->second : std::to_string(a.id);
         std::string b_name = (b_it != b.attributes.end()) ? b_it->second : std::to_string(b.id);
         if (a_name != b_name) return a_name < b_name;
@@ -98,7 +98,7 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
               // Prefer true-edges (solid) before false-edges (dashed) to match
               // the sample expected ordering used in the repository.
               auto style_of = [&](const dagir::ir_edge& e) -> std::string {
-                auto it = e.attributes.find(std::string{dagir::ir_attrs::k_style});
+                auto it = e.attributes.find(dagir::ir_attrs::k_style);
                 if (it != e.attributes.end()) return it->second;
                 return std::string{};
               };
@@ -115,7 +115,7 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
     auto it = std::find_if(ir.nodes.begin(), ir.nodes.end(),
                            [&](const dagir::ir_node& n) { return n.id == id; });
     if (it != ir.nodes.end()) {
-      auto nit = it->attributes.find("name");
+      auto nit = it->attributes.find(dagir::ir_attrs::k_id);
       if (nit != it->attributes.end()) return nit->second;
       return std::to_string(it->id);
     }
@@ -130,8 +130,8 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
               const std::string a_tgt = find_node_name(A.target);
               const std::string b_tgt = find_node_name(B.target);
               if (a_tgt != b_tgt) return a_tgt < b_tgt;
-              auto a_style_it = A.attributes.find(std::string{dagir::ir_attrs::k_style});
-              auto b_style_it = B.attributes.find(std::string{dagir::ir_attrs::k_style});
+              auto a_style_it = A.attributes.find(dagir::ir_attrs::k_style);
+              auto b_style_it = B.attributes.find(dagir::ir_attrs::k_style);
               const std::string a_style =
                   (a_style_it != A.attributes.end()) ? a_style_it->second : std::string{};
               const std::string b_style =

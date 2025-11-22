@@ -24,6 +24,7 @@
 #include <format>
 #include <functional>
 #include <iomanip>
+#include <iostream>
 #include <ostream>
 #include <string>
 #include <string_view>
@@ -111,20 +112,22 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
   os << "digraph " << graph_name << " {\n";
 
   // Emit default rankdir only if the graph-level attributes do not provide one.
-  if (!g.global_attrs.count(std::string(ir_attrs::k_rankdir))) {
+  if (!g.global_attrs.count(ir_attrs::k_rankdir)) {
     os << "  rankdir=TB;\n";  // default top-to-bottom layout
   }
 
   // First, emit global graph attributes (map known keys) in lexicographic order
   if (!g.global_attrs.empty()) {
-    std::vector<std::string> gkeys;
+    std::vector<std::string_view> gkeys;
     gkeys.reserve(g.global_attrs.size());
     std::transform(g.global_attrs.begin(), g.global_attrs.end(), std::back_inserter(gkeys),
                    [](auto const& p) { return p.first; });
-    std::sort(gkeys.begin(), gkeys.end());
+    std::sort(gkeys.begin(), gkeys.end(), [](std::string_view a, std::string_view b) {
+      return std::string_view(a) < std::string_view(b);
+    });
     for (const auto& k : gkeys) {
       const auto& v = g.global_attrs.at(k);
-      if (k == std::string(ir_attrs::k_graph_label)) {
+      if (k == ir_attrs::k_graph_label) {
         os << "  label=\"" << render_dot_detail::escape_dot(v) << "\";\n";
       } else {
         os << "  " << k << "=\"" << render_dot_detail::escape_dot(v) << "\";\n";
@@ -142,9 +145,12 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
 
     // Determine the node identifier: prefer attribute "name", then fall back
     // to a generated id. We also populate a printable label via k_label.
-    const bool has_explicit_name = amap.count("name");
+    // Prefer canonical `k_id` as the stable node identifier; for
+    // historical compatibility also accept a literal "name" attribute.
+    const bool has_explicit_name = amap.count(ir_attrs::k_id) || amap.count("name");
     const std::string raw_node_name =
-        has_explicit_name ? amap.at("name") : std::format("n{}", n.id);
+        has_explicit_name ? (amap.count(ir_attrs::k_id) ? amap.at(ir_attrs::k_id) : amap.at("name"))
+                          : std::format("n{}", n.id);
     // If the node name was provided by a policy, escape and quote it so
     // arbitrary strings remain valid DOT identifiers. If the renderer
     // generated the name (n{id}), keep it unquoted to preserve the
@@ -155,15 +161,14 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     name_map[n.id] = node_name;
 
     // Ensure label: prefer k_label, then generated id
-    std::string label = amap.count(std::string(ir_attrs::k_label))
-                            ? amap.at(std::string(ir_attrs::k_label))
-                            : std::format("{}", n.id);
+    std::string label =
+        amap.count(ir_attrs::k_label) ? amap.at(ir_attrs::k_label) : std::format("{}", n.id);
 
     // Work from a local mutable copy when applying defaults so we don't mutate the
     // const attribute map stored on the node.
     auto local = amap;
-    if (!local.count(std::string(ir_attrs::k_style))) {
-      local[std::string(ir_attrs::k_style)] = "filled";
+    if (!local.count(ir_attrs::k_style)) {
+      local[ir_attrs::k_style] = "filled";
     }
 
     // Emit node using the possibly-updated local map. Emit attributes in
@@ -171,14 +176,24 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     os << "  " << node_name << " [";
     os << "label = \"" << render_dot_detail::escape_dot(label) << "\"";
     if (!local.empty()) {
-      std::vector<std::string> keys;
+      std::vector<std::string_view> keys;
       keys.reserve(local.size());
       std::transform(local.begin(), local.end(), std::back_inserter(keys),
                      [](auto const& p) { return p.first; });
-      std::sort(keys.begin(), keys.end());
+      std::sort(keys.begin(), keys.end(),
+                [](std::string_view a, std::string_view b) { return a < b; });
       for (const auto& k : keys) {
-        if (k == std::string(ir_attrs::k_label)) continue;
-        os << ", " << k << " = \"" << render_dot_detail::escape_dot(local.at(k)) << "\"";
+        if (k == ir_attrs::k_label) continue;
+        if (k == ir_attrs::k_id) {
+          os << ", name = \"" << render_dot_detail::escape_dot(local.at(k)) << "\"";
+          continue;
+        }
+        // Avoid emitting a literal "name" attribute if we've already emitted
+        // the canonical id as `name` above. This prevents duplicate `name`
+        // attributes when both `k_id` and a historical `"name"` key exist.
+        if (k == std::string_view{"name"}) continue;
+        std::string keystr{k};
+        os << ", " << keystr << " = \"" << render_dot_detail::escape_dot(local.at(k)) << "\"";
       }
     }
     os << "];\n";
@@ -195,19 +210,19 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     if (!amap.empty()) {
       os << " [";
       bool first = true;
-      if (amap.count(std::string(ir_attrs::k_label))) {
-        os << "label = \"" << render_dot_detail::escape_dot(amap.at(std::string(ir_attrs::k_label)))
-           << "\"";
+      if (amap.count(ir_attrs::k_label)) {
+        os << "label = \"" << render_dot_detail::escape_dot(amap.at(ir_attrs::k_label)) << "\"";
         first = false;
       }
       if (!amap.empty()) {
-        std::vector<std::string> keys;
+        std::vector<std::string_view> keys;
         keys.reserve(amap.size());
         std::transform(amap.begin(), amap.end(), std::back_inserter(keys),
                        [](auto const& p) { return p.first; });
-        std::sort(keys.begin(), keys.end());
+        std::sort(keys.begin(), keys.end(),
+                  [](std::string_view a, std::string_view b) { return a < b; });
         for (const auto& k : keys) {
-          if (k == std::string(ir_attrs::k_label)) continue;
+          if (k == ir_attrs::k_label) continue;
           if (!first) os << ", ";
           first = false;
           os << k << " = \"" << render_dot_detail::escape_dot(amap.at(k)) << "\"";

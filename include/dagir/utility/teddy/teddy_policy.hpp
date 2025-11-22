@@ -50,15 +50,15 @@ struct teddy_node_attributor {
     if (h.ptr->is_terminal()) {
       // Ensure terminal nodes are labeled with either "0" or "1" explicitly.
       const auto val = h.ptr->get_value();
-      out.emplace(std::string{dagir::ir_attrs::k_label}, val ? std::string{"1"} : std::string{"0"});
-      out.emplace(std::string{dagir::ir_attrs::k_shape}, std::string{"box"});
-      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightgray"});
+      out.emplace(dagir::ir_attrs::k_label, val ? std::string{"1"} : std::string{"0"});
+      out.emplace(dagir::ir_attrs::k_shape, std::string{"box"});
+      out.emplace(dagir::ir_attrs::k_fill_color, std::string{"lightgray"});
     } else {
       // Variable nodes: label with variable name if available, otherwise index
       std::string label = std::to_string(h.ptr->get_index());
       // view-aware overload will populate var_names via the view argument when available
-      out.emplace(std::string{dagir::ir_attrs::k_label}, label);
-      out.emplace(std::string{dagir::ir_attrs::k_shape}, std::string{"circle"});
+      out.emplace(dagir::ir_attrs::k_label, label);
+      out.emplace(dagir::ir_attrs::k_shape, std::string{"circle"});
     }
 
     return out;
@@ -78,14 +78,14 @@ struct teddy_node_attributor {
       int idx = h.ptr->get_index();
       if (idx >= 0 && static_cast<size_t>(idx) < names->size()) {
         const std::string nm = (*names)[static_cast<size_t>(idx)];
-        out[std::string{dagir::ir_attrs::k_label}] = nm;
+        out[dagir::ir_attrs::k_label] = nm;
       }
     }
 
-    // Always assign a unique renderer-visible `name` attribute derived from the
+    // Always assign a unique renderer-visible id attribute derived from the
     // node's stable key. This ensures distinct nodes receive distinct ids
     // even when labels collide.
-    out[std::string{"name"}] = dagir::utility::make_node_id(h.stable_key());
+    out[dagir::ir_attrs::k_id] = dagir::utility::make_node_id(h.stable_key());
 
     return out;
   }
@@ -117,9 +117,9 @@ struct teddy_edge_attributor {
     auto son1 = parent.ptr->get_son(1);
 
     if (son0 && son0 == child.ptr) {
-      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"dashed"});
+      out.emplace(dagir::ir_attrs::k_style, std::string{"dashed"});
     } else if (son1 && son1 == child.ptr) {
-      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"solid"});
+      out.emplace(dagir::ir_attrs::k_style, std::string{"solid"});
     }
 
     return out;

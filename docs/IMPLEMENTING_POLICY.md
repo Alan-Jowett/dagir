@@ -49,8 +49,8 @@ Notes:
 
 - Keys are generic; backends map them to renderer-specific fields.
 - `dagir::ir_attrs` are `std::string_view` constants; when producing attributes
-  use `dagir::ir_attr_map` (an alias for `std::unordered_map<std::string,std::string>`) and
-  construct keys with `std::string(dagir::ir_attrs::k_label)`.
+  use `dagir::ir_attr_map` (an alias for `std::unordered_map<std::string_view,std::string>`) and
+  construct keys with `dagir::ir_attrs::k_label` (a `std::string_view`).
 
 ### Implementing a `node_attributor`
 
@@ -70,7 +70,7 @@ struct StableKeyAttributor {
   template <class View>
   dagir::ir_attr_map operator()(const View&, const typename View::handle& h) const {
     dagir::ir_attr_map m;
-    m.emplace(std::string(dagir::ir_attrs::k_label), std::to_string(h.stable_key()));
+    m.emplace(dagir::ir_attrs::k_label, std::to_string(h.stable_key()));
     return m;
   }
 };
@@ -93,8 +93,8 @@ struct SimpleEdgeAttr {
   dagir::ir_attr_map operator()(const View&, const typename View::handle& p,
                                 const typename View::handle& c) const {
     dagir::ir_attr_map out;
-    out.emplace(std::string(dagir::ir_attrs::k_label), std::to_string(c.stable_key()));
-    out.emplace(std::string(dagir::ir_attrs::k_color), "#ff9900");
+    out.emplace(dagir::ir_attrs::k_label, std::to_string(c.stable_key()));
+    out.emplace(dagir::ir_attrs::k_color, "#ff9900");
     return out;
   }
 };
