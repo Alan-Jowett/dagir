@@ -57,7 +57,7 @@ Notes:
 A `node_attributor` is any callable compatible with the `dagir::concepts::node_attributor`
 concept. Attributors are invoked with `(const View&, handle)` and are expected to
 return an attribute representation. The canonical and recommended return type is
-`dagir::ir_attr_map` (an alias for `std::unordered_map<std::string,std::string>`).
+`dagir::ir_attr_map` (an alias for `std::unordered_map<std::string_view,std::string>`).
 
 Example: stable-key label in a map
 
