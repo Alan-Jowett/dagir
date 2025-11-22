@@ -16,5 +16,13 @@ namespace Catch {
 std::string StringMaker<std::string_view>::convert(std::string_view sv) {
   return std::string(sv);
 }
+
+// Some Catch headers/libraries may reference the two-parameter variant
+// `StringMaker<T,void>`. Provide that symbol as an alias to the single-
+// parameter implementation to cover both cases.
+std::string StringMaker<std::string_view, void>::convert(std::string_view sv) {
+  return StringMaker<std::string_view>::convert(sv);
+}
+
 }  // namespace Catch
 #endif
