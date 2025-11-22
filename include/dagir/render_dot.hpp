@@ -44,7 +44,7 @@ namespace render_dot_detail {
  * It is intentionally conservative to avoid producing DOT that the parser
  * might misinterpret.
  */
-inline std::string escape_dot(const std::string& s) {
+inline std::string escape_dot(const std::string_view s) {
   std::string out;
   out.reserve(s.size() + 8);
   for (size_t i = 0; i < s.size(); ++i) {
@@ -149,7 +149,8 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     // historical compatibility also accept a literal "name" attribute.
     const bool has_explicit_name = amap.count(ir_attrs::k_id) || amap.count("name");
     const std::string raw_node_name =
-        has_explicit_name ? (amap.count(ir_attrs::k_id) ? amap.at(ir_attrs::k_id) : amap.at("name"))
+        has_explicit_name ? (amap.count(ir_attrs::k_id) ? std::string(amap.at(ir_attrs::k_id))
+                                                        : std::string(amap.at("name")))
                           : std::format("n{}", n.id);
     // If the node name was provided by a policy, escape and quote it so
     // arbitrary strings remain valid DOT identifiers. If the renderer
@@ -161,8 +162,8 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     name_map[n.id] = node_name;
 
     // Ensure label: prefer k_label, then generated id
-    std::string label =
-        amap.count(ir_attrs::k_label) ? amap.at(ir_attrs::k_label) : std::format("{}", n.id);
+    std::string label = amap.count(ir_attrs::k_label) ? std::string(amap.at(ir_attrs::k_label))
+                                                      : std::format("{}", n.id);
 
     // Work from a local mutable copy when applying defaults so we don't mutate the
     // const attribute map stored on the node.

@@ -16,13 +16,14 @@
 #include <vector>
 
 #include "dagir/ir_attrs.hpp"
+#include "dagir/string_view_cache.hpp"
 
 namespace dagir {
 
 /**
  * @brief Key/value attribute attached to nodes, edges, or the global graph.
  */
-using ir_attr_map = std::unordered_map<std::string_view, std::string>;
+using ir_attr_map = std::unordered_map<std::string_view, std::string_view>;
 
 /**
  * @brief A node in the renderer-neutral IR.
@@ -54,8 +55,8 @@ inline bool operator<(ir_node const& a, ir_node const& b) {
   const bool a_has = (a_it != a.attributes.end());
   const bool b_has = (b_it != b.attributes.end());
   if (a_has && b_has) {
-    const std::string& a_name = a_it->second;
-    const std::string& b_name = b_it->second;
+    const std::string_view a_name = a_it->second;
+    const std::string_view b_name = b_it->second;
     if (a_name != b_name) return a_name < b_name;
     return a.id < b.id;
   }
@@ -96,10 +97,10 @@ inline bool operator<(ir_edge const& a, ir_edge const& b) {
   // Compare by source id, then target id, then by style attribute (if present).
   const auto a_style_it = a.attributes.find(ir_attrs::k_style);
   const auto b_style_it = b.attributes.find(ir_attrs::k_style);
-  const std::string a_style =
-      (a_style_it != a.attributes.end()) ? a_style_it->second : std::string{};
-  const std::string b_style =
-      (b_style_it != b.attributes.end()) ? b_style_it->second : std::string{};
+  const std::string_view a_style =
+      (a_style_it != a.attributes.end()) ? a_style_it->second : std::string_view{};
+  const std::string_view b_style =
+      (b_style_it != b.attributes.end()) ? b_style_it->second : std::string_view{};
   return std::tie(a.source, a.target, a_style) < std::tie(b.source, b.target, b_style);
 }
 
@@ -132,6 +133,11 @@ struct ir_graph {
    * here for downstream consumers.
    */
   [[maybe_unused]] ir_attr_map global_attrs;
+
+  // Cache for attribute strings produced by policies. This ensures that
+  // `std::string_view` keys/values stored in `ir_attr_map` remain valid for
+  // the lifetime of the graph.
+  [[maybe_unused]] dagir::string_view_cache attr_cache;
 };
 
 // Touch pointer-to-members for fields that may be unused in some TUs.

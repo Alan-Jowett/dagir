@@ -139,14 +139,28 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
     // default name is used and a label from the stable key is written.
     auto attributes = std::invoke(node_policy, view, h);
 
-    // Copy the returned attributes into the node. Note the type may not be directly compatible.
+    // Copy the returned attributes into the node. We must ensure that
+    // `std::string_view` keys/values stored in `ir_graph` remain valid for
+    // the lifetime of the graph. Use `graph.attr_cache` to obtain cached
+    // string_views and insert those into the node's attribute map.
     for (const auto& [attr_key, attr_value] : attributes) {
-      n.attributes[attr_key] = attr_value;
+      std::string key_copy(attr_key);
+      std::string val_copy(attr_value);
+      std::string_view ksv = graph.attr_cache.cache_view(key_copy);
+      std::string_view vsv = graph.attr_cache.cache_view(val_copy);
+      n.attributes[ksv] = vsv;
     }
 
-    if (!n.attributes.count(ir_attrs::k_name))
-      n.attributes[ir_attrs::k_name] = std::format("node{:03}", idx);
-    if (!n.attributes.count(ir_attrs::k_label)) n.attributes[ir_attrs::k_label] = std::to_string(k);
+    if (!n.attributes.count(ir_attrs::k_name)) {
+      std::string name_val = std::format("node{:03}", idx);
+      n.attributes[graph.attr_cache.cache_view(ir_attrs::k_name)] =
+          graph.attr_cache.cache_view(name_val);
+    }
+    if (!n.attributes.count(ir_attrs::k_label)) {
+      std::string label_val = std::to_string(k);
+      n.attributes[graph.attr_cache.cache_view(ir_attrs::k_label)] =
+          graph.attr_cache.cache_view(label_val);
+    }
 
     graph.nodes.push_back(std::move(n));
   }
@@ -171,17 +185,34 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
       ie.source = pk;
       ie.target = ck;
 
-      // Determine attributes via flexible invocation forms
-      if constexpr (std::invocable<EdgePolicy, const View&, const H&, const decltype(edge_like)&>) {
-        ie.attributes = std::invoke(edge_attr, view, parent, edge_like);
-      } else if constexpr (std::invocable<EdgePolicy, const View&, const H&, const H&>) {
-        ie.attributes = std::invoke(edge_attr, view, parent, child);
-      } else if constexpr (std::invocable<EdgePolicy, const H&, const decltype(edge_like)&>) {
-        ie.attributes = std::invoke(edge_attr, parent, edge_like);
-      } else if constexpr (std::invocable<EdgePolicy, const H&, const H&>) {
-        ie.attributes = std::invoke(edge_attr, parent, child);
-      } else {
-        ie.attributes = {};
+      // Determine attributes via flexible invocation forms. Use a
+      // constexpr-dispatched lambda returning whatever type the policy
+      // produces so we can iterate the resulting name/value range
+      // generically (it may be an owning container of `std::string`s or
+      // a view-based map). The lambda's return type is deduced from the
+      // selected branch at compile-time.
+      auto edge_attrs = [&]() {
+        if constexpr (std::invocable<EdgePolicy, const View&, const H&,
+                                     const decltype(edge_like)&>) {
+          return std::invoke(edge_attr, view, parent, edge_like);
+        } else if constexpr (std::invocable<EdgePolicy, const View&, const H&, const H&>) {
+          return std::invoke(edge_attr, view, parent, child);
+        } else if constexpr (std::invocable<EdgePolicy, const H&, const decltype(edge_like)&>) {
+          return std::invoke(edge_attr, parent, edge_like);
+        } else if constexpr (std::invocable<EdgePolicy, const H&, const H&>) {
+          return std::invoke(edge_attr, parent, child);
+        } else {
+          return dagir::ir_attr_map{};
+        }
+      }();
+
+      // Cache keys/values from the returned map into the graph's attr_cache
+      for (const auto& [ek, ev] : edge_attrs) {
+        std::string key_copy(ek);
+        std::string val_copy(ev);
+        std::string_view ksv = graph.attr_cache.cache_view(key_copy);
+        std::string_view vsv = graph.attr_cache.cache_view(val_copy);
+        ie.attributes[ksv] = vsv;
       }
 
       graph.edges.push_back(std::move(ie));
@@ -199,9 +230,19 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
  */
 template <dagir::concepts::read_only_dag_view View>
 ir_graph build_ir(const View& view) {
-  auto node_attr = [](auto const& /*view*/, auto const& h) -> dagir::ir_attr_map {
+  // The default attributor must ensure any `std::string_view` it returns
+  // remains valid until the outer `build_ir` call consumes and caches
+  // the values. To guarantee this, keep a local container of owning
+  // `std::string`s and return `std::string_view`s that refer into that
+  // container. The container lives for the duration of this function
+  // invocation and thus prevents dangling views produced from
+  // prvalue temporaries.
+  std::vector<std::string> __default_label_storage;
+  auto node_attr = [&__default_label_storage](auto const& /*view*/,
+                                              auto const& h) -> dagir::ir_attr_map {
     dagir::ir_attr_map m;
-    m.emplace(ir_attrs::k_label, std::format("{}", h.stable_key()));
+    __default_label_storage.emplace_back(std::format("{}", h.stable_key()));
+    m.emplace(ir_attrs::k_label, std::string_view(__default_label_storage.back()));
     return m;
   };
   auto edge_attr = [](auto&&...) -> dagir::ir_attr_map { return {}; };
