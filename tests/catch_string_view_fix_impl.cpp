@@ -7,11 +7,7 @@
 #include <string>
 #include <string_view>
 
-// Only provide the missing symbol on Windows builds where Catch2 may not
-// provide it but test code expects it. On Linux CI we avoid defining this
-// symbol to prevent duplicate-definition errors when Catch2 supplies it.
-#if (defined(_WIN32) || defined(_WIN64)) && !defined(CATCH_CONFIG_CPP17_STRING_VIEW) && \
-    !defined(CATCH_CONFIG_STRINGMAKER_HAS_STRING_VIEW)
+#if (defined(_WIN32) || defined(_WIN64)) && !defined(CATCH_CONFIG_STRINGMAKER_HAS_STRING_VIEW)
 namespace Catch {
 std::string StringMaker<std::string_view>::convert(std::string_view sv) {
   return std::string(sv);
