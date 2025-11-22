@@ -163,6 +163,8 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
                      [](auto const& p) { return std::string(p.first); });
       std::sort(keys.begin(), keys.end());
       for (const auto& k : keys) {
+        if (k == ir_attrs::k_id) continue;
+
         if (!first_attr) os << ", ";
         first_attr = false;
         const auto& val = n.attributes.at(k);

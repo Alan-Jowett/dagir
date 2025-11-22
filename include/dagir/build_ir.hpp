@@ -138,8 +138,8 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
     // `n.attributes`. We prefer attribute-provided values; otherwise the
     // default name is used and a label from the stable key is written.
     n.attributes = std::invoke(node_policy, view, h);
-    if (!n.attributes.count(std::string_view{"name"}))
-      n.attributes[std::string_view{"name"}] = std::format("node{:03}", idx);
+    if (!n.attributes.count(ir_attrs::k_name))
+      n.attributes[ir_attrs::k_name] = std::format("node{:03}", idx);
     if (!n.attributes.count(ir_attrs::k_label)) n.attributes[ir_attrs::k_label] = std::to_string(k);
 
     graph.nodes.push_back(std::move(n));

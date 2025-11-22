@@ -49,8 +49,8 @@ struct ir_node {
 };
 
 inline bool operator<(ir_node const& a, ir_node const& b) {
-  const auto a_it = a.attributes.find(std::string_view{"name"});
-  const auto b_it = b.attributes.find(std::string_view{"name"});
+  const auto a_it = a.attributes.find(ir_attrs::k_name);
+  const auto b_it = b.attributes.find(ir_attrs::k_name);
   const bool a_has = (a_it != a.attributes.end());
   const bool b_has = (b_it != b.attributes.end());
   if (a_has && b_has) {

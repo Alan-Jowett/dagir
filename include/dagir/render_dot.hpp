@@ -191,7 +191,7 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
         // Avoid emitting a literal "name" attribute if we've already emitted
         // the canonical id as `name` above. This prevents duplicate `name`
         // attributes when both `k_id` and a historical `"name"` key exist.
-        if (k == std::string_view{"name"}) continue;
+        if (k == ir_attrs::k_name) continue;
         std::string keystr{k};
         os << ", " << keystr << " = \"" << render_dot_detail::escape_dot(local.at(k)) << "\"";
       }

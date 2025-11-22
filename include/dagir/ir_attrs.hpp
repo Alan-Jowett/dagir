@@ -166,6 +166,17 @@ inline constexpr std::string_view k_width{"width"};
 inline constexpr std::string_view k_height{"height"};
 
 /**
+ * @brief Canonical name for a graph element.
+ *
+ * Interpretation: a stable, human-readable name for the node or edge that
+ * can be used for identification in renderers. Backends should use this
+ * value as the primary identifier when present (for example, mapping to
+ * GraphViz node names or JSON `name` fields). If absent, backends may
+ * fall back to using `k_id` or generated ids.
+ */
+inline constexpr std::string_view k_name{"name"};
+
+/**
  * @brief Grouping key for layout engines.
  *
  * Interpretation: arbitrary string used to group nodes together for layout
