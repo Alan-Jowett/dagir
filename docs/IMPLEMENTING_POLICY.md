@@ -56,8 +56,14 @@ Notes:
 
 A `node_attributor` is any callable compatible with the `dagir::concepts::node_attributor`
 concept. Attributors are invoked with `(const View&, handle)` and are expected to
-return an attribute representation. The canonical and recommended return type is
-`dagir::ir_attr_map` (an alias for `std::unordered_map<std::string_view,std::string>`).
+return a name/value attribute representation. DagIR constrains attribute
+producers to return a forward-range of name/value elements where each element
+exposes `.first` and `.second` members convertible to `std::string_view`.
+
+The canonical and recommended return type remains `dagir::ir_attr_map` (an alias
+for `std::unordered_map<std::string_view,std::string>`), which satisfies this
+shape. For the formal concept used by the library see
+`include/dagir/concepts/name_value_range.hpp`.
 
 Example: stable-key label in a map
 
@@ -78,9 +84,15 @@ struct StableKeyAttributor {
 
 ### Implementing an `edge_attributor`
 
-`edge_attributor` callables are flexible. The `build_ir` helper accepts several
-call signatures (e.g., `(view, parent, edge_like)`, `(parent, child)`) and the
-recommended return type is `dagir::ir_attr_map`.
+`edge_attributor` callables are flexible in supported call signatures. The
+`build_ir` helper accepts variants like `(view, parent, edge_like)`,
+`(view, parent, child)`, `(parent, edge_like)`, and `(parent, child)`.
+
+Like `node_attributor`, an `edge_attributor` must return a forward-range of
+name/value elements where both `element.first` and `element.second` are
+convertible to `std::string_view`. The recommended return type is still
+`dagir::ir_attr_map`, which meets this requirement. See
+`include/dagir/concepts/name_value_range.hpp` for details on the concept.
 
 Example: simple edge attributor using `dagir::ir_attrs`
 

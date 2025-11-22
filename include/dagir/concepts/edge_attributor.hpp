@@ -11,6 +11,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "dagir/concepts/name_value_range.hpp"
+
 namespace dagir::concepts {
 
 /**
@@ -23,12 +25,16 @@ namespace dagir::concepts {
  * A type models ::dagir::edge_attributor when an lvalue of @c F is invocable as:
  *  - @c f(view, parent_handle, child_handle)
  *
- * The return type is unconstrained and left to the renderer/IR builder to interpret.
+ * The callable must return a forward range of name/value pairs where both
+ * the key (`.first`) and value (`.second`) of each element are convertible
+ * to `std::string_view`. This matches the refinement applied to
+ * `dagir::concepts::node_attributor` and models attribute maps used by the
+ * renderer/IR builder.
  */
 template <class F, class View>
 concept edge_attributor = requires(const F& f, const View& v, const typename View::handle& p,
                                    const typename View::handle& c) {
-  { f(v, p, c) };
+  { f(v, p, c) } -> name_value_range;
 };
 
 }  // namespace dagir::concepts

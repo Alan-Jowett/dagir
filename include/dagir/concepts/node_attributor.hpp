@@ -13,10 +13,11 @@
 #pragma once
 
 #include <concepts>
-#include <type_traits>
-#include <utility>
+
+#include "dagir/concepts/name_value_range.hpp"
 
 namespace dagir::concepts {
+// Helper concepts are defined in `name_value_range.hpp`.
 
 /**
  * @brief Concept for a node attribute policy callable.
@@ -29,11 +30,15 @@ namespace dagir::concepts {
  * invocable as:
  *  - @c f(view, node_handle)
  *
- * The return type is unconstrained and left to the renderer/IR builder to interpret.
+ * The callable must return a forward range of name/value pairs where both
+ * the key (`.first`) and value (`.second`) of each element are convertible
+ * to `std::string_view`. This models name/value attribute maps used by the
+ * renderer/IR builder (for example, containers of `std::pair` or
+ * associative containers exposing element-like references).
  */
 template <class F, class View>
 concept node_attributor = requires(const F& f, const View& v, const typename View::handle& n) {
-  { f(v, n) };
+  { f(v, n) } -> name_value_range;
 };
 
 }  // namespace dagir::concepts

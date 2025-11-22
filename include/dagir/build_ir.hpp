@@ -137,7 +137,13 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
     // be node-attributors producing `dagir::ir_attr_map` that will populate
     // `n.attributes`. We prefer attribute-provided values; otherwise the
     // default name is used and a label from the stable key is written.
-    n.attributes = std::invoke(node_policy, view, h);
+    auto attributes = std::invoke(node_policy, view, h);
+
+    // Copy the returned attributes into the node. Note the type may not be directly compatible.
+    for (const auto& [attr_key, attr_value] : attributes) {
+      n.attributes[attr_key] = attr_value;
+    }
+
     if (!n.attributes.count(ir_attrs::k_name))
       n.attributes[ir_attrs::k_name] = std::format("node{:03}", idx);
     if (!n.attributes.count(ir_attrs::k_label)) n.attributes[ir_attrs::k_label] = std::to_string(k);
