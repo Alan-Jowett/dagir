@@ -1,0 +1,18 @@
+<map id="include/dagir/concepts/name_value_range.hpp" name="include/dagir/concepts/name_value_range.hpp">
+<area shape="rect" id="Node000001" title="Helper concepts for name/value attribute ranges." alt="" coords="290,5,469,45"/>
+<area shape="rect" id="Node000002" href="$edge__attributor_8hpp.html" title="Concept for edge attribute&#45;producing policy callables." alt="" coords="199,93,367,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="349,57,306,95,303,91,346,53"/>
+<area shape="rect" id="Node000006" href="$node__attributor_8hpp.html" title="Concept for node attribute&#45;producing policy callables." alt="" coords="391,93,559,133"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="413,53,456,91,452,95,409,57"/>
+<area shape="rect" id="Node000003" href="$cudd__policy_8hpp.html" title="Node and edge attribute policies for CUDD BDD." alt="" coords="5,189,169,229"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="233,142,128,191,126,186,230,137"/>
+<area shape="rect" id="Node000004" href="$expression__policy_8hpp.html" title="Helper utility for parsing string binary expressions." alt="" coords="194,181,373,236"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="286,147,286,181,281,181,281,147"/>
+<area shape="rect" id="Node000005" href="$teddy__policy_8hpp.html" title="Node and edge attribute policies for TeDDy BDD." alt="" coords="397,189,573,229"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="338,137,445,186,443,191,335,142"/>
+<area shape="poly" id="edge7_Node000006_Node000003" title=" " alt="" coords="379,138,183,184,155,191,153,186,181,179,377,133"/>
+<area shape="poly" id="edge8_Node000006_Node000004" title=" " alt="" coords="425,142,339,184,336,179,423,137"/>
+<area shape="poly" id="edge9_Node000006_Node000005" title=" " alt="" coords="481,147,485,188,480,189,476,147"/>
+<area shape="rect" id="Node000007" href="$build__ir_8hpp.html" title="Build a renderer&#45;neutral IR (nodes, edges, attributes) from a read_only_dag_view adapter." alt="" coords="597,189,740,229"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="528,137,631,186,628,191,526,142"/>
+</map>

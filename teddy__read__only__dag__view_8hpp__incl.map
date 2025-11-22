@@ -1,0 +1,31 @@
+<map id="include/dagir/utility/teddy/teddy_read_only_dag_view.hpp" name="include/dagir/utility/teddy/teddy_read_only_dag_view.hpp">
+<area shape="rect" id="Node000001" title="Read&#45;only DAG view for TeDDy BDDs." alt="" coords="597,5,772,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="274,115,359,141"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="598,55,490,80,373,111,363,114,361,109,372,105,489,75,596,50"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="578,291,645,317"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="678,61,662,109,619,279,614,277,657,107,673,59"/>
+<area shape="rect" id="Node000004" href="$read__only__dag__view_8hpp.html" title="Read&#45;only DAG view concept and small helper types." alt="" coords="384,108,537,148"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="623,63,519,105,517,100,621,58"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="671,115,805,141"/>
+<area shape="poly" id="edge14_Node000001_Node000011" title=" " alt="" coords="702,59,727,102,722,104,697,62"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="830,115,889,141"/>
+<area shape="poly" id="edge15_Node000001_Node000012" title=" " alt="" coords="735,58,827,107,825,111,733,62"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="913,115,976,141"/>
+<area shape="poly" id="edge16_Node000001_Node000013" title=" " alt="" coords="766,58,902,106,907,108,905,113,900,110,764,63"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="363,372,443,397"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="453,149,433,197,415,285,407,358,402,358,409,284,427,195,448,147"/>
+<area shape="rect" id="Node000006" href="$children__range_8hpp.html" title="Concept to detect ranges of child edge references." alt="" coords="142,196,315,236"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="411,151,293,194,291,189,409,146"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="299,291,366,317"/>
+<area shape="poly" id="edge13_Node000004_Node000008" title=" " alt="" coords="436,150,411,172,387,198,361,239,344,279,339,277,357,237,383,194,407,168,433,146"/>
+<area shape="rect" id="Node000010" href="$node__handle_8hpp.html" title="Concept describing a lightweight handle to a node in an external DAG." alt="" coords="441,196,595,236"/>
+<area shape="poly" id="edge10_Node000004_Node000010" title=" " alt="" coords="476,147,500,183,495,186,471,150"/>
+<area shape="rect" id="Node000007" href="$edge__ref_8hpp.html" title="Concept to describe an edge reference type." alt="" coords="5,284,159,324"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="198,238,128,279,125,275,195,234"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="253,234,309,280,306,284,250,238"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="183,291,275,317"/>
+<area shape="poly" id="edge9_Node000006_Node000009" title=" " alt="" coords="231,236,231,277,226,277,226,236"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="160,321,351,368,349,373,158,327"/>
+<area shape="poly" id="edge12_Node000010_Node000003" title=" " alt="" coords="541,234,590,280,587,284,537,238"/>
+<area shape="poly" id="edge11_Node000010_Node000005" title=" " alt="" coords="507,238,421,362,417,359,503,235"/>
+</map>

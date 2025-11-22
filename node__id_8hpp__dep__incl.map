@@ -1,0 +1,9 @@
+<map id="include/dagir/node_id.hpp" name="include/dagir/node_id.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="212,5,355,45"/>
+<area shape="rect" id="Node000002" href="$cudd__policy_8hpp.html" title="Node and edge attribute policies for CUDD BDD." alt="" coords="5,101,169,141"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="233,54,128,103,126,98,230,49"/>
+<area shape="rect" id="Node000003" href="$expression__policy_8hpp.html" title="Helper utility for parsing string binary expressions." alt="" coords="194,93,373,148"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="286,59,286,93,281,93,281,59"/>
+<area shape="rect" id="Node000004" href="$teddy__policy_8hpp.html" title="Node and edge attribute policies for TeDDy BDD." alt="" coords="397,101,573,141"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="338,49,445,98,443,103,335,54"/>
+</map>

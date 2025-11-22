@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['k_5fcolor_0',['k_color',['../namespacedagir_1_1ir__attrs.html#a01a6732b98df9cae5281c00415349ccd',1,'dagir::ir_attrs']]],
+  ['k_5fdir_1',['k_dir',['../namespacedagir_1_1ir__attrs.html#a45c113a30f6847679f5a2a2859594ff1',1,'dagir::ir_attrs']]],
+  ['k_5ffill_5fcolor_2',['k_fill_color',['../namespacedagir_1_1ir__attrs.html#a82f91a4ea38894073e3be6d89126c3c4',1,'dagir::ir_attrs']]],
+  ['k_5ffont_5fname_3',['k_font_name',['../namespacedagir_1_1ir__attrs.html#a16fa61b4f717da3bf0e87484509a39c9',1,'dagir::ir_attrs']]],
+  ['k_5ffont_5fsize_4',['k_font_size',['../namespacedagir_1_1ir__attrs.html#a126419b083b3631ead556e0894925978',1,'dagir::ir_attrs']]],
+  ['k_5fgraph_5flabel_5',['k_graph_label',['../namespacedagir_1_1ir__attrs.html#aa2b83fbffd1aa91e5764a735a533fe24',1,'dagir::ir_attrs']]],
+  ['k_5fgroup_6',['k_group',['../namespacedagir_1_1ir__attrs.html#a13d3e8080a8c45fd751e080ef07a0c91',1,'dagir::ir_attrs']]],
+  ['k_5fheight_7',['k_height',['../namespacedagir_1_1ir__attrs.html#a22fc9adee1358dc56af8b3d0b8a0b7fd',1,'dagir::ir_attrs']]],
+  ['k_5fid_8',['k_id',['../namespacedagir_1_1ir__attrs.html#acf688fbef7f30ed245e24f802de0cdb2',1,'dagir::ir_attrs']]],
+  ['k_5flabel_9',['k_label',['../namespacedagir_1_1ir__attrs.html#a3dccf32565e11ac64ba5289510d024ad',1,'dagir::ir_attrs']]],
+  ['k_5fname_10',['k_name',['../namespacedagir_1_1ir__attrs.html#ac19b5e7cafbd4365290a907cdd4f366d',1,'dagir::ir_attrs']]],
+  ['k_5fpen_5fwidth_11',['k_pen_width',['../namespacedagir_1_1ir__attrs.html#ae7be2bed117fa637d042eda3d2ef57ef',1,'dagir::ir_attrs']]],
+  ['k_5frankdir_12',['k_rankdir',['../namespacedagir_1_1ir__attrs.html#a2042374dd627d172293313a1b577d63e',1,'dagir::ir_attrs']]],
+  ['k_5fshape_13',['k_shape',['../namespacedagir_1_1ir__attrs.html#a514f48b7227fb2374334ec4e30709362',1,'dagir::ir_attrs']]],
+  ['k_5fstyle_14',['k_style',['../namespacedagir_1_1ir__attrs.html#a298d1a03d1f55d8f0390e3a60d43eb67',1,'dagir::ir_attrs']]],
+  ['k_5ftooltip_15',['k_tooltip',['../namespacedagir_1_1ir__attrs.html#a075c1d9157bb65592654e77b14cf8193',1,'dagir::ir_attrs']]],
+  ['k_5fweight_16',['k_weight',['../namespacedagir_1_1ir__attrs.html#ab9143fc006300bcf6eaf9b432a1c54e7',1,'dagir::ir_attrs']]],
+  ['k_5fwidth_17',['k_width',['../namespacedagir_1_1ir__attrs.html#a8c1d75b98b1858c6a75c89eac77666ba',1,'dagir::ir_attrs']]]
+];

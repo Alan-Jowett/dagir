@@ -1,0 +1,35 @@
+<map id="include/dagir/render_mermaid.hpp" name="include/dagir/render_mermaid.hpp">
+<area shape="rect" id="Node000001" title="Header&#45;only Mermaid renderer for dagir::ir_graph." alt="" coords="428,5,580,45"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,93,91,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="428,42,110,96,105,97,104,92,109,91,427,37"/>
+<area shape="rect" id="Node000003" href="$ir_8hpp.html" title="Renderer&#45;neutral intermediate representation types (nodes, edges, graph)." alt="" coords="371,93,466,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="485,48,443,86,440,82,482,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="165,167,224,192"/>
+<area shape="poly" id="edge16_Node000001_Node000005" title=" " alt="" coords="451,48,395,70,336,96,275,129,224,161,221,157,273,125,333,91,392,65,449,43"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="266,240,363,265"/>
+<area shape="poly" id="edge17_Node000001_Node000006" title=" " alt="" coords="428,34,357,46,281,70,244,87,209,109,180,136,156,168,151,182,153,194,161,205,174,215,210,230,253,240,251,245,209,235,171,219,157,209,148,196,145,182,151,165,176,132,206,105,241,83,279,65,356,41,427,29"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="627,167,751,192"/>
+<area shape="poly" id="edge18_Node000001_Node000008" title=" " alt="" coords="508,45,517,81,526,100,538,117,574,143,615,161,613,165,571,148,534,121,521,103,512,83,503,46"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="775,167,838,192"/>
+<area shape="poly" id="edge19_Node000001_Node000009" title=" " alt="" coords="517,44,543,81,561,100,581,116,626,139,666,149,708,154,762,164,761,169,708,159,665,154,624,144,579,121,557,104,539,85,512,47"/>
+<area shape="rect" id="Node000010" href="$ir__attrs_8hpp.html" title="Canonical IR attribute keys and backend interpretation guidance." alt="" coords="248,167,381,192"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="441,48,399,68,361,95,339,124,325,155,320,153,334,122,357,91,396,63,439,43"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="592,93,659,119"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="535,43,597,84,595,88,532,48"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="683,93,754,119"/>
+<area shape="poly" id="edge13_Node000001_Node000012" title=" " alt="" coords="556,43,675,86,674,91,555,48"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="779,93,853,119"/>
+<area shape="poly" id="edge14_Node000001_Node000013" title=" " alt="" coords="579,43,765,89,764,94,578,48"/>
+<area shape="rect" id="Node000014" title=" " alt="" coords="878,93,954,119"/>
+<area shape="poly" id="edge15_Node000001_Node000014" title=" " alt="" coords="581,37,865,91,864,96,580,43"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="536,167,603,192"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="444,116,533,158,531,163,442,121"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="383,121,238,167,236,162,382,116"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="420,119,413,154,396,193,374,217,350,235,347,231,371,213,391,191,408,152,415,118"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="457,167,511,192"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="431,117,466,155,462,158,427,121"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="463,116,633,161,632,166,461,121"/>
+<area shape="poly" id="edge8_Node000003_Node000009" title=" " alt="" coords="467,112,596,132,762,164,761,169,595,137,466,117"/>
+<area shape="poly" id="edge9_Node000003_Node000010" title=" " alt="" coords="403,121,345,161,342,156,400,116"/>
+<area shape="poly" id="edge10_Node000010_Node000006" title=" " alt="" coords="317,192,317,226,312,226,312,192"/>
+</map>

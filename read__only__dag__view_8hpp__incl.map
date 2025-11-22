@@ -1,0 +1,20 @@
+<map id="include/dagir/concepts/read_only_dag_view.hpp" name="include/dagir/concepts/read_only_dag_view.hpp">
+<area shape="rect" id="Node000001" title="Read&#45;only DAG view concept and small helper types." alt="" coords="196,5,382,45"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="61,269,141,295"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="208,48,155,67,100,95,50,133,30,156,14,182,8,201,14,220,34,244,60,261,57,266,30,248,9,223,3,201,9,180,26,153,47,129,97,91,152,62,206,43"/>
+<area shape="rect" id="Node000003" href="$children__range_8hpp.html" title="Concept to detect ranges of child edge references." alt="" coords="141,93,314,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="277,47,251,84,247,81,273,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="318,189,385,214"/>
+<area shape="poly" id="edge10_Node000001_Node000005" title=" " alt="" coords="304,45,329,92,342,135,350,175,345,176,337,137,324,94,299,47"/>
+<area shape="rect" id="Node000007" href="$node__handle_8hpp.html" title="Concept describing a lightweight handle to a node in an external DAG." alt="" coords="390,93,543,133"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="329,43,416,85,414,90,327,48"/>
+<area shape="rect" id="Node000004" href="$edge__ref_8hpp.html" title="Concept to describe an edge reference type." alt="" coords="24,181,178,221"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="201,136,142,176,139,171,198,131"/>
+<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="257,131,325,179,322,183,254,136"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="202,189,294,214"/>
+<area shape="poly" id="edge6_Node000003_Node000006" title=" " alt="" coords="235,133,244,174,239,175,229,134"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="104,222,104,255,98,255,98,222"/>
+<area shape="poly" id="edge8_Node000007_Node000002" title=" " alt="" coords="462,135,439,180,421,204,398,224,354,242,290,257,155,278,154,272,289,252,352,237,395,219,417,200,434,177,457,132"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="460,189,526,214"/>
+<area shape="poly" id="edge9_Node000007_Node000008" title=" " alt="" coords="475,133,488,174,483,176,470,134"/>
+</map>
