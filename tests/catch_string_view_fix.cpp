@@ -15,19 +15,5 @@ namespace Catch {
 std::string StringMaker<std::string_view>::convert(std::string_view sv) {
   return std::string(sv);
 }
-
-std::string StringMaker<std::string_view, void>::convert(std::string_view sv) {
-  return StringMaker<std::string_view>::convert(sv);
-}
-}  // namespace Catch
-#elif !defined(CATCH_CONFIG_CPP17_STRING_VIEW) && !defined(CATCH_CONFIG_STRINGMAKER_HAS_STRING_VIEW)
-namespace Catch {
-std::string StringMaker<std::string_view>::convert(std::string_view sv) {
-  return std::string(sv);
-}
-
-std::string StringMaker<std::string_view, void>::convert(std::string_view sv) {
-  return StringMaker<std::string_view>::convert(sv);
-}
 }  // namespace Catch
 #endif
