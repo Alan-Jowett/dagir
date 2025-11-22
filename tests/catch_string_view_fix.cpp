@@ -6,8 +6,21 @@
 #include <string>
 #include <string_view>
 
-// Define the specialization only when Catch2 does not already provide it.
-#if !defined(CATCH_CONFIG_CPP17_STRING_VIEW) && !defined(CATCH_CONFIG_STRINGMAKER_HAS_STRING_VIEW)
+// On Windows MSVC builds the two-parameter instantiation may be required
+// but not provided by the Catch2 library; define it here to ensure the
+// test binary links. On other platforms only define when Catch2 hasn't
+// provided a stringifier to avoid ODR / duplicate-definition issues.
+#if defined(_WIN32) || defined(_WIN64)
+namespace Catch {
+std::string StringMaker<std::string_view>::convert(std::string_view sv) {
+  return std::string(sv);
+}
+
+std::string StringMaker<std::string_view, void>::convert(std::string_view sv) {
+  return StringMaker<std::string_view>::convert(sv);
+}
+}  // namespace Catch
+#elif !defined(CATCH_CONFIG_CPP17_STRING_VIEW) && !defined(CATCH_CONFIG_STRINGMAKER_HAS_STRING_VIEW)
 namespace Catch {
 std::string StringMaker<std::string_view>::convert(std::string_view sv) {
   return std::string(sv);
