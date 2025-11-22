@@ -42,29 +42,29 @@ struct expression_node_attributor {
     if (!h.ptr) return out;
 
     if (auto v = std::get_if<my_variable>(h.ptr)) {
-      out.emplace(std::string{dagir::ir_attrs::k_label}, v->variable_name);
-      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightblue"});
+      out.emplace(dagir::ir_attrs::k_label, v->variable_name);
+      out.emplace(dagir::ir_attrs::k_fill_color, std::string{"lightblue"});
     } else if (std::get_if<my_and>(h.ptr)) {
-      out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"AND"});
-      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightgreen"});
-      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
+      out.emplace(dagir::ir_attrs::k_label, std::string{"AND"});
+      out.emplace(dagir::ir_attrs::k_fill_color, std::string{"lightgreen"});
+      out.emplace(dagir::ir_attrs::k_style, std::string{"filled"});
     } else if (std::get_if<my_or>(h.ptr)) {
-      out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"OR"});
-      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightcoral"});
-      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
+      out.emplace(dagir::ir_attrs::k_label, std::string{"OR"});
+      out.emplace(dagir::ir_attrs::k_fill_color, std::string{"lightcoral"});
+      out.emplace(dagir::ir_attrs::k_style, std::string{"filled"});
     } else if (std::get_if<my_xor>(h.ptr)) {
-      out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"XOR"});
-      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"lightpink"});
-      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
+      out.emplace(dagir::ir_attrs::k_label, std::string{"XOR"});
+      out.emplace(dagir::ir_attrs::k_fill_color, std::string{"lightpink"});
+      out.emplace(dagir::ir_attrs::k_style, std::string{"filled"});
     } else if (std::get_if<my_not>(h.ptr)) {
-      out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"NOT"});
-      out.emplace(std::string{dagir::ir_attrs::k_fill_color}, std::string{"yellow"});
-      out.emplace(std::string{dagir::ir_attrs::k_style}, std::string{"filled"});
+      out.emplace(dagir::ir_attrs::k_label, std::string{"NOT"});
+      out.emplace(dagir::ir_attrs::k_fill_color, std::string{"yellow"});
+      out.emplace(dagir::ir_attrs::k_style, std::string{"filled"});
     }
 
     // Always expose a unique `name` attribute so renderers can use stable
     // unique node ids while keeping the human-visible `label` untouched.
-    out[std::string{"name"}] = dagir::utility::make_node_id(h.stable_key());
+    out[dagir::ir_attrs::k_id] = dagir::utility::make_node_id(h.stable_key());
     return out;
   }
 
@@ -93,19 +93,19 @@ struct expression_edge_attributor {
     // (e.g. bold for AND, dashed for NOT) but do not set edge colors.
     if (auto p_and = std::get_if<my_and>(parent.ptr)) {
       if (p_and->left && p_and->left.get() == child.ptr)
-        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
+        out.emplace(dagir::ir_attrs::k_label, std::string{"L"});
       else if (p_and->right && p_and->right.get() == child.ptr)
-        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
+        out.emplace(dagir::ir_attrs::k_label, std::string{"R"});
     } else if (auto p_or = std::get_if<my_or>(parent.ptr)) {
       if (p_or->left && p_or->left.get() == child.ptr)
-        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
+        out.emplace(dagir::ir_attrs::k_label, std::string{"L"});
       else if (p_or->right && p_or->right.get() == child.ptr)
-        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
+        out.emplace(dagir::ir_attrs::k_label, std::string{"R"});
     } else if (auto p_xor = std::get_if<my_xor>(parent.ptr)) {
       if (p_xor->left && p_xor->left.get() == child.ptr)
-        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"L"});
+        out.emplace(dagir::ir_attrs::k_label, std::string{"L"});
       else if (p_xor->right && p_xor->right.get() == child.ptr)
-        out.emplace(std::string{dagir::ir_attrs::k_label}, std::string{"R"});
+        out.emplace(dagir::ir_attrs::k_label, std::string{"R"});
     } else if (auto p_not = std::get_if<my_not>(parent.ptr)) {
       // Unary operator: do not emit edge labels for NOT -- leave edges unlabeled
       (void)child;

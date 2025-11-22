@@ -138,9 +138,9 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
     // `n.attributes`. We prefer attribute-provided values; otherwise the
     // default name is used and a label from the stable key is written.
     n.attributes = std::invoke(node_policy, view, h);
-    if (!n.attributes.count("name")) n.attributes["name"] = std::format("node{}", idx + 1);
-    if (!n.attributes.count(std::string(ir_attrs::k_label)))
-      n.attributes[std::string(ir_attrs::k_label)] = std::to_string(k);
+    if (!n.attributes.count(ir_attrs::k_name))
+      n.attributes[ir_attrs::k_name] = std::format("node{:03}", idx);
+    if (!n.attributes.count(ir_attrs::k_label)) n.attributes[ir_attrs::k_label] = std::to_string(k);
 
     graph.nodes.push_back(std::move(n));
   }
@@ -195,7 +195,7 @@ template <dagir::concepts::read_only_dag_view View>
 ir_graph build_ir(const View& view) {
   auto node_attr = [](auto const& /*view*/, auto const& h) -> dagir::ir_attr_map {
     dagir::ir_attr_map m;
-    m.emplace(std::string(ir_attrs::k_label), std::format("{}", h.stable_key()));
+    m.emplace(ir_attrs::k_label, std::format("{}", h.stable_key()));
     return m;
   };
   auto edge_attr = [](auto&&...) -> dagir::ir_attr_map { return {}; };

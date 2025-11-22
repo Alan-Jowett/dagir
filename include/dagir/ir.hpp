@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
@@ -21,7 +22,7 @@ namespace dagir {
 /**
  * @brief Key/value attribute attached to nodes, edges, or the global graph.
  */
-using ir_attr_map = std::unordered_map<std::string, std::string>;
+using ir_attr_map = std::unordered_map<std::string_view, std::string>;
 
 /**
  * @brief A node in the renderer-neutral IR.
@@ -48,8 +49,8 @@ struct ir_node {
 };
 
 inline bool operator<(ir_node const& a, ir_node const& b) {
-  const auto a_it = a.attributes.find(std::string{"name"});
-  const auto b_it = b.attributes.find(std::string{"name"});
+  const auto a_it = a.attributes.find(ir_attrs::k_name);
+  const auto b_it = b.attributes.find(ir_attrs::k_name);
   const bool a_has = (a_it != a.attributes.end());
   const bool b_has = (b_it != b.attributes.end());
   if (a_has && b_has) {
@@ -93,8 +94,8 @@ struct ir_edge {
 
 inline bool operator<(ir_edge const& a, ir_edge const& b) {
   // Compare by source id, then target id, then by style attribute (if present).
-  const auto a_style_it = a.attributes.find(std::string{ir_attrs::k_style});
-  const auto b_style_it = b.attributes.find(std::string{ir_attrs::k_style});
+  const auto a_style_it = a.attributes.find(ir_attrs::k_style);
+  const auto b_style_it = b.attributes.find(ir_attrs::k_style);
   const std::string a_style =
       (a_style_it != a.attributes.end()) ? a_style_it->second : std::string{};
   const std::string b_style =

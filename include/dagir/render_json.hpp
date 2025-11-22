@@ -150,9 +150,9 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     else
       os << "\"id\": \"" << render_json_detail::escape_json_string(std::to_string(n.id)) << "\"";
     // Emit label from attributes if present
-    if (amap.count(std::string(ir_attrs::k_label))) {
-      os << ", \"label\": \""
-         << render_json_detail::escape_json_string(amap.at(std::string(ir_attrs::k_label))) << "\"";
+    if (amap.count(ir_attrs::k_label)) {
+      os << ", \"label\": \"" << render_json_detail::escape_json_string(amap.at(ir_attrs::k_label))
+         << "\"";
     }
     if (!n.attributes.empty()) {
       os << ", \"attributes\": {";
@@ -160,9 +160,11 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
       std::vector<std::string> keys;
       keys.reserve(n.attributes.size());
       std::transform(n.attributes.begin(), n.attributes.end(), std::back_inserter(keys),
-                     [](auto const& p) { return p.first; });
+                     [](auto const& p) { return std::string(p.first); });
       std::sort(keys.begin(), keys.end());
       for (const auto& k : keys) {
+        if (k == ir_attrs::k_id) continue;
+
         if (!first_attr) os << ", ";
         first_attr = false;
         const auto& val = n.attributes.at(k);
@@ -209,7 +211,7 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
       std::vector<std::string> keys;
       keys.reserve(e.attributes.size());
       std::transform(e.attributes.begin(), e.attributes.end(), std::back_inserter(keys),
-                     [](auto const& p) { return p.first; });
+                     [](auto const& p) { return std::string(p.first); });
       std::sort(keys.begin(), keys.end());
       for (const auto& k : keys) {
         if (!first_attr) os << ", ";
@@ -239,7 +241,7 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     std::vector<std::string> gkeys;
     gkeys.reserve(g.global_attrs.size());
     std::transform(g.global_attrs.begin(), g.global_attrs.end(), std::back_inserter(gkeys),
-                   [](auto const& p) { return p.first; });
+                   [](auto const& p) { return std::string(p.first); });
     std::sort(gkeys.begin(), gkeys.end());
     for (const auto& k : gkeys) {
       if (!first_ga) os << ", ";

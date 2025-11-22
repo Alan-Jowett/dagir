@@ -31,9 +31,8 @@ TEST_CASE("build_ir - default policies produce stringified ids", "[build_ir]") {
   std::unordered_map<uint64_t, std::string> labels;
   for (auto const& n : ir.nodes) {
     const auto& a = n.attributes;
-    labels.emplace(n.id, a.count(std::string(dagir::ir_attrs::k_label))
-                             ? a.at(std::string(dagir::ir_attrs::k_label))
-                             : std::to_string(n.id));
+    labels.emplace(n.id, a.count(dagir::ir_attrs::k_label) ? a.at(dagir::ir_attrs::k_label)
+                                                           : std::to_string(n.id));
   }
   REQUIRE(labels[0] == "0");
   REQUIRE(labels[1] == "1");
@@ -46,7 +45,7 @@ TEST_CASE("build_ir - custom node attributor and edge attributes", "[build_ir]")
 
   auto node_attrib = [](auto const& /*view*/, auto const& h) -> dagir::ir_attr_map {
     dagir::ir_attr_map m;
-    m.emplace(std::string(dagir::ir_attrs::k_label), std::format("N_{}", h.stable_key()));
+    m.emplace(dagir::ir_attrs::k_label, std::format("N_{}", h.stable_key()));
     return m;
   };
   auto edge_attr = [](auto const& parent, auto const& edge_like) {
@@ -63,9 +62,8 @@ TEST_CASE("build_ir - custom node attributor and edge attributes", "[build_ir]")
   std::unordered_map<uint64_t, std::string> labels;
   for (auto const& n : ir.nodes) {
     const auto& a = n.attributes;
-    labels.emplace(n.id, a.count(std::string(dagir::ir_attrs::k_label))
-                             ? a.at(std::string(dagir::ir_attrs::k_label))
-                             : std::to_string(n.id));
+    labels.emplace(n.id, a.count(dagir::ir_attrs::k_label) ? a.at(dagir::ir_attrs::k_label)
+                                                           : std::to_string(n.id));
   }
   REQUIRE(labels[0] == "N_0");
 
