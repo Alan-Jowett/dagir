@@ -214,19 +214,17 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
         os << "label = \"" << render_dot_detail::escape_dot(amap.at(ir_attrs::k_label)) << "\"";
         first = false;
       }
-      if (!amap.empty()) {
-        std::vector<std::string_view> keys;
-        keys.reserve(amap.size());
-        std::transform(amap.begin(), amap.end(), std::back_inserter(keys),
-                       [](auto const& p) { return p.first; });
-        std::sort(keys.begin(), keys.end(),
-                  [](std::string_view a, std::string_view b) { return a < b; });
-        for (const auto& k : keys) {
-          if (k == ir_attrs::k_label) continue;
-          if (!first) os << ", ";
-          first = false;
-          os << k << " = \"" << render_dot_detail::escape_dot(amap.at(k)) << "\"";
-        }
+      std::vector<std::string_view> keys;
+      keys.reserve(amap.size());
+      std::transform(amap.begin(), amap.end(), std::back_inserter(keys),
+                     [](auto const& p) { return p.first; });
+      std::sort(keys.begin(), keys.end(),
+                [](std::string_view a, std::string_view b) { return a < b; });
+      for (const auto& k : keys) {
+        if (k == ir_attrs::k_label) continue;
+        if (!first) os << ", ";
+        first = false;
+        os << k << " = \"" << render_dot_detail::escape_dot(amap.at(k)) << "\"";
       }
       os << "]";
     }
