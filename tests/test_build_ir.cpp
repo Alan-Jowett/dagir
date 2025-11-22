@@ -43,16 +43,16 @@ TEST_CASE("build_ir - custom node attributor and edge attributes", "[build_ir]")
   // graph: 0->1, 0->2
   MockDagView g({MockHandle{0}}, {{MockHandle{1}, MockHandle{2}}, {}, {}});
 
-  auto node_attrib = [](auto const& /*view*/, auto const& h) -> dagir::ir_attr_map {
-    dagir::ir_attr_map m;
-    m.emplace(dagir::ir_attrs::k_label, std::format("N_{}", h.stable_key()));
+  auto node_attrib = [](auto const& /*view*/, auto const& h) {
+    std::unordered_map<std::string, std::string> m;
+    m.emplace(std::string(dagir::ir_attrs::k_label), std::format("N_{}", h.stable_key()));
     return m;
   };
   auto edge_attr = [](auto const& parent, auto const& edge_like) {
     // edge_like is expected to provide target()
     auto child = edge_like.target();
-    dagir::ir_attr_map m;
-    m.emplace("rel", std::format("{}->{}", parent.stable_key(), child.stable_key()));
+    std::unordered_map<std::string, std::string> m;
+    m.emplace(std::string("rel"), std::format("{}->{}", parent.stable_key(), child.stable_key()));
     return m;
   };
 

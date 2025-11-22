@@ -42,23 +42,24 @@ struct teddy_node_attributor {
    * @param h The node handle.
    * @return Map of attribute key/value pairs.
    */
-  dagir::ir_attr_map operator()(const typename teddy_read_only_dag_view::handle& h) const {
-    dagir::ir_attr_map out;
+  std::unordered_map<std::string, std::string> operator()(
+      const typename teddy_read_only_dag_view::handle& h) const {
+    std::unordered_map<std::string, std::string> out;
     if (!h.ptr) return out;
 
     // Terminal nodes: show their boolean value
     if (h.ptr->is_terminal()) {
       // Ensure terminal nodes are labeled with either "0" or "1" explicitly.
       const auto val = h.ptr->get_value();
-      out.emplace(dagir::ir_attrs::k_label, val ? std::string{"1"} : std::string{"0"});
-      out.emplace(dagir::ir_attrs::k_shape, std::string{"box"});
-      out.emplace(dagir::ir_attrs::k_fill_color, std::string{"lightgray"});
+      out.emplace(std::string(dagir::ir_attrs::k_label), val ? std::string{"1"} : std::string{"0"});
+      out.emplace(std::string(dagir::ir_attrs::k_shape), std::string{"box"});
+      out.emplace(std::string(dagir::ir_attrs::k_fill_color), std::string{"lightgray"});
     } else {
       // Variable nodes: label with variable name if available, otherwise index
       std::string label = std::to_string(h.ptr->get_index());
       // view-aware overload will populate var_names via the view argument when available
-      out.emplace(dagir::ir_attrs::k_label, label);
-      out.emplace(dagir::ir_attrs::k_shape, std::string{"circle"});
+      out.emplace(std::string(dagir::ir_attrs::k_label), label);
+      out.emplace(std::string(dagir::ir_attrs::k_shape), std::string{"circle"});
     }
 
     return out;
@@ -67,9 +68,10 @@ struct teddy_node_attributor {
   /**
    * @brief Two-argument overload that forwards to the single-argument form.
    */
-  dagir::ir_attr_map operator()(const teddy_read_only_dag_view& view,
-                                const typename teddy_read_only_dag_view::handle& h) const {
-    dagir::ir_attr_map out = operator()(h);
+  std::unordered_map<std::string, std::string> operator()(
+      const teddy_read_only_dag_view& view,
+      const typename teddy_read_only_dag_view::handle& h) const {
+    std::unordered_map<std::string, std::string> out = operator()(h);
     if (!h.ptr) return out;
 
     // If the view provided variable names, use them for variable nodes
@@ -78,14 +80,14 @@ struct teddy_node_attributor {
       int idx = h.ptr->get_index();
       if (idx >= 0 && static_cast<size_t>(idx) < names->size()) {
         const std::string nm = (*names)[static_cast<size_t>(idx)];
-        out[dagir::ir_attrs::k_label] = nm;
+        out[std::string(dagir::ir_attrs::k_label)] = nm;
       }
     }
 
     // Always assign a unique renderer-visible id attribute derived from the
     // node's stable key. This ensures distinct nodes receive distinct ids
     // even when labels collide.
-    out[dagir::ir_attrs::k_id] = dagir::utility::make_node_id(h.stable_key());
+    out[std::string(dagir::ir_attrs::k_id)] = dagir::utility::make_node_id(h.stable_key());
 
     return out;
   }

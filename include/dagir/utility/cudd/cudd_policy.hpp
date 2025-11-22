@@ -31,8 +31,9 @@ struct cudd_node_attributor {
 
   // Use shared helper: dagir::utility::make_node_id(key)
 
-  dagir::ir_attr_map operator()(const typename cudd_read_only_dag_view::handle& h) const {
-    dagir::ir_attr_map out;
+  std::unordered_map<std::string, std::string> operator()(
+      const typename cudd_read_only_dag_view::handle& h) const {
+    std::unordered_map<std::string, std::string> out;
     if (!h.ptr) return out;
 
     if (Cudd_IsConstant(h.ptr)) {
@@ -40,22 +41,23 @@ struct cudd_node_attributor {
       // to the logical-one node. Use the complement flag to determine value.
       const bool is_complement = Cudd_IsComplement(h.ptr);
       int val = is_complement ? 0 : 1;
-      out.emplace(dagir::ir_attrs::k_label, val ? std::string{"1"} : std::string{"0"});
-      out.emplace(dagir::ir_attrs::k_shape, std::string{"box"});
-      out.emplace(dagir::ir_attrs::k_fill_color, std::string{"lightgray"});
+      out.emplace(std::string(dagir::ir_attrs::k_label), val ? std::string{"1"} : std::string{"0"});
+      out.emplace(std::string(dagir::ir_attrs::k_shape), std::string{"box"});
+      out.emplace(std::string(dagir::ir_attrs::k_fill_color), std::string{"lightgray"});
     } else {
       DdNode* base = Cudd_Regular(h.ptr);
       std::string label = std::to_string(Cudd_NodeReadIndex(base));
-      out.emplace(dagir::ir_attrs::k_label, label);
-      out.emplace(dagir::ir_attrs::k_shape, std::string{"circle"});
+      out.emplace(std::string(dagir::ir_attrs::k_label), label);
+      out.emplace(std::string(dagir::ir_attrs::k_shape), std::string{"circle"});
     }
 
     return out;
   }
 
-  dagir::ir_attr_map operator()(const cudd_read_only_dag_view& view,
-                                const typename cudd_read_only_dag_view::handle& h) const {
-    dagir::ir_attr_map out = operator()(h);
+  std::unordered_map<std::string, std::string> operator()(
+      const cudd_read_only_dag_view& view,
+      const typename cudd_read_only_dag_view::handle& h) const {
+    std::unordered_map<std::string, std::string> out = operator()(h);
     if (!h.ptr) return out;
 
     const auto* names = view.var_names();
@@ -64,12 +66,12 @@ struct cudd_node_attributor {
       int idx = Cudd_NodeReadIndex(base);
       if (idx >= 0 && static_cast<size_t>(idx) < names->size()) {
         const std::string nm = (*names)[static_cast<size_t>(idx)];
-        out[dagir::ir_attrs::k_label] = nm;
+        out[std::string(dagir::ir_attrs::k_label)] = nm;
       }
     }
 
     // Assign unique node id attribute based on stable key
-    out[dagir::ir_attrs::k_id] = dagir::utility::make_node_id(h.stable_key());
+    out[std::string(dagir::ir_attrs::k_id)] = dagir::utility::make_node_id(h.stable_key());
 
     return out;
   }
