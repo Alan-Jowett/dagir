@@ -69,6 +69,12 @@ struct cudd_node_attributor {
       out.emplace_back(key_shape, std::string_view("circle"));
     }
 
+    // Assign unique node id attribute based on stable key (keep consistent
+    // with expression_policy which computes id in the single-arg overload).
+    const std::string id = dagir::utility::make_node_id(h.stable_key());
+    auto id_sv = cache.cache_view(id);
+    out.emplace_back(dagir::ir_attrs::k_id, id_sv);
+
     return out;
   }
 
