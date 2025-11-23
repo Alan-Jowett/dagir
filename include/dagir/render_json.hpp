@@ -159,10 +159,10 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     if (!n.attributes.empty()) {
       os << ", \"attributes\": {";
       bool first_attr = true;
-      std::vector<std::string> keys;
+      std::vector<std::string_view> keys;
       keys.reserve(n.attributes.size());
       std::transform(n.attributes.begin(), n.attributes.end(), std::back_inserter(keys),
-                     [](auto const& p) { return std::string(p.first); });
+                     [](auto const& p) { return p.first; });
       std::sort(keys.begin(), keys.end());
       for (const auto& k : keys) {
         if (k == ir_attrs::k_id) continue;

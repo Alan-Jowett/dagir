@@ -122,9 +122,7 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     gkeys.reserve(g.global_attrs.size());
     std::transform(g.global_attrs.begin(), g.global_attrs.end(), std::back_inserter(gkeys),
                    [](auto const& p) { return p.first; });
-    std::sort(gkeys.begin(), gkeys.end(), [](std::string_view a, std::string_view b) {
-      return std::string_view(a) < std::string_view(b);
-    });
+    std::sort(gkeys.begin(), gkeys.end());
     for (const auto& k : gkeys) {
       const auto& v = g.global_attrs.at(k);
       if (k == ir_attrs::k_graph_label) {
