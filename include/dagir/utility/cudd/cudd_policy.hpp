@@ -80,9 +80,10 @@ struct cudd_node_attributor {
 struct cudd_edge_attributor {
   using handle = typename cudd_read_only_dag_view::handle;
 
-  dagir::ir_attr_map operator()(const cudd_read_only_dag_view& /*view*/, const handle& parent,
-                                const handle& child) const {
-    dagir::ir_attr_map out;
+  std::unordered_map<std::string, std::string> operator()(const cudd_read_only_dag_view& /*view*/,
+                                                          const handle& parent,
+                                                          const handle& child) const {
+    std::unordered_map<std::string, std::string> out;
     if (!parent.ptr) return out;
 
     const bool is_comp = Cudd_IsComplement(parent.ptr);
@@ -95,9 +96,9 @@ struct cudd_edge_attributor {
     }
 
     if (else_child && else_child == child.ptr) {
-      out.emplace(dagir::ir_attrs::k_style, std::string{"dashed"});
+      out.emplace(std::string(dagir::ir_attrs::k_style), std::string{"dashed"});
     } else if (then_child && then_child == child.ptr) {
-      out.emplace(dagir::ir_attrs::k_style, std::string{"solid"});
+      out.emplace(std::string(dagir::ir_attrs::k_style), std::string{"solid"});
     }
 
     return out;

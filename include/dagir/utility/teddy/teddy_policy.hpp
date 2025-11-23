@@ -109,9 +109,10 @@ struct teddy_edge_attributor {
    * @param child Child node handle.
    * @return Map of attribute key/value pairs.
    */
-  dagir::ir_attr_map operator()(const teddy_read_only_dag_view& /*view*/, const handle& parent,
-                                const handle& child) const {
-    dagir::ir_attr_map out;
+  std::unordered_map<std::string, std::string> operator()(const teddy_read_only_dag_view& /*view*/,
+                                                          const handle& parent,
+                                                          const handle& child) const {
+    std::unordered_map<std::string, std::string> out;
     if (!parent.ptr) return out;
 
     // Determine whether this child is the false (0) or true (1) branch.
@@ -119,9 +120,9 @@ struct teddy_edge_attributor {
     auto son1 = parent.ptr->get_son(1);
 
     if (son0 && son0 == child.ptr) {
-      out.emplace(dagir::ir_attrs::k_style, std::string{"dashed"});
+      out.emplace(std::string(dagir::ir_attrs::k_style), std::string{"dashed"});
     } else if (son1 && son1 == child.ptr) {
-      out.emplace(dagir::ir_attrs::k_style, std::string{"solid"});
+      out.emplace(std::string(dagir::ir_attrs::k_style), std::string{"solid"});
     }
 
     return out;
