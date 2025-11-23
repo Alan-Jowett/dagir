@@ -36,7 +36,7 @@ namespace render_mermaid_detail {
  * This performs conservative escaping of control characters and quotes so
  * labels are safe to include inside Mermaid quoted labels.
  */
-inline std::string escape_mermaid(const std::string& s) {
+inline std::string escape_mermaid(const std::string_view s) {
   std::string out;
   out.reserve(s.size() + 8);
   for (unsigned char c : s) {
@@ -97,20 +97,20 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
 
   // Emit title if provided (deterministic: check sorted keys)
   if (!g.global_attrs.empty()) {
-    std::vector<std::string> gkeys;
+    std::vector<std::string_view> gkeys;
     gkeys.reserve(g.global_attrs.size());
     std::transform(g.global_attrs.begin(), g.global_attrs.end(), std::back_inserter(gkeys),
-                   [](auto const& p) { return std::string(p.first); });
+                   [](auto const& p) { return p.first; });
     std::sort(gkeys.begin(), gkeys.end());
     bool found_title = false;
     for (const auto& k : gkeys) {
-      if (k == std::string(ir_attrs::k_graph_label)) {
+      if (k == ir_attrs::k_graph_label) {
         os << "  title " << render_mermaid_detail::escape_mermaid(g.global_attrs.at(k)) << "\n";
         found_title = true;
       }
     }
     if (found_title) {
-      os << render_mermaid_detail::escape_mermaid(std::string(graph_name)) << "\n";
+      os << "%% " << render_mermaid_detail::escape_mermaid(graph_name) << "\n";
     }
   }
 
@@ -119,8 +119,14 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
     const auto& amap = n.attributes;
 
     // Determine label: prefer k_label, then id
-    std::string label =
-        amap.count(ir_attrs::k_label) ? amap.at(ir_attrs::k_label) : std::format("{}", n.id);
+    std::string label_gen;
+    std::string_view label_sv;
+    if (amap.count(ir_attrs::k_label)) {
+      label_sv = amap.at(ir_attrs::k_label);
+    } else {
+      label_gen = std::format("{}", n.id);
+      label_sv = label_gen;
+    }
 
     // Determine shape: map some known shapes to Mermaid bracket syntax
     std::string opening = "[";
@@ -140,9 +146,16 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
     }
 
     // Prefer attribute "name" for the identifier used in edges and styles.
-    std::string node_name = amap.count("name") ? amap.at("name") : std::format("n{}", n.id);
-    os << "  " << node_name << opening << '"' << render_mermaid_detail::escape_mermaid(label) << '"'
-       << closing << "\n";
+    std::string node_name_gen;
+    std::string_view node_name_sv;
+    if (amap.count("name")) {
+      node_name_sv = amap.at("name");
+    } else {
+      node_name_gen = std::format("n{}", n.id);
+      node_name_sv = node_name_gen;
+    }
+    os << "  " << node_name_sv << opening << '"' << render_mermaid_detail::escape_mermaid(label_sv)
+       << '"' << closing << "\n";
 
     // Emit simple style directive if fill or stroke is provided
     if (amap.count(ir_attrs::k_fill_color) || amap.count(ir_attrs::k_color) ||
@@ -156,7 +169,7 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
         parts.push_back(std::format("stroke-width:{}", amap.at(ir_attrs::k_pen_width)));
       if (!parts.empty()) {
         std::sort(parts.begin(), parts.end());
-        os << "  style " << node_name << " " << parts[0];
+        os << "  style " << node_name_sv << " " << parts[0];
         for (size_t i = 1; i < parts.size(); ++i) os << "," << parts[i];
         os << "\n";
       }
@@ -170,7 +183,7 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
                              [&](const ir_node& nn) { return nn.id == nid; });
       if (it != g.nodes.end()) {
         const auto& a = it->attributes;
-        if (a.count("name")) return a.at("name");
+        if (a.count("name")) return std::string(a.at("name"));
         return std::format("n{}", it->id);
       }
       return std::format("n{}", nid);

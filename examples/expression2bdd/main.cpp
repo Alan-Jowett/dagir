@@ -45,25 +45,25 @@
  * @param backend Target backend name: "dot", "json", or "mermaid".
  * @throws std::runtime_error If an unknown backend is requested.
  */
-static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
-  dagir::ir_graph ir = in_ir;  // make a local copy we can reorder
-
+static void emit_ir(dagir::ir_graph ir, const std::string& backend) {
   auto node_print_name = [&](const dagir::ir_node& n) {
     auto it = n.attributes.find(dagir::ir_attrs::k_id);
-    if (it != n.attributes.end()) return it->second;
+    if (it != n.attributes.end()) return std::string(it->second);
     return std::to_string(n.id);
   };
 
   // Sort nodes by printable name ('name' attribute if present, otherwise id)
-  std::sort(
-      ir.nodes.begin(), ir.nodes.end(), [&](const dagir::ir_node& a, const dagir::ir_node& b) {
-        auto a_it = a.attributes.find(dagir::ir_attrs::k_id);
-        auto b_it = b.attributes.find(dagir::ir_attrs::k_id);
-        std::string a_name = (a_it != a.attributes.end()) ? a_it->second : std::to_string(a.id);
-        std::string b_name = (b_it != b.attributes.end()) ? b_it->second : std::to_string(b.id);
-        if (a_name != b_name) return a_name < b_name;
-        return a.id < b.id;
-      });
+  std::sort(ir.nodes.begin(), ir.nodes.end(),
+            [&](const dagir::ir_node& a, const dagir::ir_node& b) {
+              auto a_it = a.attributes.find(dagir::ir_attrs::k_id);
+              auto b_it = b.attributes.find(dagir::ir_attrs::k_id);
+              std::string a_name =
+                  (a_it != a.attributes.end()) ? std::string(a_it->second) : std::to_string(a.id);
+              std::string b_name =
+                  (b_it != b.attributes.end()) ? std::string(b_it->second) : std::to_string(b.id);
+              if (a_name != b_name) return a_name < b_name;
+              return a.id < b.id;
+            });
 
   std::sort(ir.edges.begin(), ir.edges.end(),
             [&](const dagir::ir_edge& A, const dagir::ir_edge& B) {
@@ -99,7 +99,7 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
               // the sample expected ordering used in the repository.
               auto style_of = [&](const dagir::ir_edge& e) -> std::string {
                 auto it = e.attributes.find(dagir::ir_attrs::k_style);
-                if (it != e.attributes.end()) return it->second;
+                if (it != e.attributes.end()) return std::string(it->second);
                 return std::string{};
               };
 
@@ -116,28 +116,28 @@ static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
                            [&](const dagir::ir_node& n) { return n.id == id; });
     if (it != ir.nodes.end()) {
       auto nit = it->attributes.find(dagir::ir_attrs::k_id);
-      if (nit != it->attributes.end()) return nit->second;
+      if (nit != it->attributes.end()) return std::string(nit->second);
       return std::to_string(it->id);
     }
     return std::to_string(id);
   };
 
-  std::sort(ir.edges.begin(), ir.edges.end(),
-            [&](const dagir::ir_edge& A, const dagir::ir_edge& B) {
-              const std::string a_src = find_node_name(A.source);
-              const std::string b_src = find_node_name(B.source);
-              if (a_src != b_src) return a_src < b_src;
-              const std::string a_tgt = find_node_name(A.target);
-              const std::string b_tgt = find_node_name(B.target);
-              if (a_tgt != b_tgt) return a_tgt < b_tgt;
-              auto a_style_it = A.attributes.find(dagir::ir_attrs::k_style);
-              auto b_style_it = B.attributes.find(dagir::ir_attrs::k_style);
-              const std::string a_style =
-                  (a_style_it != A.attributes.end()) ? a_style_it->second : std::string{};
-              const std::string b_style =
-                  (b_style_it != B.attributes.end()) ? b_style_it->second : std::string{};
-              return a_style < b_style;
-            });
+  std::sort(
+      ir.edges.begin(), ir.edges.end(), [&](const dagir::ir_edge& A, const dagir::ir_edge& B) {
+        const std::string a_src = find_node_name(A.source);
+        const std::string b_src = find_node_name(B.source);
+        if (a_src != b_src) return a_src < b_src;
+        const std::string a_tgt = find_node_name(A.target);
+        const std::string b_tgt = find_node_name(B.target);
+        if (a_tgt != b_tgt) return a_tgt < b_tgt;
+        auto a_style_it = A.attributes.find(dagir::ir_attrs::k_style);
+        auto b_style_it = B.attributes.find(dagir::ir_attrs::k_style);
+        const std::string a_style =
+            (a_style_it != A.attributes.end()) ? std::string(a_style_it->second) : std::string{};
+        const std::string b_style =
+            (b_style_it != B.attributes.end()) ? std::string(b_style_it->second) : std::string{};
+        return a_style < b_style;
+      });
 
   if (backend == "dot") {
     dagir::render_dot(std::cout, ir, "bdd");
@@ -256,7 +256,7 @@ int main(int argc, char** argv) {
       // Build IR using teddy policies and render deterministically
       dagir::ir_graph ir = dagir::build_ir(view, dagir::utility::teddy_node_attributor{},
                                            dagir::utility::teddy_edge_attributor{});
-      emit_ir(ir, backend);
+      emit_ir(std::move(ir), backend);
 
     } else if (library == "cudd") {
       // Initialize CUDD manager
@@ -274,7 +274,7 @@ int main(int argc, char** argv) {
       dagir::ir_graph ir = dagir::build_ir(view, dagir::utility::cudd_node_attributor{},
                                            dagir::utility::cudd_edge_attributor{});
       try {
-        emit_ir(ir, backend);
+        emit_ir(std::move(ir), backend);
       } catch (...) {
         Cudd_RecursiveDeref(mgr, diag);
         Cudd_Quit(mgr);

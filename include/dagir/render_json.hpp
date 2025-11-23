@@ -44,7 +44,7 @@ namespace render_json_detail {
  * Produces a JSON-safe string by escaping quotes, backslashes and control
  * characters. The result is suitable to be written inside double quotes.
  */
-inline std::string escape_json_string(const std::string& s) {
+inline std::string escape_json_string(const std::string_view s) {
   std::ostringstream o;
   for (unsigned char c : s) {
     switch (c) {
@@ -89,7 +89,7 @@ inline std::string escape_json_string(const std::string& s) {
  * (without surrounding quotes). Otherwise returns `std::nullopt` indicating
  * the value should be emitted as a JSON string.
  */
-inline std::optional<std::string> try_emit_primitive(const std::string& s) {
+inline std::optional<std::string> try_emit_primitive(const std::string_view s) {
   if (s == "null") return std::string("null");
   if (s == "true") return std::string("true");
   if (s == "false") return std::string("false");
@@ -104,8 +104,10 @@ inline std::optional<std::string> try_emit_primitive(const std::string& s) {
   // Fallback: try floating point via strtod
   errno = 0;
   char* endptr = nullptr;
-  double d = std::strtod(s.c_str(), &endptr);
-  if (endptr == s.c_str() + s.size() && errno == 0) {
+  // strtod expects a null-terminated string; copy to std::string_view-safe
+  std::string tmp(s);
+  double d = std::strtod(tmp.c_str(), &endptr);
+  if (endptr == tmp.c_str() + tmp.size() && errno == 0) {
     std::ostringstream os;
     os << std::setprecision(15) << d;
     return os.str();
@@ -157,10 +159,10 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
     if (!n.attributes.empty()) {
       os << ", \"attributes\": {";
       bool first_attr = true;
-      std::vector<std::string> keys;
+      std::vector<std::string_view> keys;
       keys.reserve(n.attributes.size());
       std::transform(n.attributes.begin(), n.attributes.end(), std::back_inserter(keys),
-                     [](auto const& p) { return std::string(p.first); });
+                     [](auto const& p) { return p.first; });
       std::sort(keys.begin(), keys.end());
       for (const auto& k : keys) {
         if (k == ir_attrs::k_id) continue;
@@ -195,7 +197,7 @@ inline void render_json(std::ostream& os, const ir_graph& g) {
                              [&](const ir_node& nn) { return nn.id == nid; });
       if (it != g.nodes.end()) {
         const auto& aam = it->attributes;
-        if (aam.count("name")) return aam.at("name");
+        if (aam.count("name")) return std::string(aam.at("name"));
         return std::to_string(it->id);
       }
       return std::to_string(nid);
