@@ -41,15 +41,15 @@ class string_view_cache {
   // std::string_view entries in `index_` pointing at the original
   // `storage_` and would produce dangling views in the copy.
   string_view_cache() = default;
-  string_view_cache(string_view_cache&& other) noexcept {
-    // Steal storage and rebuild index to point into our own storage
-    storage_ = std::move(other.storage_);
+  string_view_cache(string_view_cache&& other) noexcept : storage_(std::move(other.storage_)) {
+    // Rebuild index to point into our own storage
     rebuild_index_from_storage();
   }
+
   string_view_cache& operator=(string_view_cache&& other) noexcept {
     if (this != &other) {
       storage_ = std::move(other.storage_);
-      index_.clear();
+      // Rebuild index to point into the moved-in storage
       rebuild_index_from_storage();
     }
     return *this;
