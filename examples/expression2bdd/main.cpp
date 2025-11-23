@@ -45,9 +45,7 @@
  * @param backend Target backend name: "dot", "json", or "mermaid".
  * @throws std::runtime_error If an unknown backend is requested.
  */
-static void emit_ir(const dagir::ir_graph& in_ir, const std::string& backend) {
-  dagir::ir_graph ir = in_ir;  // make a local copy we can reorder
-
+static void emit_ir(dagir::ir_graph ir, const std::string& backend) {
   auto node_print_name = [&](const dagir::ir_node& n) {
     auto it = n.attributes.find(dagir::ir_attrs::k_id);
     if (it != n.attributes.end()) return std::string(it->second);
@@ -258,7 +256,7 @@ int main(int argc, char** argv) {
       // Build IR using teddy policies and render deterministically
       dagir::ir_graph ir = dagir::build_ir(view, dagir::utility::teddy_node_attributor{},
                                            dagir::utility::teddy_edge_attributor{});
-      emit_ir(ir, backend);
+      emit_ir(std::move(ir), backend);
 
     } else if (library == "cudd") {
       // Initialize CUDD manager
@@ -276,7 +274,7 @@ int main(int argc, char** argv) {
       dagir::ir_graph ir = dagir::build_ir(view, dagir::utility::cudd_node_attributor{},
                                            dagir::utility::cudd_edge_attributor{});
       try {
-        emit_ir(ir, backend);
+        emit_ir(std::move(ir), backend);
       } catch (...) {
         Cudd_RecursiveDeref(mgr, diag);
         Cudd_Quit(mgr);
