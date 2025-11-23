@@ -37,9 +37,35 @@ class string_view_cache {
     return view;
   }
 
+  // Make the cache movable but not copyable. Copying would leave
+  // std::string_view entries in `index_` pointing at the original
+  // `storage_` and would produce dangling views in the copy.
+  string_view_cache() = default;
+  string_view_cache(string_view_cache&& other) noexcept {
+    // Steal storage and rebuild index to point into our own storage
+    storage_ = std::move(other.storage_);
+    rebuild_index_from_storage();
+  }
+  string_view_cache& operator=(string_view_cache&& other) noexcept {
+    if (this != &other) {
+      storage_ = std::move(other.storage_);
+      index_.clear();
+      rebuild_index_from_storage();
+    }
+    return *this;
+  }
+
+  string_view_cache(const string_view_cache&) = delete;
+  string_view_cache& operator=(const string_view_cache&) = delete;
+
  private:
   std::list<std::string> storage_;
   std::unordered_set<std::string_view> index_;
+
+  void rebuild_index_from_storage() {
+    index_.clear();
+    for (const auto& s : storage_) index_.insert(std::string_view(s));
+  }
 };
 
 }  // namespace dagir

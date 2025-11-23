@@ -23,6 +23,25 @@ namespace dagir {
 /**
  * @brief Key/value attribute attached to nodes, edges, or the global graph.
  */
+/**
+ * @brief Non-owning view map for attributes.
+ *
+ * This map stores attribute keys and values as `std::string_view`. It does
+ * not own the underlying character data — callers must ensure that any
+ * `std::string_view` inserted into an `ir_attr_map` refers to storage that
+ * remains alive for the lifetime of the `ir_graph` that contains it. The
+ * intended usage pattern is for callers to prepare `std::string` keys/values
+ * (for example via `std::unordered_map<std::string,std::string>`) and then
+ * have `build_ir` cache those strings into `ir_graph::attr_cache` which
+ * returns stable `std::string_view`s suitable for storing in `ir_attr_map`.
+ *
+ * Alternatives:
+ * - Use `ir_graph::attr_cache.cache_view(...)` to obtain stable views for
+ *   keys/values copied from temporary `std::string`s.
+ * - Construct attributes as `std::unordered_map<std::string,std::string>` and
+ *   let callers convert them via the builder helpers that populate the
+ *   `attr_cache` (see `build_ir`).
+ */
 using ir_attr_map = std::unordered_map<std::string_view, std::string_view>;
 
 /**

@@ -29,10 +29,13 @@ namespace utility {
 /**
  * @brief Node attributor for expression AST nodes.
  *
- * This functor models `dagir::concepts::node_attributor`. It returns a
- * `dagir::ir_attr_map` and supports both `(handle)` and `(view, handle)`
- * invocation forms by forwarding the two-argument call to the single-argument
- * implementation.
+ * This functor models `dagir::concepts::node_attributor`. It returns an
+ * owning `std::unordered_map<std::string,std::string>` for convenience; the
+ * map's contents are intended to be converted into the graph's
+ * `ir_attr_map` via `build_ir` which will cache strings into
+ * `ir_graph::attr_cache` and store stable `std::string_view`s. Avoid
+ * constructing attribute keys repeatedly in hot paths; consider using
+ * static `const std::string` for frequently-used attribute names.
  */
 struct expression_node_attributor {
   using view_t = expression_read_only_dag_view;  // forward declaration use-case
