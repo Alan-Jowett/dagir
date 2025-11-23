@@ -110,13 +110,10 @@ struct cudd_node_attributor {
  * @brief Edge attributor for CUDD edges.
  *
  * Produces a small vector of attribute key/value string_views for each
- * edge. Style values are returned as string literals when possible; the
- * `cache` member may be used if dynamic strings are required.
+ * edge. Style values are returned as string literals when possible.
  */
 struct cudd_edge_attributor {
   using handle = typename cudd_read_only_dag_view::handle;
-
-  mutable dagir::string_view_cache cache;
 
   std::vector<std::pair<std::string_view, std::string_view>> operator()(
       const cudd_read_only_dag_view& /*view*/, const handle& parent, const handle& child) const {

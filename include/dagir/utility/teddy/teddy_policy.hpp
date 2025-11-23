@@ -26,15 +26,6 @@ namespace utility {
 
 /**
  * @brief Node attributor for TeDDy nodes.
- */
-
-/**
- * @brief Node attribute policy for TeDDy nodes.
- *
- * Produces renderer-neutral attributes (labels, shapes, colors) for nodes.
- */
-/**
- * @brief Node attributor for TeDDy nodes.
  *
  * Returns a `std::vector<std::pair<std::string_view,std::string_view>>` of
  * attributes. Computed strings (numeric labels, generated ids) are cached
@@ -94,9 +85,6 @@ struct teddy_node_attributor {
     if (names && !h.ptr->is_terminal()) {
       int idx = h.ptr->get_index();
       if (idx >= 0 && static_cast<size_t>(idx) < names->size()) {
-        // Always assign a unique renderer-visible id attribute derived from the
-        // node's stable key. This ensures distinct nodes receive distinct ids
-        // even when labels collide.
         std::string_view nm = (*names)[static_cast<size_t>(idx)];
         const std::string_view key_label(dagir::ir_attrs::k_label);
         auto it = std::find_if(out.begin(), out.end(),
@@ -105,6 +93,9 @@ struct teddy_node_attributor {
       }
     }
 
+    // Always assign a unique renderer-visible id attribute derived from the
+    // node's stable key. This ensures distinct nodes receive distinct ids
+    // even when labels collide.
     const std::string id = dagir::utility::make_node_id(h.stable_key());
     out.emplace_back(dagir::ir_attrs::k_id, cache.cache_view(id));
     return out;

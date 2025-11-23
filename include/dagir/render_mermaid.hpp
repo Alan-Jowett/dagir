@@ -110,7 +110,7 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
       }
     }
     if (found_title) {
-      os << render_mermaid_detail::escape_mermaid(graph_name) << "\n";
+      os << "%% " << render_mermaid_detail::escape_mermaid(graph_name) << "\n";
     }
   }
 

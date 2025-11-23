@@ -91,9 +91,8 @@ struct expression_node_attributor {
  * @brief Edge attribute policy for expression AST edges.
  *
  * This functor models `dagir::concepts::edge_attributor` and returns a
- * `dagir::ir_attr_map` containing attribute key/value pairs. Attributes
- * encode a simple color/style scheme derived from the parent node's
- * operator type.
+ * `std::vector<std::pair<std::string_view,std::string_view>>` containing attribute key/value pairs.
+ * Attributes encode a simple color/style scheme derived from the parent node's operator type.
  */
 struct expression_edge_attributor {
   using handle = typename expression_read_only_dag_view::handle;
