@@ -65,13 +65,6 @@ inline std::string escape_mermaid(const std::string_view s) {
   return out;
 }
 
-/**
- * @brief Convert IR attribute vector to a lookup map.
- *
- * Convenience helper to simplify attribute lookup when emitting nodes/edges.
- */
-// Attributes are now stored as `ir_attr_map`; helper removed.
-
 }  // namespace render_mermaid_detail
 
 /**

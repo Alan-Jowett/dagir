@@ -22,7 +22,12 @@
 // Implement read_only_dag_view over expression ASTs
 namespace dagir {
 namespace utility {
-// Non-owning handle pointing at a node inside a parsed expression AST.
+/**
+ * @brief Non-owning handle pointing at a node inside a parsed expression AST.
+ *
+ * This handle wraps a pointer into an expression AST and provides the
+ * stable_key/debug_address accessors required by the DAG view concepts.
+ */
 struct expression_handle {
   const my_expression* ptr = nullptr;
 
@@ -38,21 +43,38 @@ struct expression_handle {
   constexpr bool operator!=(const expression_handle& o) const noexcept { return ptr != o.ptr; }
 };
 
-/// Read-only adapter exposing an expression AST as a DAG view.
-/// Non-owning: the caller must ensure the lifetime of the root expression.
+/**
+ * @brief Read-only adapter exposing an expression AST as a DAG view.
+ *
+ * Non-owning: the caller must ensure the lifetime of the root expression
+ * passed to the constructor.
+ */
 class expression_read_only_dag_view {
  public:
   using handle = expression_handle;
 
-  // Lightweight edge type for this adapter satisfying `edge_ref` concept.
+  /**
+   * @brief Lightweight edge type for this adapter satisfying `edge_ref`.
+   */
   struct expression_edge {
     handle to;
+    /** Return the target handle stored in this edge wrapper. */
     constexpr const handle& target() const noexcept { return to; }
   };
 
+  /**
+   * @brief Construct a view over the provided expression AST root.
+   *
+   * @param root Pointer to the root expression (non-owning).
+   */
   explicit expression_read_only_dag_view(const my_expression* root = nullptr) : root_{root} {}
 
-  // Return a range (vector) of edges for the given handle. Edges carry target handles.
+  /**
+   * @brief Return children (edges) of the given handle.
+   *
+   * Returns a vector of `expression_edge` representing each child. The
+   * vector is empty for null handles or leaf nodes.
+   */
   auto children(const handle& h) const {
     std::vector<expression_edge> out;
     if (!h.ptr) return out;
@@ -73,13 +95,17 @@ class expression_read_only_dag_view {
     return out;
   }
 
-  // Return roots as a one-element range (or empty if no root)
+  /**
+   * @brief Return the set of roots for this view (one-element or empty).
+   */
   auto roots() const {
     if (!root_) return std::vector<handle>{};
     return std::vector<handle>{handle{root_}};
   }
 
-  // No-op guard for this simple in-memory view
+  /**
+   * @brief No-op guard for this in-memory view.
+   */
   static auto start_guard(const handle&) { return dagir::noop_guard{}; }
 
  private:

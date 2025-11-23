@@ -34,31 +34,6 @@
 
 namespace dagir {
 
-// Detection idiom helpers
-//
-// NOTE: These lightweight detection traits are retained for historical
-// reasons and for use by static analysis tools. `build_ir` requires
-// node attributors that model `dagir::concepts::node_attributor`. Attributors
-// are expected to produce attribute representations (the canonical type is
-// `dagir::ir_attr_map`).
-namespace build_ir_detail {
-template <class, class = void>
-struct has_first_second : std::false_type {};
-
-template <class T>
-struct has_first_second<
-    T, std::void_t<decltype(std::declval<T>().first), decltype(std::declval<T>().second)>>
-    : std::true_type {};
-
-template <class, class = void>
-struct has_name_label : std::false_type {};
-
-template <class T>
-struct has_name_label<
-    T, std::void_t<decltype(std::declval<T>().name), decltype(std::declval<T>().label)>>
-    : std::true_type {};
-}  // namespace build_ir_detail
-
 /**
  * @brief Extract a child handle from an edge-like range element.
  *

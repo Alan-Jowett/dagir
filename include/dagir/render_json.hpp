@@ -116,11 +116,6 @@ inline std::optional<std::string> try_emit_primitive(const std::string_view s) {
   return std::nullopt;
 }
 
-/**
- * @brief Convert an attribute vector to a map for easier lookup.
- */
-// Attributes are now stored as `ir_attr_map`; conversion helper removed.
-
 }  // namespace render_json_detail
 
 /**

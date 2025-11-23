@@ -47,9 +47,6 @@ class string_view_cache {
     return view;
   }
 
-  // Make the cache movable but not copyable. Copying would leave
-  // std::string_view entries in `index_` pointing at the original
-  // `storage_` and would produce dangling views in the copy.
   /**
    * @brief Default construct an empty cache.
    */

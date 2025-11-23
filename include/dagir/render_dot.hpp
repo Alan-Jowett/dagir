@@ -88,22 +88,6 @@ inline std::string escape_dot(const std::string_view s) {
   }
   return out;
 }
-
-/**
- * @brief Helper that emits a comma-separated list of attributes to `os`.
- *
- * Each attribute is emitted as `key="escaped value"`. This is an internal
- * helper used during node/edge emission.
- */
-/**
- * @brief Convert an attribute vector into a lookup map.
- *
- * This convenience helper is used by the simple emitter logic in this file
- * to perform presence checks and indexed lookups. It is intentionally
- * straightforward and trades a small amount of work for code clarity.
- */
-// Attributes are stored as `ir_attr_map` in the IR; helpers are not needed.
-
 }  // namespace render_dot_detail
 
 // Writes a GraphViz DOT representation of `g` to `os`.

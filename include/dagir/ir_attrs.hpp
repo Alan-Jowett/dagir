@@ -1,17 +1,3 @@
-// SPDX-License-Identifier: MIT
-// Copyright (c) DagIR Contributors
-//
-// Canonical IR attribute key names exposed as `inline constexpr` string_view
-// values. These keys are intended to be backend-neutral: backends should map
-// them to renderer-specific attributes or fields when emitting output.
-
-#pragma once
-
-#include <string_view>
-
-namespace dagir {
-namespace ir_attrs {
-
 /**
  * @file
  * @brief Canonical IR attribute keys and backend interpretation guidance.
@@ -21,7 +7,17 @@ namespace ir_attrs {
  * them into renderer-specific attribute names and semantics when producing
  * output (GraphViz, JSON, Mermaid, etc.). The documentation below explains
  * the intended meaning for each key and recommended backend behaviour.
+ *
+ * @copyright © DagIR Contributors. All rights reserved.
+ * SPDX-License-Identifier: MIT
  */
+
+#pragma once
+
+#include <string_view>
+
+namespace dagir {
+namespace ir_attrs {
 
 /**
  * @brief Primary label for nodes or edges.

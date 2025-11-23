@@ -21,9 +21,6 @@
 namespace dagir {
 
 /**
- * @brief Key/value attribute attached to nodes, edges, or the global graph.
- */
-/**
  * @brief Non-owning view map for attributes.
  *
  * This map stores attribute keys and values as `std::string_view`. It does
@@ -46,6 +43,10 @@ using ir_attr_map = std::unordered_map<std::string_view, std::string_view>;
 
 /**
  * @brief A node in the renderer-neutral IR.
+ *
+ * `ir_node` holds a numeric identifier and a map of renderer-neutral
+ * attributes. Attributes are stored as `std::string_view` and must refer to
+ * storage that remains alive for the lifetime of the containing `ir_graph`.
  */
 struct ir_node {
   /**
@@ -68,6 +69,12 @@ struct ir_node {
   [[maybe_unused]] ir_attr_map attributes;  ///< Node-specific attributes.
 };
 
+/**
+ * @brief Compare two nodes for deterministic ordering.
+ *
+ * Nodes are compared by their `name` attribute when present, falling back
+ * to numeric id ordering for deterministic iteration order.
+ */
 inline bool operator<(ir_node const& a, ir_node const& b) {
   const auto a_it = a.attributes.find(ir_attrs::k_name);
   const auto b_it = b.attributes.find(ir_attrs::k_name);
@@ -86,6 +93,9 @@ inline bool operator<(ir_node const& a, ir_node const& b) {
 
 /**
  * @brief An edge in the renderer-neutral IR.
+ *
+ * `ir_edge` stores numeric source/target ids and an attribute map similar to
+ * `ir_node`.
  */
 struct ir_edge {
   /**
@@ -102,7 +112,6 @@ struct ir_edge {
    */
   std::uint64_t target;
 
-  // cppcheck-suppress unusedStructMember
   /**
    * @brief Map of renderer-neutral attributes for the edge.
    *
@@ -112,6 +121,12 @@ struct ir_edge {
   [[maybe_unused]] ir_attr_map attributes;
 };
 
+/**
+ * @brief Compare two edges for deterministic ordering.
+ *
+ * Edges are ordered by source, target and then by style attribute (if any)
+ * to provide deterministic outputs from renderers.
+ */
 inline bool operator<(ir_edge const& a, ir_edge const& b) {
   // Compare by source id, then target id, then by style attribute (if present).
   const auto a_style_it = a.attributes.find(ir_attrs::k_style);
@@ -125,9 +140,11 @@ inline bool operator<(ir_edge const& a, ir_edge const& b) {
 
 /**
  * @brief Top-level intermediate representation produced from a DAG view.
+ *
+ * `ir_graph` contains nodes, edges, and global attributes together with a
+ * `string_view_cache` used to ensure attribute string views remain valid.
  */
 struct ir_graph {
-  // cppcheck-suppress unusedStructMember
   /**
    * @brief All nodes present in the graph.
    *
@@ -135,7 +152,6 @@ struct ir_graph {
    */
   [[maybe_unused]] std::vector<ir_node> nodes;
 
-  // cppcheck-suppress unusedStructMember
   /**
    * @brief All directed edges in the graph.
    *
@@ -143,7 +159,6 @@ struct ir_graph {
    */
   [[maybe_unused]] std::vector<ir_edge> edges;
 
-  // cppcheck-suppress unusedStructMember
   /**
    * @brief Global graph-level attributes.
    *
