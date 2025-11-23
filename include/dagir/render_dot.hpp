@@ -44,7 +44,7 @@ namespace render_dot_detail {
  * It is intentionally conservative to avoid producing DOT that the parser
  * might misinterpret.
  */
-inline std::string escape_dot(const std::string& s) {
+inline std::string escape_dot(const std::string_view s) {
   std::string out;
   out.reserve(s.size() + 8);
   for (size_t i = 0; i < s.size(); ++i) {
@@ -88,22 +88,6 @@ inline std::string escape_dot(const std::string& s) {
   }
   return out;
 }
-
-/**
- * @brief Helper that emits a comma-separated list of attributes to `os`.
- *
- * Each attribute is emitted as `key="escaped value"`. This is an internal
- * helper used during node/edge emission.
- */
-/**
- * @brief Convert an attribute vector into a lookup map.
- *
- * This convenience helper is used by the simple emitter logic in this file
- * to perform presence checks and indexed lookups. It is intentionally
- * straightforward and trades a small amount of work for code clarity.
- */
-// Attributes are stored as `ir_attr_map` in the IR; helpers are not needed.
-
 }  // namespace render_dot_detail
 
 // Writes a GraphViz DOT representation of `g` to `os`.
@@ -122,9 +106,7 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     gkeys.reserve(g.global_attrs.size());
     std::transform(g.global_attrs.begin(), g.global_attrs.end(), std::back_inserter(gkeys),
                    [](auto const& p) { return p.first; });
-    std::sort(gkeys.begin(), gkeys.end(), [](std::string_view a, std::string_view b) {
-      return std::string_view(a) < std::string_view(b);
-    });
+    std::sort(gkeys.begin(), gkeys.end());
     for (const auto& k : gkeys) {
       const auto& v = g.global_attrs.at(k);
       if (k == ir_attrs::k_graph_label) {
@@ -149,7 +131,8 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     // historical compatibility also accept a literal "name" attribute.
     const bool has_explicit_name = amap.count(ir_attrs::k_id) || amap.count("name");
     const std::string raw_node_name =
-        has_explicit_name ? (amap.count(ir_attrs::k_id) ? amap.at(ir_attrs::k_id) : amap.at("name"))
+        has_explicit_name ? (amap.count(ir_attrs::k_id) ? std::string(amap.at(ir_attrs::k_id))
+                                                        : std::string(amap.at("name")))
                           : std::format("n{}", n.id);
     // If the node name was provided by a policy, escape and quote it so
     // arbitrary strings remain valid DOT identifiers. If the renderer
@@ -161,8 +144,8 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     name_map[n.id] = node_name;
 
     // Ensure label: prefer k_label, then generated id
-    std::string label =
-        amap.count(ir_attrs::k_label) ? amap.at(ir_attrs::k_label) : std::format("{}", n.id);
+    std::string label = amap.count(ir_attrs::k_label) ? std::string(amap.at(ir_attrs::k_label))
+                                                      : std::format("{}", n.id);
 
     // Work from a local mutable copy when applying defaults so we don't mutate the
     // const attribute map stored on the node.

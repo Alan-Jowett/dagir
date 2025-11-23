@@ -23,7 +23,6 @@
 namespace dagir {
 namespace utility {
 
-// Non-owning handle pointing at a TeDDy node
 /**
  * @brief Lightweight non-owning handle to a TeDDy node.
  *

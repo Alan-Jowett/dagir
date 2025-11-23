@@ -32,7 +32,9 @@ namespace utility {
  *
  * @param mgr Teddy BDD manager used to create diagrams.
  * @param expr Expression AST to convert.
- * @param var_map Mapping from variable names to Teddy variable indices.
+ * @param var_map Mapping from variable names to Teddy variable indices; new
+ *                names are assigned sequential indices and inserted into
+ *                this map.
  * @return A `teddy::bdd_manager::diagram_t` representing the expression.
  *
  * The resolver treats names like `xN` as index `N`; otherwise names are
@@ -56,31 +58,39 @@ inline teddy::bdd_manager::diagram_t convert_expression_to_teddy(
 
   /**
    * @brief Visitor used with `std::visit` to convert variant nodes.
+   *
+   * Each overload returns a `diagram_t` constructed using `mgr`.
    */
   struct visitor {
     teddy::bdd_manager& mgr;
     std::function<int(const std::string&)> resolve_var;
 
-    /** Convert variable node to a Teddy variable diagram. */
+    /**
+     * @brief Convert a variable AST node to a Teddy variable diagram.
+     */
     diagram_t operator()(const my_variable& v) {
       int idx = resolve_var(v.variable_name);
       return mgr.variable(idx);
     }
+    /** @brief Convert a binary AND node. */
     diagram_t operator()(const my_and& a) {
       auto L = std::visit(*this, *a.left);
       auto R = std::visit(*this, *a.right);
       return mgr.apply<teddy::ops::AND>(L, R);
     }
+    /** @brief Convert a binary OR node. */
     diagram_t operator()(const my_or& o) {
       auto L = std::visit(*this, *o.left);
       auto R = std::visit(*this, *o.right);
       return mgr.apply<teddy::ops::OR>(L, R);
     }
+    /** @brief Convert a binary XOR node. */
     diagram_t operator()(const my_xor& x) {
       auto L = std::visit(*this, *x.left);
       auto R = std::visit(*this, *x.right);
       return mgr.apply<teddy::ops::XOR>(L, R);
     }
+    /** @brief Convert a unary NOT node. */
     diagram_t operator()(const my_not& n) {
       auto D = std::visit(*this, *n.expr);
       return mgr.apply<teddy::ops::NAND>(D, D);
