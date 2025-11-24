@@ -18,6 +18,7 @@
 #include <dagir/ir.hpp>
 #include <dagir/ir_attrs.hpp>
 #include <functional>
+#include <iterator>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -177,7 +178,7 @@ inline void render_expr(std::ostream& os, const ir_graph& g) {
   // For BDDs produced by the helpers the first root is the diagram root.
   // If multiple roots are present join them with OR.
   std::vector<Expr> root_exprs;
-  for (auto r : roots) root_exprs.push_back(emit(r));
+  std::transform(roots.begin(), roots.end(), std::back_inserter(root_exprs), emit);
 
   if (root_exprs.empty()) return;
 
