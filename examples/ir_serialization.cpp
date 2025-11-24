@@ -29,4 +29,3 @@ int main() {
 
   return 0;
 }
-g.attr_cache.cache_view("Root Node");
