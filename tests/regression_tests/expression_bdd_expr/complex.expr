@@ -1,1 +1,1 @@
-a AND (b AND e OR NOT b AND (c AND (d AND 1 OR NOT d AND e) OR NOT c AND (d AND e OR NOT d AND 1))) OR NOT a AND 1
+NOT a OR b AND e OR NOT b AND (c AND (d OR e) OR NOT c AND (NOT d OR e))

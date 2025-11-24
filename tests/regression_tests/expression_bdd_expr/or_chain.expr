@@ -1,1 +1,1 @@
-p AND 1 OR NOT p AND (q AND 1 OR NOT q AND (r AND 1 OR NOT r AND s))
+p OR q OR r OR s

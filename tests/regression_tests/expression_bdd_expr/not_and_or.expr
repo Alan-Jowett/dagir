@@ -1,1 +1,1 @@
-x AND (y AND NOT z OR NOT y AND 0) OR NOT x AND 1
+NOT x OR y AND NOT z
