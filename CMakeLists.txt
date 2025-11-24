@@ -225,6 +225,18 @@ if(DAGIR_BUILD_TESTS)
     cmake_policy(POP)
   endif()
 
+  # Ensure nlohmann/json is available for serialization tests
+  find_package(nlohmann_json QUIET CONFIG)
+  if(NOT nlohmann_json_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+      nlohmann_json
+      GIT_REPOSITORY https://github.com/nlohmann/json.git
+      GIT_TAG        v3.11.2
+    )
+    FetchContent_MakeAvailable(nlohmann_json)
+  endif()
+
   # Gather test sources (portable glob; users can add more files).
   file(GLOB DAGIR_TEST_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
@@ -254,6 +266,14 @@ if(DAGIR_BUILD_TESTS)
     target_link_libraries(dagir_tests PRIVATE
       dagir::dagir
       Catch2::Catch2WithMain)
+
+    # If nlohmann_json is available (fetched or found), link it so its
+    # include directories are propagated to the test target. This ensures
+    # headers like <nlohmann/json.hpp> are visible to tests that include
+    # `dagir/ir_serialization.hpp` which uses __has_include.
+    if(TARGET nlohmann_json::nlohmann_json)
+      target_link_libraries(dagir_tests PRIVATE nlohmann_json::nlohmann_json)
+    endif()
 
     # If external BDD libraries (TeDDy/CUDD) were fetched and their CMake
     # targets are available, link them into the test executable so their
