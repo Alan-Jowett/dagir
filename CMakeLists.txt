@@ -231,6 +231,23 @@ if(DAGIR_BUILD_TESTS)
     "${CMAKE_CURRENT_SOURCE_DIR}/tests/*_test.cpp"
   )
 
+  # On Apple platforms TeDDy doesn't build reliably with the system Clang.
+  # Exclude tests that depend on TeDDy (those that include libteddy headers)
+  # so CI on macOS doesn't fail to configure/build. We filter by filename
+  # rather than full path to remain portable across environments.
+  if(APPLE)
+    set(_dagir_filtered_tests)
+    foreach(_src IN LISTS DAGIR_TEST_SOURCES)
+      get_filename_component(_name ${_src} NAME)
+      if(_name STREQUAL "test_equivalence_all_regression.cpp" OR _name STREQUAL "test_equivalence_expr.cpp")
+        message(STATUS "Skipping Teddy-dependent test: ${_name} on Apple platforms")
+      else()
+        list(APPEND _dagir_filtered_tests ${_src})
+      endif()
+    endforeach()
+    set(DAGIR_TEST_SOURCES ${_dagir_filtered_tests})
+  endif()
+
   if(DAGIR_TEST_SOURCES)
     add_executable(dagir_tests ${DAGIR_TEST_SOURCES})
     target_compile_features(dagir_tests PRIVATE cxx_std_20)
