@@ -198,5 +198,6 @@ inline void touch_ir_members_for_static_analysis() {
   (void)&ir_graph::nodes;
   (void)&ir_graph::edges;
   (void)&ir_graph::global_attrs;
+  (void)&ir_graph::roots;
 }
 }  // namespace dagir
