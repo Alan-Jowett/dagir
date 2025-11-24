@@ -11,6 +11,7 @@
 #include <dagir/utility/teddy/teddy_convert_expression.hpp>
 #include <dagir/utility/teddy/teddy_policy.hpp>
 #include <dagir/utility/teddy/teddy_read_only_dag_view.hpp>
+#include <iostream>
 #include <sstream>
 
 // This test constructs a simple expression A (e.g. "p AND q"), builds a
@@ -29,7 +30,10 @@ TEST_CASE("render_expr equivalence produces identical BDD", "[equivalence]") {
 
   // Convert A to a Teddy diagram
   std::unordered_map<std::string, int> var_map;
-  teddy::bdd_manager mgr(static_cast<int32_t>(2), 1024);
+  // Allocate a few variables upfront so conversions that introduce extra
+  // temporary variable names (e.g. the '0' terminal emitted by render_expr)
+  // do not index out-of-range in the Teddy manager.
+  teddy::bdd_manager mgr(static_cast<int32_t>(4), 1024);
   auto diagA = convert_expression_to_teddy(mgr, *and_expr, var_map);
 
   // Build a read-only view and IR for A, then render expression B using render_expr
@@ -43,6 +47,9 @@ TEST_CASE("render_expr equivalence produces identical BDD", "[equivalence]") {
   std::ostringstream os;
   dagir::render_expr(os, ir);
   std::string rendered = os.str();
+
+  // Basic runtime checks to avoid dereferencing null pointers later
+  REQUIRE(diagA.unsafe_get_root() != nullptr);
 
   // Parse rendered expression back into AST B
   auto parsedB = parse_expression(rendered);
@@ -59,6 +66,7 @@ TEST_CASE("render_expr equivalence produces identical BDD", "[equivalence]") {
   // The resulting diagram should be the constant false terminal: check root is terminal and
   // value==0
   auto root = diagX.unsafe_get_root();
+  REQUIRE(root != nullptr);
   REQUIRE(root->is_terminal());
   REQUIRE(root->get_value() == false);
 }

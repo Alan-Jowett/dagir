@@ -238,6 +238,28 @@ if(DAGIR_BUILD_TESTS)
       dagir::dagir
       Catch2::Catch2WithMain)
 
+    # If external BDD libraries (TeDDy/CUDD) were fetched and their CMake
+    # targets are available, link them into the test executable so their
+    # include directories and compile options are propagated. This allows
+    # tests that include `libteddy/core.hpp` to compile when the libraries
+    # are present.
+    if(TARGET teddy::teddy)
+      target_link_libraries(dagir_tests PRIVATE teddy::teddy)
+    endif()
+    if(TARGET cudd::cudd)
+      target_link_libraries(dagir_tests PRIVATE cudd::cudd)
+    endif()
+
+    # Some configurations fetch DecisionDiagrams (TeDDy) later in the
+    # configure/build pipeline. Add the expected source include directory
+    # from the FetchContent/externalproject layout to the test target so
+    # headers like <libteddy/core.hpp> can be found even if the CMake target
+    # isn't available at configure time. The path is valid once the
+    # external project is populated during the build.
+    target_include_directories(dagir_tests PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/_deps/decisiondiagrams-src>
+    )
+
     # Cross-platform warning levels for tests (non-fatal if unsupported).
     if(MSVC)
       target_compile_options(dagir_tests PRIVATE /W4 /wd4996 /permissive-)

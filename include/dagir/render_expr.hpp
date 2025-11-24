@@ -137,8 +137,48 @@ inline void render_expr(std::ostream& os, const ir_graph& g) {
     }
 
     // General ITE -> (var AND high) OR (NOT var AND low)
+    // Avoid emitting literal terminals '0'/'1' in composed expressions because
+    // the expression parser treats those as variable names. Handle simple
+    // cases to produce cleaner expressions without constant tokens.
     Expr var_expr{var_name, PREC_ATOM};
     Expr not_var_expr{std::string("NOT ") + var_name, PREC_NOT};
+
+    // If low is constant 0 then right part is 0 and expression simplifies to
+    // (var AND high). Likewise if high is constant 0 simplify to (NOT var AND low).
+    if (low.s == "0") {
+      std::string left_s = parenthesize_if_needed(var_expr, PREC_AND) + " AND " +
+                           parenthesize_if_needed(high, PREC_AND);
+      Expr left{left_s, PREC_AND};
+      memo.emplace(id, left);
+      return left;
+    }
+    if (high.s == "0") {
+      std::string right_s = parenthesize_if_needed(not_var_expr, PREC_AND) + " AND " +
+                            parenthesize_if_needed(low, PREC_AND);
+      Expr right{right_s, PREC_AND};
+      memo.emplace(id, right);
+      return right;
+    }
+
+    // If high is constant 1: ITE(var,1,low) == var OR low
+    if (high.s == "1") {
+      std::string a = parenthesize_if_needed(var_expr, PREC_OR);
+      std::string b = parenthesize_if_needed(low, PREC_OR);
+      std::string out_s = a + " OR " + b;
+      Expr out{out_s, PREC_OR};
+      memo.emplace(id, out);
+      return out;
+    }
+
+    // If low is constant 1: ITE(var,high,1) == (NOT var) OR high
+    if (low.s == "1") {
+      std::string a = parenthesize_if_needed(not_var_expr, PREC_OR);
+      std::string b = parenthesize_if_needed(high, PREC_OR);
+      std::string out_s = a + " OR " + b;
+      Expr out{out_s, PREC_OR};
+      memo.emplace(id, out);
+      return out;
+    }
 
     // Build left = var AND high
     std::string left_s = parenthesize_if_needed(var_expr, PREC_AND) + " AND " +
@@ -151,8 +191,9 @@ inline void render_expr(std::ostream& os, const ir_graph& g) {
     Expr right{right_s, PREC_AND};
 
     // Combine: left OR right
-    std::string out_s =
-        parenthesize_if_needed(left, PREC_OR) + " OR " + parenthesize_if_needed(right, PREC_OR);
+    std::string a_out = parenthesize_if_needed(left, PREC_OR);
+    std::string b_out = parenthesize_if_needed(right, PREC_OR);
+    std::string out_s = a_out + " OR " + b_out;
     Expr out{out_s, PREC_OR};
 
     // Cache and return
