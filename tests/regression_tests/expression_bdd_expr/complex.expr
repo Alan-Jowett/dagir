@@ -1,0 +1,1 @@
+NOT a OR b AND e OR NOT b AND (c AND (d OR e) OR NOT c AND (NOT d OR e))

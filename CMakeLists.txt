@@ -231,12 +231,51 @@ if(DAGIR_BUILD_TESTS)
     "${CMAKE_CURRENT_SOURCE_DIR}/tests/*_test.cpp"
   )
 
+  # On Apple platforms TeDDy doesn't build reliably with the system Clang.
+  # Exclude tests that depend on TeDDy (those that include libteddy headers)
+  # so CI on macOS doesn't fail to configure/build. We filter by filename
+  # rather than full path to remain portable across environments.
+  if(APPLE)
+    set(_dagir_filtered_tests)
+    foreach(_src IN LISTS DAGIR_TEST_SOURCES)
+      get_filename_component(_name ${_src} NAME)
+      if(_name STREQUAL "test_equivalence_all_regression.cpp" OR _name STREQUAL "test_equivalence_expr.cpp")
+        message(STATUS "Skipping Teddy-dependent test: ${_name} on Apple platforms")
+      else()
+        list(APPEND _dagir_filtered_tests ${_src})
+      endif()
+    endforeach()
+    set(DAGIR_TEST_SOURCES ${_dagir_filtered_tests})
+  endif()
+
   if(DAGIR_TEST_SOURCES)
     add_executable(dagir_tests ${DAGIR_TEST_SOURCES})
     target_compile_features(dagir_tests PRIVATE cxx_std_20)
     target_link_libraries(dagir_tests PRIVATE
       dagir::dagir
       Catch2::Catch2WithMain)
+
+    # If external BDD libraries (TeDDy/CUDD) were fetched and their CMake
+    # targets are available, link them into the test executable so their
+    # include directories and compile options are propagated. This allows
+    # tests that include `libteddy/core.hpp` to compile when the libraries
+    # are present.
+    if(TARGET teddy::teddy)
+      target_link_libraries(dagir_tests PRIVATE teddy::teddy)
+    endif()
+    if(TARGET cudd::cudd)
+      target_link_libraries(dagir_tests PRIVATE cudd::cudd)
+    endif()
+
+    # Some configurations fetch DecisionDiagrams (TeDDy) later in the
+    # configure/build pipeline. Add the expected source include directory
+    # from the FetchContent/externalproject layout to the test target so
+    # headers like <libteddy/core.hpp> can be found even if the CMake target
+    # isn't available at configure time. The path is valid once the
+    # external project is populated during the build.
+    target_include_directories(dagir_tests PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/_deps/decisiondiagrams-src>
+    )
 
     # Cross-platform warning levels for tests (non-fatal if unsupported).
     if(MSVC)
@@ -371,7 +410,7 @@ if(DAGIR_EXAMPLES AND DAGIR_BUILD_TESTS)
     endforeach()
 
     # expression2bdd: use teddy library to match the expected outputs
-    set(_bdd_backends dot json mermaid)
+    set(_bdd_backends dot json mermaid expr)
 
     foreach(_expr IN LISTS SAMPLE_EXPRESSIONS)
       get_filename_component(_expr_name ${_expr} NAME_WE)

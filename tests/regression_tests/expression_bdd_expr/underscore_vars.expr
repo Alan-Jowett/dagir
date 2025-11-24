@@ -1,0 +1,1 @@
+var_1 AND (var_2 OR var_3) OR NOT var_1 AND var_3

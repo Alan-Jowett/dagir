@@ -55,6 +55,7 @@ $out = [ordered]@{
     bdd_dot      = Join-Path $repoRoot "tests\regression_tests\expression_bdd_dot"
     bdd_json     = Join-Path $repoRoot "tests\regression_tests\expression_bdd_json"
     bdd_mermaid  = Join-Path $repoRoot "tests\regression_tests\expression_bdd_mermaid"
+    bdd_expr     = Join-Path $repoRoot "tests\regression_tests\expression_bdd_expr"
 }
 
 foreach ($d in $out.Values) {
@@ -215,6 +216,10 @@ foreach ($f in $exprFiles) {
         $mmdExt = if ($StripMermaidFences) { '.mmd' } else { '.md' }
         $mmdOut = Join-Path $out.bdd_mermaid "$base$mmdExt"
         Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'mermaid') -outfile $mmdOut -stripMermaid:$StripMermaidFences
+
+        # Produce plain expression backend output
+        $exprOut = Join-Path $out.bdd_expr "$base.expr"
+        Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'expr') -outfile $exprOut
     }
 }
 
