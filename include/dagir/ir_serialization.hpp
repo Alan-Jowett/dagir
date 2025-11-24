@@ -154,10 +154,6 @@ inline dagir::ir_graph from_json(std::string_view sv) {
     g.nodes.push_back(std::move(rn));
   }
 
-  // Build a map from numeric id to node index for later
-  std::unordered_map<uint64_t, size_t> numeric_to_index;
-  for (size_t i = 0; i < g.nodes.size(); ++i) numeric_to_index[g.nodes[i].id] = i;
-
   // Read edges
   for (const auto& ee : in.at("edges")) {
     if (!ee.contains("source") || !ee.contains("target"))
