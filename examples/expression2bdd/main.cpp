@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <dagir/build_ir.hpp>
 #include <dagir/render_dot.hpp>
+#include <dagir/render_expr.hpp>
 #include <dagir/render_json.hpp>
 #include <dagir/render_mermaid.hpp>
 #include <iostream>
@@ -147,6 +148,10 @@ static void emit_ir(dagir::ir_graph ir, const std::string& backend) {
     std::cout << "```mermaid\n";
     dagir::render_mermaid(std::cout, ir, "bdd");
     std::cout << "```\n";
+  } else if (backend == "expr") {
+    // Render BDD as an equivalent boolean expression
+    dagir::render_expr(std::cout, ir);
+    std::cout << "\n";
   } else {
     std::cerr << "Unknown backend: " << backend << "\n";
     throw std::runtime_error("Unknown backend");

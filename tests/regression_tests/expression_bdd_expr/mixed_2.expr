@@ -1,0 +1,1 @@
+x AND (y AND 0 OR NOT y AND (u AND 1 OR NOT u AND v)) OR NOT x AND (y AND (u AND 1 OR NOT u AND v) OR NOT y AND 0)

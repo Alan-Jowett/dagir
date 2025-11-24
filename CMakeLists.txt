@@ -371,7 +371,7 @@ if(DAGIR_EXAMPLES AND DAGIR_BUILD_TESTS)
     endforeach()
 
     # expression2bdd: use teddy library to match the expected outputs
-    set(_bdd_backends dot json mermaid)
+    set(_bdd_backends dot json mermaid expr)
 
     foreach(_expr IN LISTS SAMPLE_EXPRESSIONS)
       get_filename_component(_expr_name ${_expr} NAME_WE)
