@@ -21,8 +21,6 @@ TEST_CASE("render_expr equivalence over regression directory", "[equivalence][re
   // Determine regression expressions directory relative to this source file
   const fs::path source_dir = fs::path(__FILE__).parent_path();
   const fs::path expr_dir = source_dir / "regression_tests" / "expressions";
-  (void)source_dir;
-  (void)expr_dir;
   REQUIRE(fs::exists(expr_dir));
 
   for (auto const& entry : fs::directory_iterator(expr_dir)) {
@@ -66,9 +64,9 @@ TEST_CASE("render_expr equivalence over regression directory", "[equivalence][re
     dagir::render_expr(os, ir);
     std::string rendered = os.str();
 
-    // Parse B
+    // Parse B and ensure parsing succeeded
     auto parsedB = parse_expression(rendered);
-    (void)parsedB;
+    REQUIRE(parsedB != nullptr);
 
     // Convert parsed B into diagram using a fresh var_map that maps names to indices from var_names
     std::unordered_map<std::string, int> var_map_b;
