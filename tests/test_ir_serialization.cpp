@@ -30,6 +30,9 @@ TEST_CASE("ir_graph round-trip serialization") {
   e.attributes[g.attr_cache.cache_view("weight")] = g.attr_cache.cache_view("42");
   g.edges.push_back(std::move(e));
 
+  // roots
+  g.roots.push_back(g.attr_cache.cache_view("A"));
+
   // Serialize and deserialize
   std::string json = dagir::serialize::to_json(g);
   dagir::ir_graph g2 = dagir::serialize::from_json(json);

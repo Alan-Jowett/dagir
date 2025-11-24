@@ -82,6 +82,13 @@ inline std::string to_json(const dagir::ir_graph& g) {
     out["graphAttributes"] = std::move(ga);
   }
 
+  // roots (optional)
+  if (!g.roots.empty()) {
+    json r = json::array();
+    for (const auto& rv : g.roots) r.push_back(std::string(rv));
+    out["roots"] = std::move(r);
+  }
+
   return out.dump();
 }
 
@@ -105,22 +112,22 @@ inline dagir::ir_graph from_json(std::string_view sv) {
     if (!nn.contains("id")) throw std::invalid_argument("node missing id");
     std::string jid = nn.at("id").get<std::string>();
 
-    uint64_t numeric_id = 0;
-    // Try parse as integer
+    std::optional<uint64_t> parsed_id;
+    // Try parse as integer and record success explicitly. This avoids using
+    // 0 as a sentinel value so an input id of "0" is preserved.
     try {
       size_t idx = 0;
       unsigned long long v = std::stoull(jid, &idx);
-      if (idx == jid.size()) numeric_id = static_cast<uint64_t>(v);
+      if (idx == jid.size()) parsed_id = static_cast<uint64_t>(v);
     } catch (...) {
-      numeric_id = 0;
+      parsed_id.reset();
     }
 
-    if (numeric_id == 0) numeric_id = next_id++;
-
-    id_map[jid] = numeric_id;
+    uint64_t final_id = parsed_id.has_value() ? *parsed_id : next_id++;
+    id_map[jid] = final_id;
 
     dagir::ir_node rn;
-    rn.id = numeric_id;
+    rn.id = final_id;
 
     // Label
     if (nn.contains("label")) {
@@ -183,6 +190,17 @@ inline dagir::ir_graph from_json(std::string_view sv) {
       std::string sval = it.value().is_string() ? it.value().get<std::string>() : it.value().dump();
       auto val = g.attr_cache.cache_view(sval);
       g.global_attrs[key] = val;
+    }
+  }
+
+  // roots (optional)
+  if (in.contains("roots") && !in.at("roots").is_null()) {
+    if (!in.at("roots").is_array())
+      throw std::invalid_argument("roots must be an array of strings");
+    for (const auto& rv : in.at("roots")) {
+      if (!rv.is_string()) throw std::invalid_argument("roots elements must be strings");
+      auto rvstr = rv.get<std::string>();
+      g.roots.push_back(g.attr_cache.cache_view(rvstr));
     }
   }
 

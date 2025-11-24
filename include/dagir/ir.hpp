@@ -168,6 +168,17 @@ struct ir_graph {
    */
   [[maybe_unused]] ir_attr_map global_attrs;
 
+  /**
+   * @brief Optional ordered list of root node identifiers.
+   *
+   * The `roots` vector holds node id strings (typically names when present
+   * or numeric string ids) as `std::string_view`. Strings inserted here must
+   * refer to storage that remains alive for the lifetime of the graph; use
+   * `ir_graph::attr_cache.cache_view(...)` when constructing roots from
+   * temporary `std::string`s.
+   */
+  [[maybe_unused]] std::vector<std::string_view> roots;
+
   // Cache for attribute strings produced by policies. This ensures that
   // `std::string_view` keys/values stored in `ir_attr_map` remain valid for
   // the lifetime of the graph.
