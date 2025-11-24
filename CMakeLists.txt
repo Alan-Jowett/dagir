@@ -7,6 +7,13 @@
 
 cmake_minimum_required(VERSION 3.20)
 
+# Explicitly set the policy version so FetchContent/populated subprojects
+# inherit a modern policy level. Some third-party CMakeLists.txt files
+# use older cmake_minimum_required() arguments which can trigger
+# compatibility errors when configured with newer CMake. Setting the
+# policy version here prevents those errors early in the configure step.
+cmake_policy(VERSION 3.20)
+
 # -----------------------------
 # Project
 # -----------------------------
