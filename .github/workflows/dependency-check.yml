@@ -11,7 +11,7 @@ on:
       create_pr:
         description: 'Create PR if updates are available'
         required: false
-        default: 'false'
+        default: 'true'
         type: boolean
 
 permissions:
@@ -114,13 +114,87 @@ for name,repo,tag in blocks:
         print(f"  UPDATE AVAILABLE: {name} {tag} -> {latest_tag}")
 PY
 
-    - name: Create issue if updates found
-      if: always()
-      uses: actions/github-script@v8
-      with:
-        script: |
-          // This step is intentionally a placeholder. It can be extended to create
-          // issues or PRs when updates are detected in the previous step. For
-          // safety we don't auto-create PRs by default; pass `create_pr=true` to
-          // the workflow_dispatch input to enable PR creation in future.
-          console.log('Dependency check completed. Review logs to see if updates are available.')
+    - name: Create pull request for updates
+      if: ${{ github.event.inputs.create_pr == 'true' || github.event_name == 'schedule' }}
+      env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+      set -euo pipefail
+      # Re-parse to get structured blocks and detect available updates
+      python3 - <<'PY'
+  import re,subprocess,sys,json
+  with open('CMakeLists.txt') as f: txt=f.read()
+  blocks=[]
+  for m in re.finditer(r'FetchContent_Declare\((.*?)\)', txt, re.S):
+    block=m.group(1)
+    if 'GIT_REPOSITORY' in block and 'GIT_TAG' in block:
+      name_match=re.search(r'^\s*([A-Za-z0-9_\-]+)', block)
+      name=name_match.group(1) if name_match else 'unknown'
+      repo_match=re.search(r'GIT_REPOSITORY\s+([^\n\r]+)', block)
+      tag_match=re.search(r'GIT_TAG\s+([^\n\r]+)', block)
+      if repo_match and tag_match:
+        repo=repo_match.group(1).strip()
+        tag=tag_match.group(1).strip()
+        blocks.append((name,repo,tag))
+
+  updates=[]
+  for name,repo,tag in blocks:
+    if 'github.com' not in repo:
+      continue
+    repo_path=re.sub(r"^.*github.com[:/]?","",repo).rstrip('/').replace('.git','')
+    api_url=f"https://api.github.com/repos/{repo_path}/releases/latest"
+    try:
+      out=subprocess.check_output(['curl','-s',api_url])
+      data=json.loads(out)
+      latest=data.get('tag_name') or data.get('name')
+      if latest and latest!=tag:
+        updates.append((name,repo_path,tag,latest))
+    except Exception:
+      continue
+
+  if not updates:
+    print('No updates detected')
+    sys.exit(0)
+
+  print('Updates to apply:')
+  for u in updates: print(u)
+
+  # Create branch and modify CMakeLists.txt
+  BRANCH=f"chore/update-deps-{'-'.join([u[0] for u in updates])}"
+  subprocess.check_call(['git','checkout','-b',BRANCH])
+  orig=open('CMakeLists.txt').read()
+  new=orig
+  for name,repo,tag,latest in updates:
+    # Replace first occurrence of the GIT_TAG for this block robustly
+    pattern=re.compile(r'(FetchContent_Declare\([\s\S]*?'+re.escape(name)+r'[\s\S]*?GIT_TAG\s*)'+re.escape(tag), re.M)
+    new, n = pattern.subn(r"\1"+latest, new, count=1)
+    if n==0:
+      # fallback: simple replace
+      new=new.replace(tag, latest, 1)
+
+  if new==orig:
+    print('Failed to update CMakeLists.txt automatically')
+    sys.exit(1)
+
+  open('CMakeLists.txt','w').write(new)
+  subprocess.check_call(['git','config','user.name','github-actions[bot]'])
+  subprocess.check_call(['git','config','user.email','github-actions[bot]@users.noreply.github.com'])
+  subprocess.check_call(['git','add','CMakeLists.txt'])
+  msg='chore(deps): update pinned FetchContent GIT_TAGs'
+  subprocess.check_call(['git','commit','-s','-m',msg])
+  subprocess.check_call(['git','push','-u','origin',BRANCH])
+
+  # Create PR using gh if available, otherwise use GitHub API via curl
+  try:
+    pr_title=msg
+    body='Automated update of pinned FetchContent GIT_TAGs.'
+    subprocess.check_call(['gh','pr','create','--title',pr_title,'--body',body,'--base','main','--head',BRANCH])
+  except Exception:
+    # fallback: use GitHub API to create PR
+    import os,urllib.parse
+    repo_full=os.environ['GITHUB_REPOSITORY']
+    api_url=f"https://api.github.com/repos/{repo_full}/pulls"
+    payload={'title':msg,'head':BRANCH,'base':'main','body':'Automated dependency updates.'}
+    import json,subprocess
+    subprocess.check_call(['curl','-s','-X','POST','-H',f"Authorization: token {os.environ['GITHUB_TOKEN']}",' -H','Content-Type: application/json','-d',json.dumps(payload),api_url])
+  PY
