@@ -11,6 +11,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "dagir/ir.hpp"
 #include "dagir/ir_attrs.hpp"
@@ -105,6 +106,8 @@ inline dagir::ir_graph from_json(std::string_view sv) {
 
   // Map from JSON id string to numeric id
   std::unordered_map<std::string, uint64_t> id_map;
+  // Track used numeric ids (parsed or assigned) to avoid collisions
+  std::unordered_set<uint64_t> used_ids;
   uint64_t next_id = 1;
 
   // Read nodes
@@ -123,7 +126,19 @@ inline dagir::ir_graph from_json(std::string_view sv) {
       parsed_id.reset();
     }
 
-    uint64_t final_id = parsed_id.has_value() ? *parsed_id : next_id++;
+    uint64_t final_id;
+    if (parsed_id.has_value()) {
+      // Reject duplicate numeric ids from input to avoid collisions
+      if (used_ids.find(*parsed_id) != used_ids.end())
+        throw std::invalid_argument("duplicate numeric node id");
+      final_id = *parsed_id;
+      used_ids.insert(final_id);
+    } else {
+      // Find next unused id
+      while (used_ids.find(next_id) != used_ids.end()) ++next_id;
+      final_id = next_id++;
+      used_ids.insert(final_id);
+    }
     id_map[jid] = final_id;
 
     dagir::ir_node rn;
