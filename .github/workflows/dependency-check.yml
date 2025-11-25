@@ -36,7 +36,8 @@ jobs:
         # Use shared parser to emit stable JSON
         ./.github/scripts/parse_cmake_deps.py > /tmp/fetch_deps.json
         echo "Found deps:"; cat /tmp/fetch_deps.json || true
-        echo "::set-output name=blocks::$(jq length /tmp/fetch_deps.json)"
+        count=$(jq length /tmp/fetch_deps.json)
+        echo "blocks=$count" >> "$GITHUB_OUTPUT"
 
     - name: Check versions
       id: check
