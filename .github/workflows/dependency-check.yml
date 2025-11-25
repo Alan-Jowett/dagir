@@ -203,5 +203,13 @@ PY
     api_url=f"https://api.github.com/repos/{repo_full}/pulls"
     payload={'title':msg,'head':BRANCH,'base':'main','body':'Automated dependency updates.'}
     import json,subprocess
-    subprocess.check_call(['curl','-s','-X','POST','-H',f"Authorization: token {os.environ['GITHUB_TOKEN']}",' -H','Content-Type: application/json','-d',json.dumps(payload),api_url])
+    # Build curl arguments with each flag and its value as separate list elements
+    curl_args = [
+      'curl', '-s', '-X', 'POST',
+      '-H', f"Authorization: token {os.environ['GITHUB_TOKEN']}",
+      '-H', 'Content-Type: application/json',
+      '-d', json.dumps(payload),
+      api_url
+    ]
+    subprocess.check_call(curl_args)
   PY
