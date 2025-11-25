@@ -33,86 +33,44 @@ jobs:
       id: extract
       run: |
         set -euo pipefail
-        # Look for FetchContent_Declare blocks with GIT_REPOSITORY and GIT_TAG
-        perl -0777 -ne 'while(/FetchContent_Declare\((.*?)\)/sg){ print "$1\n---\n" }' CMakeLists.txt | \
-          awk 'BEGIN{RS="---"} /GIT_REPOSITORY/ && /GIT_TAG/ {print $0}' > /tmp/fetch_blocks.txt || true
-        echo "Found blocks:"; cat /tmp/fetch_blocks.txt || true
-        # Normalize to lines of: name|repo|tag
-        python3 - <<'PY'
-import re,sys
-blocks=open('/tmp/fetch_blocks.txt').read().strip().split('---')
-out=[]
-for b in blocks:
-    if not b.strip(): continue
-    # project name is the first token
-    m = re.search(r'^\s*([A-Za-z0-9_\-]+)', b)
-    name = m.group(1) if m else 'unknown'
-    repo = re.search(r'GIT_REPOSITORY\s+([^\n\r]+)', b)
-    tag = re.search(r'GIT_TAG\s+([^\n\r]+)', b)
-    if repo and tag:
-        repo_url=repo.group(1).strip()
-        tag_s=tag.group(1).strip()
-        print(f"{name}|{repo_url}|{tag_s}")
-PY
-        echo "::set-output name=blocks::$(cat /tmp/fetch_blocks.txt | wc -l)"
+        # Use shared parser to emit stable JSON
+        ./.github/scripts/parse_cmake_deps.py > /tmp/fetch_deps.json
+        echo "Found deps:"; cat /tmp/fetch_deps.json || true
+        echo "::set-output name=blocks::$(jq length /tmp/fetch_deps.json)"
 
     - name: Check versions
       id: check
       run: |
         set -euo pipefail
-        # Hardcoded checks for known repos — extend as needed
-        python3 - <<'PY'
-import re,subprocess,sys
-
-# Parse lines emitted by previous step
-# Re-run parsing to get structured output
-import os
-with open('CMakeLists.txt') as f:
-    txt=f.read()
-
-blocks=[]
-for m in re.finditer(r'FetchContent_Declare\((.*?)\)', txt, re.S):
-    block=m.group(1)
-    if 'GIT_REPOSITORY' in block and 'GIT_TAG' in block:
-        name_match=re.search(r'^\s*([A-Za-z0-9_\-]+)', block)
-        name=name_match.group(1) if name_match else 'unknown'
-        repo_match=re.search(r'GIT_REPOSITORY\s+([^\n\r]+)', block)
-        tag_match=re.search(r'GIT_TAG\s+([^\n\r]+)', block)
-        if repo_match and tag_match:
-            repo=repo_match.group(1).strip()
-            tag=tag_match.group(1).strip()
-            blocks.append((name,repo,tag))
-
-
-# Map repo URL to GitHub API owner/repo if possible
-for name,repo,tag in blocks:
-    if 'github.com' not in repo:
-        print(f"Skipping non-GitHub repo for {name}: {repo}")
-        continue
-    # normalize URL
-    repo_path=re.sub(r"^.*github.com[:/]?","",repo).rstrip('/').replace('.git','')
-    api_url=f"https://api.github.com/repos/{repo_path}/releases/latest"
-    try:
-        out=subprocess.check_output(['curl','-s',api_url]).decode('utf-8')
-    except subprocess.CalledProcessError:
-        print(f"Failed to query GitHub for {repo_path}")
-        continue
-    import json
-    try:
-        data=json.loads(out)
-    except Exception:
-        print(f"No JSON response for {repo_path}")
-        continue
-    latest_tag=data.get('tag_name') or data.get('name')
-    if not latest_tag:
-        print(f"No release tag for {repo_path}; skipping")
-        continue
-    print(f"{name}: pinned={tag} latest={latest_tag} repo={repo_path}")
-    if tag==latest_tag:
-        print(f"  OK: {name} up to date")
-    else:
-        print(f"  UPDATE AVAILABLE: {name} {tag} -> {latest_tag}")
-PY
+        # Use shared parser output and jq for machine-readable processing
+        DEPS_JSON=/tmp/fetch_deps.json
+        if [ ! -f "$DEPS_JSON" ]; then
+          ./.github/scripts/parse_cmake_deps.py > "$DEPS_JSON"
+        fi
+        echo "Checking versions from $DEPS_JSON"
+        jq -c '.[]' "$DEPS_JSON" | while read -r dep; do
+          name=$(jq -r '.name' <<<"$dep")
+          repo=$(jq -r '.repo' <<<"$dep")
+          tag=$(jq -r '.tag' <<<"$dep")
+          if [[ "$repo" != *github.com* ]]; then
+            echo "Skipping non-GitHub repo for $name: $repo"
+            continue
+          fi
+          repo_path=$(echo "$repo" | sed -E 's#^.*github.com[:/]?##' | sed 's#\.git$##' | sed 's#/$##')
+          api_url="https://api.github.com/repos/$repo_path/releases/latest"
+          out=$(curl -s "$api_url" || true)
+          latest_tag=$(jq -r '.tag_name // .name // empty' <<<"$out" 2>/dev/null || true)
+          if [ -z "$latest_tag" ]; then
+            echo "No release tag for $repo_path; skipping"
+            continue
+          fi
+          echo "$name: pinned=$tag latest=$latest_tag repo=$repo_path"
+          if [ "$tag" = "$latest_tag" ]; then
+            echo "  OK: $name up to date"
+          else
+            echo "  UPDATE AVAILABLE: $name $tag -> $latest_tag"
+          fi
+        done
 
     - name: Create pull request for updates
       if: ${{ github.event.inputs.create_pr == 'true' || github.event_name == 'schedule' }}
@@ -120,96 +78,66 @@ PY
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
       set -euo pipefail
-      # Re-parse to get structured blocks and detect available updates
-      python3 - <<'PY'
-  import re,subprocess,sys,json
-  with open('CMakeLists.txt') as f: txt=f.read()
-  blocks=[]
-  for m in re.finditer(r'FetchContent_Declare\((.*?)\)', txt, re.S):
-    block=m.group(1)
-    if 'GIT_REPOSITORY' in block and 'GIT_TAG' in block:
-      name_match=re.search(r'^\s*([A-Za-z0-9_\-]+)', block)
-      name=name_match.group(1) if name_match else 'unknown'
-      repo_match=re.search(r'GIT_REPOSITORY\s+([^\n\r]+)', block)
-      tag_match=re.search(r'GIT_TAG\s+([^\n\r]+)', block)
-      if repo_match and tag_match:
-        repo=repo_match.group(1).strip()
-        tag=tag_match.group(1).strip()
-        blocks.append((name,repo,tag))
+      # Read deps JSON (produce if missing)
+      DEPS_JSON=/tmp/fetch_deps.json
+      if [ ! -f "$DEPS_JSON" ]; then
+        ./.github/scripts/parse_cmake_deps.py > "$DEPS_JSON"
+      fi
+      updates=()
+      while read -r dep; do
+        name=$(jq -r '.name' <<<"$dep")
+        repo=$(jq -r '.repo' <<<"$dep")
+        tag=$(jq -r '.tag' <<<"$dep")
+        if [[ "$repo" != *github.com* ]]; then
+          continue
+        fi
+        repo_path=$(echo "$repo" | sed -E 's#^.*github.com[:/]?##' | sed 's#\.git$##' | sed 's#/$##')
+        api_url="https://api.github.com/repos/$repo_path/releases/latest"
+        out=$(curl -s "$api_url" || true)
+        latest=$(jq -r '.tag_name // .name // empty' <<<"$out" 2>/dev/null || true)
+        if [ -n "$latest" ] && [ "$latest" != "$tag" ]; then
+          updates+=("$name|$repo_path|$tag|$latest")
+        fi
+      done < <(jq -c '.[]' "$DEPS_JSON")
 
-  updates=[]
-  for name,repo,tag in blocks:
-    if 'github.com' not in repo:
-      continue
-    repo_path=re.sub(r"^.*github.com[:/]?","",repo).rstrip('/').replace('.git','')
-    api_url=f"https://api.github.com/repos/{repo_path}/releases/latest"
-    try:
-      out=subprocess.check_output(['curl','-s',api_url])
-      data=json.loads(out)
-      latest=data.get('tag_name') or data.get('name')
-      if latest and latest!=tag:
-        updates.append((name,repo_path,tag,latest))
-    except Exception:
-      continue
+      if [ ${#updates[@]} -eq 0 ]; then
+        echo 'No updates detected'
+        exit 0
+      fi
 
-  if not updates:
-    print('No updates detected')
-    sys.exit(0)
+      echo 'Updates to apply:'
+      for u in "${updates[@]}"; do echo "$u"; done
 
-  print('Updates to apply:')
-  for u in updates: print(u)
+      # Create branch and modify CMakeLists.txt
+      BRANCH="chore/update-deps-$(printf '%s' "${updates[@]}" | cut -d'|' -f1 | tr ' ' '-')"
+      git checkout -b "$BRANCH"
+      orig=$(cat CMakeLists.txt)
+      new="$orig"
+      for u in "${updates[@]}"; do
+        IFS='|' read -r name repo_path tag latest <<<"$u"
+        # Replace first occurrence of the GIT_TAG for this block robustly
+        new=$(echo "$new" | perl -0777 -pe "s/(FetchContent_Declare\([\s\S]*?\Q${name}\E[\s\S]*?GIT_TAG\s*)\Q${tag}\E\b/\1${latest}/m;" )
+      done
 
-  # Create branch and modify CMakeLists.txt
-  BRANCH=f"chore/update-deps-{'-'.join([u[0] for u in updates])}"
-  subprocess.check_call(['git','checkout','-b',BRANCH])
-  orig=open('CMakeLists.txt').read()
-  new=orig
-  for name,repo,tag,latest in updates:
-    # Replace first occurrence of the GIT_TAG for this block robustly
-    pattern=re.compile(r'(FetchContent_Declare\([\s\S]*?'+re.escape(name)+r'[\s\S]*?GIT_TAG\s*)'+re.escape(tag)+r'\b', re.M)
-    new, n = pattern.subn(r"\1"+latest, new, count=1)
-    if n==0:
-      # Targeted fallback: only replace when the tag appears as the GIT_TAG
-      # inside the FetchContent_Declare block for this dependency. This
-      # avoids accidental replacements elsewhere in the file.
-      block_pattern = re.compile(r'(FetchContent_Declare\([\s\S]*?'+re.escape(name)+r'[\s\S]*?GIT_TAG\s*)('+re.escape(tag)+r')\b', re.M)
-      new, m = block_pattern.subn(r"\1"+latest, new, count=1)
-      if m == 0:
-        # Still failed — do not perform a blind replace. Log and skip.
-        print(f"Warning: could not safely replace tag for {name} (tag={tag}); skipping update for this dependency")
-        continue
+      if [ "$new" = "$orig" ]; then
+        echo 'Failed to update CMakeLists.txt automatically'
+        exit 1
+      fi
 
-  if new==orig:
-    print('Failed to update CMakeLists.txt automatically')
-    sys.exit(1)
+      printf '%s' "$new" > CMakeLists.txt
+      git config user.name 'github-actions[bot]'
+      git config user.email 'github-actions[bot]@users.noreply.github.com'
+      git add CMakeLists.txt
+      msg='chore(deps): update pinned FetchContent GIT_TAGs'
+      git commit -s -m "$msg"
+      git push -u origin "$BRANCH"
 
-  open('CMakeLists.txt','w').write(new)
-  subprocess.check_call(['git','config','user.name','github-actions[bot]'])
-  subprocess.check_call(['git','config','user.email','github-actions[bot]@users.noreply.github.com'])
-  subprocess.check_call(['git','add','CMakeLists.txt'])
-  msg='chore(deps): update pinned FetchContent GIT_TAGs'
-  subprocess.check_call(['git','commit','-s','-m',msg])
-  subprocess.check_call(['git','push','-u','origin',BRANCH])
-
-  # Create PR using gh if available, otherwise use GitHub API via curl
-  try:
-    pr_title=msg
-    body='Automated update of pinned FetchContent GIT_TAGs.'
-    subprocess.check_call(['gh','pr','create','--title',pr_title,'--body',body,'--base','main','--head',BRANCH])
-  except Exception:
-    # fallback: use GitHub API to create PR
-    import os,urllib.parse
-    repo_full=os.environ['GITHUB_REPOSITORY']
-    api_url=f"https://api.github.com/repos/{repo_full}/pulls"
-    payload={'title':msg,'head':BRANCH,'base':'main','body':'Automated dependency updates.'}
-    import json,subprocess
-    # Build curl arguments with each flag and its value as separate list elements
-    curl_args = [
-      'curl', '-s', '-X', 'POST',
-      '-H', f"Authorization: token {os.environ['GITHUB_TOKEN']}",
-      '-H', 'Content-Type: application/json',
-      '-d', json.dumps(payload),
-      api_url
-    ]
-    subprocess.check_call(curl_args)
-  PY
+      # Create PR using gh if available, otherwise use GitHub API via curl
+      if command -v gh >/dev/null 2>&1; then
+        gh pr create --title "$msg" --body 'Automated update of pinned FetchContent GIT_TAGs.' --base main --head "$BRANCH"
+      else
+        repo_full="$GITHUB_REPOSITORY"
+        api_url="https://api.github.com/repos/$repo_full/pulls"
+        payload=$(jq -n --arg title "$msg" --arg head "$BRANCH" --arg base "main" --arg body "Automated dependency updates." '{title:$title, head:$head, base:$base, body:$body}')
+        curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H 'Content-Type: application/json' -d "$payload" "$api_url"
+      fi
