@@ -79,6 +79,15 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
       set -euo pipefail
+      # Fail early with clear message if CMakeLists.txt is missing or not readable
+      if [ ! -f "CMakeLists.txt" ]; then
+        echo "Error: CMakeLists.txt not found in repository root" >&2
+        exit 1
+      fi
+      if [ ! -r "CMakeLists.txt" ]; then
+        echo "Error: CMakeLists.txt exists but is not readable" >&2
+        exit 1
+      fi
       # Read deps JSON (produce if missing)
       DEPS_JSON=/tmp/fetch_deps.json
       if [ ! -f "$DEPS_JSON" ]; then
