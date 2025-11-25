@@ -6,7 +6,7 @@ name: CMake Dependency Check
 
 on:
   schedule:
-    - cron: '0 6 * * 1' # weekly on Mondays at 06:00 UTC
+    - cron: '0 6 * * 1'  # weekly on Mondays at 06:00 UTC
   workflow_dispatch:
     inputs:
       create_pr:
@@ -27,128 +27,154 @@ jobs:
     timeout-minutes: 15
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v6
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-    - name: Extract pinned GIT_TAGs
-      id: extract
-      run: |
-        set -euo pipefail
-        # Use shared parser to emit stable JSON
-        ./.github/scripts/parse_cmake_deps.py > /tmp/fetch_deps.json
-        echo "Found deps:"; cat /tmp/fetch_deps.json || true
-        count=$(jq length /tmp/fetch_deps.json)
-        echo "blocks=$count" >> "$GITHUB_OUTPUT"
+      - name: Extract pinned GIT_TAGs
+        id: extract
+        run: |
+          set -euo pipefail
+          # Use shared parser to emit stable JSON
+          ./.github/scripts/parse_cmake_deps.py > /tmp/fetch_deps.json
+          echo "Found deps:"; cat /tmp/fetch_deps.json || true
+          count=$(jq length /tmp/fetch_deps.json)
+          echo "blocks=$count" >> "$GITHUB_OUTPUT"
 
-    - name: Check versions
-      id: check
-      run: |
-        set -euo pipefail
-        # Use shared parser output and jq for machine-readable processing
-        DEPS_JSON=/tmp/fetch_deps.json
-        if [ ! -f "$DEPS_JSON" ]; then
-          ./.github/scripts/parse_cmake_deps.py > "$DEPS_JSON"
-        fi
-        echo "Checking versions from $DEPS_JSON"
-        jq -c '.[]' "$DEPS_JSON" | while read -r dep; do
-          name=$(jq -r '.name' <<<"$dep")
-          repo=$(jq -r '.repo' <<<"$dep")
-          tag=$(jq -r '.tag' <<<"$dep")
-          if [[ "$repo" != *github.com* ]]; then
-            echo "Skipping non-GitHub repo for $name: $repo"
-            continue
+      - name: Check versions
+        id: check
+        run: |
+          set -euo pipefail
+          # Use shared parser output and jq for machine-readable processing
+          DEPS_JSON=/tmp/fetch_deps.json
+          if [ ! -f "$DEPS_JSON" ]; then
+            ./.github/scripts/parse_cmake_deps.py > "$DEPS_JSON"
           fi
-          repo_path=$(echo "$repo" | sed -E 's#^.*github.com[:/]?##' | sed 's#\.git$##' | sed 's#/$##')
-          api_url="https://api.github.com/repos/$repo_path/releases/latest"
-          out=$(curl -s "$api_url" || true)
-          latest_tag=$(jq -r '.tag_name // .name // empty' <<<"$out" 2>/dev/null || true)
-          if [ -z "$latest_tag" ]; then
-            echo "No release tag for $repo_path; skipping"
-            continue
+          echo "Checking versions from $DEPS_JSON"
+          jq -c '.[]' "$DEPS_JSON" | while read -r dep; do
+            name=$(jq -r '.name' <<<"$dep")
+            repo=$(jq -r '.repo' <<<"$dep")
+            tag=$(jq -r '.tag' <<<"$dep")
+            if [[ "$repo" != *github.com* ]]; then
+              echo "Skipping non-GitHub repo for $name: $repo"
+              continue
+            fi
+            repo_path=$(echo "$repo" | sed -E 's#^.*github.com[:/]?##' | sed 's#\.git$##' | sed 's#/$##')
+            api_url="https://api.github.com/repos/$repo_path/releases/latest"
+            out=$(curl -s "$api_url" || true)
+            latest_tag=$(jq -r '.tag_name // .name // empty' <<<"$out" 2>/dev/null || true)
+            if [ -z "$latest_tag" ]; then
+              echo "No release tag for $repo_path; skipping"
+              continue
+            fi
+            echo "$name: pinned=$tag latest=$latest_tag repo=$repo_path"
+            if [ "$tag" = "$latest_tag" ]; then
+              echo "  OK: $name up to date"
+            else
+              echo "  UPDATE AVAILABLE: $name $tag -> $latest_tag"
+            fi
+          done
+
+      - name: Create pull request for updates
+        if: ${{ github.event.inputs.create_pr == 'true' || github.event_name == 'schedule' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Fail early with clear message if CMakeLists.txt is missing or not readable
+          if [ ! -f "CMakeLists.txt" ]; then
+            echo "Error: CMakeLists.txt not found in repository root" >&2
+            exit 1
           fi
-          echo "$name: pinned=$tag latest=$latest_tag repo=$repo_path"
-          if [ "$tag" = "$latest_tag" ]; then
-            echo "  OK: $name up to date"
+          if [ ! -r "CMakeLists.txt" ]; then
+            echo "Error: CMakeLists.txt exists but is not readable" >&2
+            exit 1
+          fi
+          # Read deps JSON (produce if missing)
+          DEPS_JSON=/tmp/fetch_deps.json
+          if [ ! -f "$DEPS_JSON" ]; then
+            ./.github/scripts/parse_cmake_deps.py > "$DEPS_JSON"
+          fi
+          updates=()
+          while read -r dep; do
+            name=$(jq -r '.name' <<<"$dep")
+            repo=$(jq -r '.repo' <<<"$dep")
+            tag=$(jq -r '.tag' <<<"$dep")
+            if [[ "$repo" != *github.com* ]]; then
+              continue
+            fi
+            repo_path=$(echo "$repo" | sed -E 's#^.*github.com[:/]?##' | sed 's#\.git$##' | sed 's#/$##')
+            api_url="https://api.github.com/repos/$repo_path/releases/latest"
+            out=$(curl -s "$api_url" || true)
+            latest=$(jq -r '.tag_name // .name // empty' <<<"$out" 2>/dev/null || true)
+            if [ -n "$latest" ] && [ "$latest" != "$tag" ]; then
+              updates+=("$name|$repo_path|$tag|$latest")
+            fi
+          done < <(jq -c '.[]' "$DEPS_JSON")
+
+          if [ ${#updates[@]} -eq 0 ]; then
+            echo 'No updates detected'
+            exit 0
+          fi
+
+          echo 'Updates to apply:'
+          for u in "${updates[@]}"; do echo "$u"; done
+
+          # Create branch and modify CMakeLists.txt
+          BRANCH="chore/update-deps-$(printf '%s' "${updates[@]}" | cut -d'|' -f1 | tr ' ' '-')"
+          echo "Creating branch $BRANCH"
+          if ! git checkout -b "$BRANCH"; then
+            echo "Error: git checkout -b $BRANCH failed" >&2
+            exit 1
+          fi
+          # Verify branch was created
+          if ! git rev-parse --verify "$BRANCH" >/dev/null 2>&1; then
+            echo "Error: branch $BRANCH does not exist after checkout" >&2
+            exit 1
+          fi
+          orig=$(cat CMakeLists.txt)
+          new="$orig"
+          for u in "${updates[@]}"; do
+            IFS='|' read -r name repo_path tag latest <<<"$u"
+            # Replace first occurrence of the GIT_TAG for this block robustly
+            new=$(echo "$new" | perl -0777 -pe "s/(FetchContent_Declare\([\s\S]*?\Q${name}\E[\s\S]*?GIT_TAG\s*)\Q${tag}\E\b/\1${latest}/m;" )
+          done
+
+          if [ "$new" = "$orig" ]; then
+            echo 'Failed to update CMakeLists.txt automatically'
+            exit 1
+          fi
+
+          printf '%s' "$new" > CMakeLists.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          if ! git add CMakeLists.txt; then
+            echo "Error: git add failed for CMakeLists.txt" >&2
+            git checkout -
+            exit 1
+          fi
+          # Verify file is staged
+          if ! git diff --cached --name-only | grep -q '^CMakeLists.txt$'; then
+            echo "Error: CMakeLists.txt not staged after git add" >&2
+            git checkout -
+            exit 1
+          fi
+          msg='chore(deps): update pinned FetchContent GIT_TAGs'
+          if ! git commit -s -m "$msg"; then
+            echo "Error: git commit failed" >&2
+            git checkout -
+            exit 1
+          fi
+          if ! git push -u origin "$BRANCH"; then
+            echo "Error: git push failed for branch $BRANCH" >&2
+            exit 1
+          fi
+
+          # Create PR using gh if available, otherwise use GitHub API via curl
+          if command -v gh >/dev/null 2>&1; then
+            gh pr create --title "$msg" --body 'Automated update of pinned FetchContent GIT_TAGs.' --base main --head "$BRANCH"
           else
-            echo "  UPDATE AVAILABLE: $name $tag -> $latest_tag"
+            repo_full="$GITHUB_REPOSITORY"
+            api_url="https://api.github.com/repos/$repo_full/pulls"
+            payload=$(jq -n --arg title "$msg" --arg head "$BRANCH" --arg base "main" --arg body "Automated dependency updates." '{title:$title, head:$head, base:$base, body:$body}')
+            curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H 'Content-Type: application/json' -d "$payload" "$api_url"
           fi
-        done
-
-    - name: Create pull request for updates
-      if: ${{ github.event.inputs.create_pr == 'true' || github.event_name == 'schedule' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        set -euo pipefail
-        # Fail early with clear message if CMakeLists.txt is missing or not readable
-        if [ ! -f "CMakeLists.txt" ]; then
-          echo "Error: CMakeLists.txt not found in repository root" >&2
-          exit 1
-        fi
-        if [ ! -r "CMakeLists.txt" ]; then
-          echo "Error: CMakeLists.txt exists but is not readable" >&2
-          exit 1
-        fi
-        # Read deps JSON (produce if missing)
-        DEPS_JSON=/tmp/fetch_deps.json
-        if [ ! -f "$DEPS_JSON" ]; then
-          ./.github/scripts/parse_cmake_deps.py > "$DEPS_JSON"
-        fi
-        updates=()
-        while read -r dep; do
-          name=$(jq -r '.name' <<<"$dep")
-          repo=$(jq -r '.repo' <<<"$dep")
-          tag=$(jq -r '.tag' <<<"$dep")
-          if [[ "$repo" != *github.com* ]]; then
-            continue
-          fi
-          repo_path=$(echo "$repo" | sed -E 's#^.*github.com[:/]?##' | sed 's#\.git$##' | sed 's#/$##')
-          api_url="https://api.github.com/repos/$repo_path/releases/latest"
-          out=$(curl -s "$api_url" || true)
-          latest=$(jq -r '.tag_name // .name // empty' <<<"$out" 2>/dev/null || true)
-          if [ -n "$latest" ] && [ "$latest" != "$tag" ]; then
-            updates+=("$name|$repo_path|$tag|$latest")
-          fi
-        done < <(jq -c '.[]' "$DEPS_JSON")
-
-        if [ ${#updates[@]} -eq 0 ]; then
-          echo 'No updates detected'
-          exit 0
-        fi
-
-        echo 'Updates to apply:'
-        for u in "${updates[@]}"; do echo "$u"; done
-
-        # Create branch and modify CMakeLists.txt
-        BRANCH="chore/update-deps-$(printf '%s' "${updates[@]}" | cut -d'|' -f1 | tr ' ' '-')"
-        git checkout -b "$BRANCH"
-        orig=$(cat CMakeLists.txt)
-        new="$orig"
-        for u in "${updates[@]}"; do
-          IFS='|' read -r name repo_path tag latest <<<"$u"
-          # Replace first occurrence of the GIT_TAG for this block robustly
-          new=$(echo "$new" | perl -0777 -pe "s/(FetchContent_Declare\([\s\S]*?\Q${name}\E[\s\S]*?GIT_TAG\s*)\Q${tag}\E\b/\1${latest}/m;" )
-        done
-
-        if [ "$new" = "$orig" ]; then
-          echo 'Failed to update CMakeLists.txt automatically'
-          exit 1
-        fi
-
-        printf '%s' "$new" > CMakeLists.txt
-        git config user.name 'github-actions[bot]'
-        git config user.email 'github-actions[bot]@users.noreply.github.com'
-        git add CMakeLists.txt
-        msg='chore(deps): update pinned FetchContent GIT_TAGs'
-        git commit -s -m "$msg"
-        git push -u origin "$BRANCH"
-
-        # Create PR using gh if available, otherwise use GitHub API via curl
-        if command -v gh >/dev/null 2>&1; then
-          gh pr create --title "$msg" --body 'Automated update of pinned FetchContent GIT_TAGs.' --base main --head "$BRANCH"
-        else
-          repo_full="$GITHUB_REPOSITORY"
-          api_url="https://api.github.com/repos/$repo_full/pulls"
-          payload=$(jq -n --arg title "$msg" --arg head "$BRANCH" --arg base "main" --arg body "Automated dependency updates." '{title:$title, head:$head, base:$base, body:$body}')
-          curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H 'Content-Type: application/json' -d "$payload" "$api_url"
-        fi
