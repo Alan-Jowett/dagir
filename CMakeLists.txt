@@ -225,6 +225,44 @@ if(DAGIR_BUILD_TESTS)
     cmake_policy(POP)
   endif()
 
+  # Ensure <nlohmann/json.hpp> is available for serialization tests.
+  # Instead of invoking third-party CMake for the package (which can fail
+  # on some CI runners), probe for the header first and only download the
+  # single-header fallback when the header is not present on the system.
+  include(CheckIncludeFileCXX)
+  check_include_file_cxx("nlohmann/json.hpp" HAVE_NLOHMANN_JSON_HPP)
+
+  if(NOT HAVE_NLOHMANN_JSON_HPP)
+    message(STATUS "Using single-header fallback for nlohmann_json (download)")
+    set(_nj_inc_dir "${CMAKE_BINARY_DIR}/_deps/nlohmann_json-single_include")
+    file(MAKE_DIRECTORY "${_nj_inc_dir}/nlohmann")
+    set(_nj_header "${_nj_inc_dir}/nlohmann/json.hpp")
+    if(NOT EXISTS "${_nj_header}")
+      file(DOWNLOAD
+        "https://raw.githubusercontent.com/nlohmann/json/v3.11.2/single_include/nlohmann/json.hpp"
+        "${_nj_header}"
+        SHOW_PROGRESS
+        STATUS _nj_dl_status
+        TLS_VERIFY ON)
+      list(GET _nj_dl_status 0 _nj_dl_code)
+      if(NOT _nj_dl_code EQUAL 0)
+        message(FATAL_ERROR "Failed to download nlohmann/json single header; status=${_nj_dl_status}")
+      endif()
+    endif()
+
+    add_library(nlohmann_json::nlohmann_json INTERFACE IMPORTED)
+    set_target_properties(nlohmann_json::nlohmann_json PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${_nj_inc_dir}")
+  else()
+    # If the header exists on the system, create a simple IMPORTED target so
+    # downstream code can link `nlohmann_json::nlohmann_json` uniformly.
+    # This avoids requiring the package config while still allowing code to
+    # include <nlohmann/json.hpp> during builds and tests.
+    add_library(nlohmann_json::nlohmann_json INTERFACE IMPORTED)
+    set_target_properties(nlohmann_json::nlohmann_json PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "")
+  endif()
+
   # Gather test sources (portable glob; users can add more files).
   file(GLOB DAGIR_TEST_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
@@ -254,6 +292,14 @@ if(DAGIR_BUILD_TESTS)
     target_link_libraries(dagir_tests PRIVATE
       dagir::dagir
       Catch2::Catch2WithMain)
+
+    # If nlohmann_json is available (fetched or found), link it so its
+    # include directories are propagated to the test target. This ensures
+    # headers like <nlohmann/json.hpp> are visible to tests that include
+    # `dagir/ir_serialization.hpp` which uses __has_include.
+    if(TARGET nlohmann_json::nlohmann_json)
+      target_link_libraries(dagir_tests PRIVATE nlohmann_json::nlohmann_json)
+    endif()
 
     # If external BDD libraries (TeDDy/CUDD) were fetched and their CMake
     # targets are available, link them into the test executable so their
