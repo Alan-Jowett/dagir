@@ -166,11 +166,18 @@ PY
   new=orig
   for name,repo,tag,latest in updates:
     # Replace first occurrence of the GIT_TAG for this block robustly
-    pattern=re.compile(r'(FetchContent_Declare\([\s\S]*?'+re.escape(name)+r'[\s\S]*?GIT_TAG\s*)'+re.escape(tag), re.M)
+    pattern=re.compile(r'(FetchContent_Declare\([\s\S]*?'+re.escape(name)+r'[\s\S]*?GIT_TAG\s*)'+re.escape(tag)+r'\b', re.M)
     new, n = pattern.subn(r"\1"+latest, new, count=1)
     if n==0:
-      # fallback: simple replace
-      new=new.replace(tag, latest, 1)
+      # Targeted fallback: only replace when the tag appears as the GIT_TAG
+      # inside the FetchContent_Declare block for this dependency. This
+      # avoids accidental replacements elsewhere in the file.
+      block_pattern = re.compile(r'(FetchContent_Declare\([\s\S]*?'+re.escape(name)+r'[\s\S]*?GIT_TAG\s*)('+re.escape(tag)+r')\b', re.M)
+      new, m = block_pattern.subn(r"\1"+latest, new, count=1)
+      if m == 0:
+        # Still failed — do not perform a blind replace. Log and skip.
+        print(f"Warning: could not safely replace tag for {name} (tag={tag}); skipping update for this dependency")
+        continue
 
   if new==orig:
     print('Failed to update CMakeLists.txt automatically')
