@@ -12,8 +12,30 @@ from pathlib import Path
 
 def parse_cmake(text):
     deps = []
-    for m in re.finditer(r'FetchContent_Declare\((.*?)\)', text, re.S):
-        block = m.group(1)
+    needle = 'FetchContent_Declare('
+    pos = 0
+    text_len = len(text)
+    while True:
+        idx = text.find(needle, pos)
+        if idx == -1:
+            break
+        start = idx + len(needle)
+        depth = 1
+        i = start
+        # iterate forward char-by-char tracking parenthesis depth
+        while i < text_len and depth > 0:
+            c = text[i]
+            if c == '(':
+                depth += 1
+            elif c == ')':
+                depth -= 1
+            i += 1
+        if depth != 0:
+            # unmatched parentheses; stop parsing further
+            break
+        # capture the content inside the matching parentheses
+        block = text[start:i-1]
+        pos = i
         if 'GIT_REPOSITORY' in block and 'GIT_TAG' in block:
             # find name
             name_match = re.search(r'^\s*([A-Za-z0-9_\-]+)', block)
