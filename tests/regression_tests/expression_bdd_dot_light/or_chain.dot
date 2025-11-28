@@ -1,6 +1,7 @@
 digraph bdd {
   rankdir=TB;
   bgcolor="white";
+  edge [color="#000000"];
   "node000" [label = "p", fillcolor = "#ffffff", fontcolor = "#000000", name = "node000", shape = "circle", style = "filled"];
   "node001" [label = "q", fillcolor = "#ffffff", fontcolor = "#000000", name = "node001", shape = "circle", style = "filled"];
   "node002" [label = "r", fillcolor = "#ffffff", fontcolor = "#000000", name = "node002", shape = "circle", style = "filled"];

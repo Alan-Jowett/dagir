@@ -131,6 +131,26 @@ inline void render_dot(
     os << "  bgcolor=\"" << *opts->get().bgcolor << "\";\n";
   }
 
+  // If options specify edge defaults, emit them as an `edge [...]` block so
+  // GraphViz picks them up as defaults for all edges (useful for empty
+  // graphs in tests and to avoid repeating attributes on every edge).
+  if (opts && (opts->get().edge_color || opts->get().edge_penwidth)) {
+    std::vector<std::pair<std::string, std::string>> edge_defaults;
+    if (opts->get().edge_color) edge_defaults.emplace_back("color", *opts->get().edge_color);
+    if (opts->get().edge_penwidth)
+      edge_defaults.emplace_back("penwidth", *opts->get().edge_penwidth);
+    if (!edge_defaults.empty()) {
+      os << "  edge [";
+      bool first = true;
+      for (const auto& p : edge_defaults) {
+        if (!first) os << ", ";
+        first = false;
+        os << p.first << "=\"" << render_dot_detail::escape_dot(p.second) << "\"";
+      }
+      os << "];\n";
+    }
+  }
+
   std::unordered_map<std::uint64_t, std::string> name_map;
   // Gather node names for use in edge emission.
 
@@ -177,13 +197,8 @@ inline void render_dot(
     if (!local.count(ir_attrs::k_fill_color) && opts && opts->get().node_fill_color) {
       local[ir_attrs::k_fill_color] = *opts->get().node_fill_color;
     }
-    // Apply font family/size defaults from theme when not present on node
-    if (!local.count(ir_attrs::k_font_name) && opts && opts->get().fontname) {
-      local[ir_attrs::k_font_name] = *opts->get().fontname;
-    }
-    if (!local.count(ir_attrs::k_font_size) && opts && opts->get().fontsize) {
-      local[ir_attrs::k_font_size] = *opts->get().fontsize;
-    }
+    // (fontname/fontsize are intentionally not applied here to avoid
+    // altering node output unless explicitly requested by the node.)
     // If the node explicitly provided a fill color (e.g. terminal 0/1 nodes)
     // prefer the node's choice and do not override the font color from the
     // theme. This avoids cases where a theme supplies a light font color
