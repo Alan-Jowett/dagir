@@ -20,11 +20,14 @@
 #include <format>
 #include <iterator>
 #include <numeric>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+
+#include "dagir/themes.hpp"
 
 namespace dagir {
 
@@ -74,16 +77,25 @@ inline std::string escape_mermaid(const std::string_view s) {
  * @param g The intermediate representation to render.
  * @param graph_name Optional identifier for the graph (used in comments only).
  */
-inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view graph_name = "G") {
-  // Ensure consistent appearance on platforms (e.g. GitHub) that may
-  // apply a dark theme to Mermaid renderings. Emit an init directive
-  // to request the default (light) Mermaid theme so node fill/stroke
-  // colours remain visible.
-  os << "%%{ init: {\"theme\": \"default\"} }%%\n";
+inline void render_mermaid(
+    std::ostream& os, const ir_graph& g, std::string_view graph_name = "G",
+    const std::optional<std::reference_wrapper<const mermaid_options>>& opts = std::nullopt) {
+  // Determine the mermaid theme name to emit in the init directive.
+  const std::string theme = (opts ? opts->get().mermaid_theme : std::string("default"));
+  os << "%%{ init: {\"theme\": \"" << theme << "\"} }%%\n";
+
+  // Emit any provided classDef blocks before the graph itself.
+  if (opts && !opts->get().class_defs.empty()) {
+    for (const auto& cd : opts->get().class_defs) os << "%% " << cd << "\n";
+  }
 
   // Determine direction: prefer graph-level k_rankdir if present
   std::string rankdir = "TB";
-  if (g.global_attrs.count(ir_attrs::k_rankdir)) rankdir = g.global_attrs.at(ir_attrs::k_rankdir);
+  if (g.global_attrs.count(ir_attrs::k_rankdir)) {
+    rankdir = g.global_attrs.at(ir_attrs::k_rankdir);
+  } else if (opts && opts->get().rankdir) {
+    rankdir = *opts->get().rankdir;
+  }
 
   // Mermaid requires `graph <dir>` where <dir> is TB, LR, etc.
   os << "graph " << rankdir << "\n";
@@ -167,6 +179,13 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
         os << "\n";
       }
     }
+    // If options provide a node class for this node id, emit class line
+    if (opts && !opts->get().node_classes.empty()) {
+      auto it = opts->get().node_classes.find(std::string(node_name_sv));
+      if (it != opts->get().node_classes.end()) {
+        os << "  class " << node_name_sv << " " << it->second << "\n";
+      }
+    }
   }
 
   // Emit edges. Mermaid edge label syntax: A -- "label" --> B
@@ -191,6 +210,15 @@ inline void render_mermaid(std::ostream& os, const ir_graph& g, std::string_view
          << "\n";
     } else {
       os << "  " << src << " --> " << dst << "\n";
+    }
+  }
+
+  // If options specified node_classes for nodes that weren't present in the
+  // graph, still emit class statements so examples can attach visuals to
+  // externally-named nodes.
+  if (opts && !opts->get().node_classes.empty()) {
+    for (const auto& kv : opts->get().node_classes) {
+      os << "  class " << kv.first << " " << kv.second << "\n";
     }
   }
 }

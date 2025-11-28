@@ -1,0 +1,15 @@
+digraph bdd {
+  rankdir=TB;
+  bgcolor="#202124";
+  "node000" [label = "m", fillcolor = "#2e2e2e", fontcolor = "#e8eaed", name = "node000", shape = "circle", style = "filled"];
+  "node001" [label = "n", fillcolor = "#2e2e2e", fontcolor = "#e8eaed", name = "node001", shape = "circle", style = "filled"];
+  "node002" [label = "n", fillcolor = "#2e2e2e", fontcolor = "#e8eaed", name = "node002", shape = "circle", style = "filled"];
+  "node003" [label = "1", fillcolor = "lightgray", name = "node003", shape = "box", style = "filled"];
+  "node004" [label = "0", fillcolor = "lightgray", name = "node004", shape = "box", style = "filled"];
+  "node000" -> "node001" [style = "dashed"];
+  "node000" -> "node002" [style = "solid"];
+  "node001" -> "node003" [style = "solid"];
+  "node001" -> "node004" [style = "dashed"];
+  "node002" -> "node003" [style = "dashed"];
+  "node002" -> "node004" [style = "solid"];
+}

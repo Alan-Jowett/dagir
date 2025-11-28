@@ -25,11 +25,14 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+
+#include "dagir/themes.hpp"
 
 namespace dagir {
 
@@ -92,12 +95,18 @@ inline std::string escape_dot(const std::string_view s) {
 
 // Writes a GraphViz DOT representation of `g` to `os`.
 // `graph_name` is used as the DOT graph identifier.
-inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view graph_name = "G") {
+inline void render_dot(
+    std::ostream& os, const ir_graph& g, std::string_view graph_name = "G",
+    const std::optional<std::reference_wrapper<const dot_options>>& opts = std::nullopt) {
   os << "digraph " << graph_name << " {\n";
 
   // Emit default rankdir only if the graph-level attributes do not provide one.
   if (!g.global_attrs.count(ir_attrs::k_rankdir)) {
-    os << "  rankdir=TB;\n";  // default top-to-bottom layout
+    if (opts && opts->get().rankdir) {
+      os << "  rankdir=" << *opts->get().rankdir << ";\n";
+    } else {
+      os << "  rankdir=TB;\n";  // default top-to-bottom layout
+    }
   }
 
   // First, emit global graph attributes (map known keys) in lexicographic order
@@ -115,6 +124,11 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
         os << "  " << k << "=\"" << render_dot_detail::escape_dot(v) << "\";\n";
       }
     }
+  }
+
+  // If options specify a bgcolor and the graph did not provide one, emit it.
+  if (opts && opts->get().bgcolor && !g.global_attrs.count("bgcolor")) {
+    os << "  bgcolor=\"" << *opts->get().bgcolor << "\";\n";
   }
 
   std::unordered_map<std::uint64_t, std::string> name_map;
@@ -151,7 +165,25 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     // const attribute map stored on the node.
     auto local = amap;
     if (!local.count(ir_attrs::k_style)) {
-      local[ir_attrs::k_style] = "filled";
+      if (opts && opts->get().node_style)
+        local[ir_attrs::k_style] = *opts->get().node_style;
+      else
+        local[ir_attrs::k_style] = "filled";
+    }
+
+    if (!local.count(ir_attrs::k_shape) && opts && opts->get().node_shape) {
+      local[ir_attrs::k_shape] = *opts->get().node_shape;
+    }
+    if (!local.count(ir_attrs::k_fill_color) && opts && opts->get().node_fill_color) {
+      local[ir_attrs::k_fill_color] = *opts->get().node_fill_color;
+    }
+    // If the node explicitly provided a fill color (e.g. terminal 0/1 nodes)
+    // prefer the node's choice and do not override the font color from the
+    // theme. This avoids cases where a theme supplies a light font color
+    // but the node's fill is also light (making text unreadable).
+    if (!local.count("fontcolor") && !amap.count(ir_attrs::k_fill_color) && opts &&
+        opts->get().node_fontcolor) {
+      local["fontcolor"] = *opts->get().node_fontcolor;
     }
 
     // Emit node using the possibly-updated local map. Emit attributes in
