@@ -224,7 +224,13 @@ inline void render_mermaid(
     // First, collect keys emitted during node emission above by iterating
     // the graph and checking the map again (this keeps memory/time small).
     for (const auto& n : g.nodes) {
-      auto it = opts->get().node_classes.find(n.name);
+      std::string node_name;
+      if (n.attributes.count("name")) {
+        node_name = n.attributes.at("name");
+      } else {
+        node_name = std::format("n{}", n.id);
+      }
+      auto it = opts->get().node_classes.find(node_name);
       if (it != opts->get().node_classes.end()) emitted.insert(it->first);
     }
     for (const auto& kv : opts->get().node_classes) {
