@@ -177,6 +177,13 @@ inline void render_dot(
     if (!local.count(ir_attrs::k_fill_color) && opts && opts->get().node_fill_color) {
       local[ir_attrs::k_fill_color] = *opts->get().node_fill_color;
     }
+    // Apply font family/size defaults from theme when not present on node
+    if (!local.count(ir_attrs::k_font_name) && opts && opts->get().fontname) {
+      local[ir_attrs::k_font_name] = *opts->get().fontname;
+    }
+    if (!local.count(ir_attrs::k_font_size) && opts && opts->get().fontsize) {
+      local[ir_attrs::k_font_size] = *opts->get().fontsize;
+    }
     // If the node explicitly provided a fill color (e.g. terminal 0/1 nodes)
     // prefer the node's choice and do not override the font color from the
     // theme. This avoids cases where a theme supplies a light font color
@@ -220,17 +227,27 @@ inline void render_dot(
 
     const auto& amap = e.attributes;
 
+    // Work from a local copy so we can apply theme defaults when appropriate.
+    auto local_edge = amap;
+    if (!local_edge.count(ir_attrs::k_color) && opts && opts->get().edge_color) {
+      local_edge[ir_attrs::k_color] = *opts->get().edge_color;
+    }
+    if (!local_edge.count(ir_attrs::k_pen_width) && opts && opts->get().edge_penwidth) {
+      local_edge[ir_attrs::k_pen_width] = *opts->get().edge_penwidth;
+    }
+
     os << "  " << src << " -> " << dst;
     if (!amap.empty()) {
       os << " [";
       bool first = true;
-      if (amap.count(ir_attrs::k_label)) {
-        os << "label = \"" << render_dot_detail::escape_dot(amap.at(ir_attrs::k_label)) << "\"";
+      if (local_edge.count(ir_attrs::k_label)) {
+        os << "label = \"" << render_dot_detail::escape_dot(local_edge.at(ir_attrs::k_label))
+           << "\"";
         first = false;
       }
       std::vector<std::string_view> keys;
-      keys.reserve(amap.size());
-      std::transform(amap.begin(), amap.end(), std::back_inserter(keys),
+      keys.reserve(local_edge.size());
+      std::transform(local_edge.begin(), local_edge.end(), std::back_inserter(keys),
                      [](auto const& p) { return p.first; });
       std::sort(keys.begin(), keys.end(),
                 [](std::string_view a, std::string_view b) { return a < b; });
@@ -238,7 +255,7 @@ inline void render_dot(
         if (k == ir_attrs::k_label) continue;
         if (!first) os << ", ";
         first = false;
-        os << k << " = \"" << render_dot_detail::escape_dot(amap.at(k)) << "\"";
+        os << k << " = \"" << render_dot_detail::escape_dot(local_edge.at(k)) << "\"";
       }
       os << "]";
     }

@@ -232,9 +232,10 @@ int main(int argc, char** argv) {
   using namespace dagir::utility;
 
   if (argc < 4) {
-    std::cerr << "Usage: " << argv[0] << " <expression_file> <library> <backend>\n";
+    std::cerr << "Usage: " << argv[0] << " <expression_file> <library> <backend> [theme]\n";
     std::cerr << "library: teddy | cudd\n";
     std::cerr << "backend: dot | json | mermaid\n";
+    std::cerr << "theme (optional): light | dark | diagnostics | data_flow\n";
     return 1;
   }
 
@@ -273,12 +274,12 @@ int main(int argc, char** argv) {
         owned_dot_opts = dagir::dot_theme::data_flow();
         owned_mermaid_opts = dagir::mermaid_theme::data_flow();
       }
-      if (owned_dot_opts)
-        dot_opts = std::optional<std::reference_wrapper<const dagir::dot_options>>(
-            std::cref(*owned_dot_opts));
-      if (owned_mermaid_opts)
-        mermaid_opts = std::optional<std::reference_wrapper<const dagir::mermaid_options>>(
-            std::cref(*owned_mermaid_opts));
+      if (owned_dot_opts) dot_opts = {std::cref(*owned_dot_opts)};
+      if (owned_mermaid_opts) mermaid_opts = {std::cref(*owned_mermaid_opts)};
+      if (!owned_dot_opts && !owned_mermaid_opts) {
+        std::cerr << "Warning: Unknown theme '" << theme_name
+                  << "' - proceeding without theme options\n";
+      }
     }
 
     if (library == "teddy") {

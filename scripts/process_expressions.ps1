@@ -167,23 +167,10 @@ foreach ($f in $exprFiles) {
     if ($treeExe) {
         $dotOut = Join-Path $out.tree_dot "$base.dot"
         Run-And-Save -exe $treeExe -arguments @($f.FullName,'dot') -outfile $dotOut
-        if ($dotExe -and (Test-Path $dotOut)) {
-            $pngOut = [System.IO.Path]::ChangeExtension($dotOut, '.png')
-            $dotInfo = Get-Item $dotOut
-            $sizeKB = [math]::Ceiling($dotInfo.Length / 1KB)
-            if ($sizeKB -gt $MaxDotSizeKB) {
-                if ($Verbose) { Write-Host "Skipping DOT->PNG for $dotOut (size ${sizeKB}KB > ${MaxDotSizeKB}KB)" }
-            } else {
-                if ($Verbose) { Write-Host "Converting DOT -> PNG: $dotOut -> $pngOut" }
-                $convOut = & $dotExe.FullName -Tpng -o $pngOut $dotOut 2>&1
-                $convExit = $LASTEXITCODE
-                if ($convExit -ne 0) {
-                    $msg = $convOut -join "`n"
-                    Write-Warning ("Graphviz conversion failed (exit {0}) for {1}: {2}" -f $convExit, $dotOut, $msg)
-                }
-                elseif ($Verbose) { Write-Host "Wrote: $pngOut" }
-            }
-        }
+        # Note: per-theme DOT->PNG conversion already happens inside the theme loop.
+        # The old code attempted to re-run conversion on the last-written $dotOut
+        # here which was redundant and could re-process a single theme. Skip
+        # duplicate conversion to avoid extra work and potential confusion.
 
         $jsonOut = Join-Path $out.tree_json "$base.json"
         Run-And-Save -exe $treeExe -arguments @($f.FullName,'json') -outfile $jsonOut
