@@ -1,6 +1,6 @@
 ```mermaid
 %%{ init: {"theme": "default"} }%%
-%% classDef flowEdge stroke:#1a73e8,stroke-width:2px
+classDef flowEdge stroke:#1a73e8,stroke-width:2px
 graph TB
   node000("a")
   node001("b")

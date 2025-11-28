@@ -1,7 +1,7 @@
 ```mermaid
 %%{ init: {"theme": "default"} }%%
-%% classDef error fill:#ffdce0,stroke:#d93025,stroke-width:2px
-%% classDef critical fill:#fff4e5,stroke:#f29900,stroke-width:2px
+classDef error fill:#ffdce0,stroke:#d93025,stroke-width:2px
+classDef critical fill:#fff4e5,stroke:#f29900,stroke-width:2px
 graph TB
   node000("m")
   node001("n")
