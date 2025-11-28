@@ -252,7 +252,7 @@ inline void render_dot(
     }
 
     os << "  " << src << " -> " << dst;
-    if (!amap.empty()) {
+    if (!local_edge.empty()) {
       os << " [";
       bool first = true;
       if (local_edge.count(ir_attrs::k_label)) {

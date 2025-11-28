@@ -84,9 +84,11 @@ inline void render_mermaid(
   const std::string theme = (opts ? opts->get().mermaid_theme : std::string("default"));
   os << "%%{ init: {\"theme\": \"" << theme << "\"} }%%\n";
 
-  // Emit any provided classDef blocks before the graph itself.
+  // Emit any provided classDef blocks before the graph itself. These are
+  // intended to be active styles and should be emitted uncommented so
+  // Mermaid picks them up.
   if (opts && !opts->get().class_defs.empty()) {
-    for (const auto& cd : opts->get().class_defs) os << "%% " << cd << "\n";
+    for (const auto& cd : opts->get().class_defs) os << cd << "\n";
   }
 
   // Determine direction: prefer graph-level k_rankdir if present
@@ -215,10 +217,20 @@ inline void render_mermaid(
 
   // If options specified node_classes for nodes that weren't present in the
   // graph, still emit class statements so examples can attach visuals to
-  // externally-named nodes.
+  // externally-named nodes. Avoid emitting duplicates for nodes already
+  // processed above by tracking emitted keys.
   if (opts && !opts->get().node_classes.empty()) {
+    std::unordered_set<std::string> emitted;
+    // First, collect keys emitted during node emission above by iterating
+    // the graph and checking the map again (this keeps memory/time small).
+    for (const auto& n : g.nodes) {
+      auto it = opts->get().node_classes.find(n.name);
+      if (it != opts->get().node_classes.end()) emitted.insert(it->first);
+    }
     for (const auto& kv : opts->get().node_classes) {
-      os << "  class " << kv.first << " " << kv.second << "\n";
+      if (emitted.find(kv.first) == emitted.end()) {
+        os << "  class " << kv.first << " " << kv.second << "\n";
+      }
     }
   }
 }
