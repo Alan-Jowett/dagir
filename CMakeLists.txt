@@ -214,7 +214,7 @@ if(DAGIR_BUILD_TESTS)
     FetchContent_Declare(
       catch2
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-      GIT_TAG        v3.6.0   # pin to a known version
+      GIT_TAG        v3.11.0
     )
     # Work around shallow clone timestamp issues on older CMake/Windows machines.
     cmake_policy(PUSH)
