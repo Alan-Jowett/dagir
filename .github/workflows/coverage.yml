@@ -131,7 +131,7 @@ jobs:
         fail-on-error: false
 
     - name: Upload coverage reports as artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: coverage-reports
         path: |
