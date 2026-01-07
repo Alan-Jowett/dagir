@@ -69,28 +69,51 @@ static H build_ir_extract_child(const E& e) {
  *           - `edge_attr(view, parent, child_handle)`
  *           - `edge_attr(parent, edge_like)`
  *           - `edge_attr(parent, child_handle)`
+ * @param detect_cycles_flag If true, detect and mark cycles in the graph.
  *
  * @param view Read-only DAG view to traverse.
  * @param node_policy Node attributor policy (callable returning attributes).
  * @param edge_attr Edge attribute policy.
+ * @param detect_cycles_flag If true, detect cycles and add cycle metadata to IR.
  * @return ir_graph The constructed intermediate representation.
  *
  * Behavior:
- *  - Traverses the DAG in topological order (using `kahn_topological_order`).
+ *  - When detect_cycles_flag is false (default), uses Kahn's algorithm for
+ *    topological order and throws on cycles (backward compatible behavior).
+ *  - When detect_cycles_flag is true, uses DFS traversal that handles cycles
+ *    and adds cycle metadata (back-edges, SCCs) to the IR.
  *  - Calls `view.start_guard(handle)` if provided by the adapter.
  *  - Memoizes nodes by `stable_key()` to avoid duplicates.
  */
 template <dagir::concepts::read_only_dag_view View, class NodePolicy, class EdgePolicy>
   requires dagir::concepts::node_attributor<NodePolicy, View>
-ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_attr) {
+ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_attr,
+                  bool detect_cycles_flag = false) {
   using H = typename View::handle;
   using key_t = std::uint64_t;
 
   ir_graph graph;
 
-  // Get a deterministic traversal order (topological for DAGs). We traverse
-  // nodes in topological order and generate edges as we go.
-  std::vector<H> topo = kahn_topological_order(view);
+  // Detect cycles if requested
+  dagir::cycle_info cycle_detection;
+  if (detect_cycles_flag) {
+    cycle_detection = dagir::detect_cycles(view);
+    
+    // Add graph-level cycle flag
+    if (cycle_detection.has_cycles) {
+      std::string_view key = graph.attr_cache.cache_view(std::string(ir_attrs::k_has_cycles));
+      std::string_view val = graph.attr_cache.cache_view("true");
+      graph.global_attrs[key] = val;
+    }
+  }
+
+  // Get a deterministic traversal order. Use DFS for DCGs, Kahn's for DAGs.
+  std::vector<H> topo;
+  if (detect_cycles_flag && cycle_detection.has_cycles) {
+    topo = dagir::dfs_traversal_order(view);
+  } else {
+    topo = kahn_topological_order(view);
+  }
 
   graph.nodes.reserve(topo.size());
 
@@ -135,6 +158,15 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
       std::string label_val = std::to_string(k);
       n.attributes[graph.attr_cache.cache_view(ir_attrs::k_label)] =
           graph.attr_cache.cache_view(label_val);
+    }
+    
+    // Add cycle group if node is part of an SCC
+    if (detect_cycles_flag && cycle_detection.cycle_groups.count(k)) {
+      std::size_t scc_id = cycle_detection.cycle_groups.at(k);
+      std::string scc_str = std::to_string(scc_id);
+      std::string_view key = graph.attr_cache.cache_view(std::string(ir_attrs::k_cycle_group));
+      std::string_view val = graph.attr_cache.cache_view(scc_str);
+      n.attributes[key] = val;
     }
 
     graph.nodes.push_back(std::move(n));
@@ -188,6 +220,17 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
         std::string_view ksv = graph.attr_cache.cache_view(key_copy);
         std::string_view vsv = graph.attr_cache.cache_view(val_copy);
         ie.attributes[ksv] = vsv;
+      }
+      
+      // Mark back-edges if cycle detection is enabled
+      if (detect_cycles_flag && cycle_detection.has_cycles) {
+        auto edge_key = std::make_pair(pk, ck);
+        if (cycle_detection.back_edges.count(edge_key) && 
+            cycle_detection.back_edges.at(edge_key)) {
+          std::string_view key = graph.attr_cache.cache_view(std::string(ir_attrs::k_is_cycle_back_edge));
+          std::string_view val = graph.attr_cache.cache_view("true");
+          ie.attributes[key] = val;
+        }
       }
 
       graph.edges.push_back(std::move(ie));
