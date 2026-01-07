@@ -90,6 +90,7 @@ ctest -C RelWithDebInfo --parallel
 
 ## Automated Agent Requirements
 
+- **NEVER commit directly to `main`** — `main` is updated only via pull requests. Always work on a feature branch.
 - **All commits must include `Signed-off-by`** line (`git commit -s`)
 - **Build and test locally before committing**:
   1. Configure with `DAGIR_BUILD_TESTS=ON`
