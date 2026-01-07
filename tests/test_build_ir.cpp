@@ -134,12 +134,9 @@ TEST_CASE("build_ir - cycle detection enabled handles simple cycle", "[build_ir]
   REQUIRE(std::string(ir.global_attrs.at(dagir::ir_attrs::k_has_cycles)) == "true");
 
   // Check that both nodes have cycle_group attribute
-  int nodes_with_cycle_group = 0;
-  for (const auto& n : ir.nodes) {
-    if (n.attributes.count(dagir::ir_attrs::k_cycle_group)) {
-      nodes_with_cycle_group++;
-    }
-  }
+  auto nodes_with_cycle_group = std::count_if(ir.nodes.begin(), ir.nodes.end(), [](const auto& n) {
+    return n.attributes.count(dagir::ir_attrs::k_cycle_group) > 0;
+  });
   REQUIRE(nodes_with_cycle_group == 2);
 
   // Check that at least one edge is marked as back-edge
