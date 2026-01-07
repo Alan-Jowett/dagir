@@ -291,11 +291,11 @@ cycle_info detect_cycles_with_traversal(const View& view,
   std::size_t counter = 0;
   
   // Helper to extract child handle
-  auto extract_child = []<class E>(const E& e) -> H {
-    if constexpr (std::convertible_to<E, H>) {
-      return static_cast<H>(e);
+  auto extract_child = [](const auto& edge_like) -> H {
+    if constexpr (std::convertible_to<decltype(edge_like), H>) {
+      return static_cast<H>(edge_like);
     } else {
-      return e.target();
+      return edge_like.target();
     }
   };
   
