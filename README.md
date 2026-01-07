@@ -9,13 +9,14 @@
 
 
 # DagIR
-**Traverse external DAGs without copying and render them anywhere: DagIR builds a lightweight IR for DOT, Mermaid, or JSON — header‑only, C++20, cross‑platform.**
+**Traverse external DAGs and DCGs without copying and render them anywhere: DagIR builds a lightweight IR for DOT, Mermaid, or JSON — header‑only, C++20, cross‑platform.**
 
 ---
 
 ## ✨ Why DagIR?
 Existing graph libraries assume you own the graph. DagIR is different:
-- Works on **external DAGs** (TeDDy, CUDD, expression DAGs) without copying.
+- Works on **external graphs** (TeDDy, CUDD, expression DAGs/DCGs) without copying.
+- Supports both **directed acyclic graphs (DAGs)** and **directed cyclic graphs (DCGs)** with cycle detection.
 - Provides a **renderer-neutral IR** for DOT, Mermaid, JSON, or custom backends.
 - Uses **policy-driven customization** for labels, styles, and metadata.
 - Lightweight, **header-only**, and **MIT licensed**.
@@ -54,10 +55,13 @@ flowchart TD
 ```
 
 ## ✅ Features
- **Concepts**: `read_only_dag_view`, `node_handle`, `edge_ref`.
-   - `kahn_topological_order(view)` – Kahn’s algorithm.
+- **Concepts**: `read_only_dag_view`, `node_handle`, `edge_ref`.
+- **Algorithms**:
+  - `kahn_topological_order(view)` – Kahn's algorithm for DAGs.
+  - `dfs_traversal_order(view)` – DFS traversal for DAGs and DCGs.
+  - `detect_cycles(view)` – Cycle detection with SCC identification.
   - `postorder_fold(view, combiner)` – N-ary fold with memoization (returns map from node `stable_key()` to result).
-   - `ir_graph` with nodes, edges, attributes.
+- **IR**: `ir_graph` with nodes, edges, attributes, and optional cycle metadata.
 - **Renderers**:
   - DOT (Graphviz)
   - Mermaid
@@ -66,6 +70,7 @@ flowchart TD
   - TeDDy
   - CUDD
   - Mock for testing.
+- **DCG Support**: Optional cycle detection and marking in IR for directed cyclic graphs.
 
 ---
 

@@ -4,9 +4,15 @@
 # Implementing `read_only_dag_view`
 
 This document explains how to implement a `read_only_dag_view` adapter for DagIR. A
-`read_only_dag_view` is a lightweight, non-owning view over an existing DAG and
+`read_only_dag_view` is a lightweight, non-owning view over an existing graph and
 exposes a minimal API that the DagIR algorithms and `build_ir` use to traverse
 nodes and edges without copying the underlying graph.
+
+**Note**: Despite the name `read_only_dag_view`, DagIR now supports both directed
+acyclic graphs (DAGs) and directed cyclic graphs (DCGs). The concept name is
+retained for backward compatibility. When using `build_ir` with the
+`detect_cycles_flag=true` parameter, cyclic graphs are properly handled and
+cycle metadata is added to the IR.
 
 See `include/dagir/concepts/read_only_dag_view.hpp` for the formal concept definitions; this
 document provides a practical summary and examples.
@@ -171,3 +177,71 @@ Implementing a `read_only_dag_view` is intentionally lightweight:
 - Optionally provide `start_guard(handle)` if needed.
 
 With these in place you can use DagIR traversal algorithms and `build_ir` to emit an `ir_graph` for rendering or analysis.
+
+## Handling Cycles in Adapters
+
+DagIR now supports directed cyclic graphs (DCGs) in addition to DAGs. Your adapter
+doesn't need special handling for cycles — the library automatically detects and
+processes them when you enable cycle detection.
+
+### Using cycle detection
+
+When calling `build_ir`, pass `true` as the fourth parameter to enable cycle detection:
+
+```cpp
+auto ir = dagir::build_ir(view, node_policy, edge_policy, true);
+```
+
+With cycle detection enabled:
+- The library uses DFS traversal instead of Kahn's topological sort
+- Cycles are detected using Tarjan's algorithm for finding strongly connected components
+- Back-edges (edges that create cycles) are marked in the IR
+- Nodes in the same cycle group (SCC) receive the same `cycle_group` attribute
+
+### Example with cycles
+
+```cpp
+// Graph with cycle: 0 -> 1 -> 0
+MockDagView cyclic_view({MockHandle{0}}, {{MockHandle{1}}, {MockHandle{0}}});
+
+auto node_attr = [](auto const& /*view*/, auto const& h) {
+  dagir::ir_attr_map m;
+  m[dagir::ir_attrs::k_label] = std::to_string(h.stable_key());
+  return m;
+};
+auto edge_attr = [](auto&&...) { return dagir::ir_attr_map{}; };
+
+// Enable cycle detection
+auto ir = dagir::build_ir(cyclic_view, node_attr, edge_attr, true);
+
+// The IR will contain:
+// - graph.has_cycles = "true" in global_attrs
+// - cycle_group attribute on both nodes (same value)
+// - is_cycle_back_edge = "true" on the back-edge (1 -> 0)
+```
+
+### Backward compatibility
+
+By default, cycle detection is **disabled** (`detect_cycles_flag = false`):
+- Kahn's algorithm is used (throws on cycles)
+- No cycle metadata is added to the IR
+- Existing code continues to work unchanged
+
+Enable cycle detection only when you need to handle cyclic graphs.
+
+### Cycle attributes in IR
+
+When cycle detection is enabled, the IR contains:
+
+**Graph-level attributes:**
+- `graph.has_cycles`: Set to "true" if cycles are detected
+
+**Node attributes:**
+- `cycle_group`: Integer identifier for the strongly connected component (SCC).
+  Nodes with the same value are part of the same cycle.
+
+**Edge attributes:**
+- `is_cycle_back_edge`: Set to "true" for back-edges that create cycles.
+
+These attributes are available for renderers to visualize cycles appropriately
+(e.g., using dashed lines or different colors for back-edges).

@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <queue>
 #include <span>
@@ -23,6 +24,38 @@
 #include "dagir/concepts/read_only_dag_view.hpp"
 
 namespace dagir {
+
+// Forward declarations for hash helper
+namespace detail {
+struct pair_hash {
+  template <class T1, class T2>
+  std::size_t operator()(const std::pair<T1, T2>& p) const {
+    auto h1 = std::hash<T1>{}(p.first);
+    auto h2 = std::hash<T2>{}(p.second);
+    return h1 ^ (h2 << 1);
+  }
+};
+}  // namespace detail
+
+/**
+ * @brief Result of cycle detection analysis.
+ *
+ * Contains information about cycles detected in the graph including
+ * back-edges and strongly connected components.
+ */
+struct cycle_info {
+  /** @brief Whether the graph contains any cycles */
+  bool has_cycles = false;
+
+  /** @brief Map from edge (source_key, target_key) to whether it's a back-edge */
+  std::unordered_map<std::pair<std::uint64_t, std::uint64_t>, bool, detail::pair_hash> back_edges;
+
+  /** @brief Map from node key to its cycle group (SCC identifier) */
+  std::unordered_map<std::uint64_t, std::size_t> cycle_groups;
+
+  /** @brief Number of strongly connected components */
+  std::size_t num_sccs = 0;
+};
 
 /**
  * @brief Compute a topological ordering of nodes reachable from `view.roots()`
@@ -113,6 +146,303 @@ std::vector<typename View::handle> kahn_topological_order(const View& view) {
 
   if (order.size() != nodes.size())
     throw std::runtime_error("kahn_topological_order: cycle detected in reachable graph");
+
+  return order;
+}
+
+/**
+ * @brief Detect cycles in the graph using depth-first search.
+ *
+ * @tparam View A type modeling ::dagir::read_only_dag_view
+ * @param view The read-only DAG/DCG view
+ * @return cycle_info Structure containing cycle detection results
+ *
+ * Uses DFS with visited/recursion stack tracking to identify:
+ * - Back-edges (edges that create cycles)
+ * - Strongly connected components using Tarjan's algorithm
+ * - Which nodes belong to each SCC
+ *
+ * Notes:
+ *  - This function works for both DAGs and DCGs
+ *  - For DAGs, returns has_cycles=false with empty back_edges
+ *  - For DCGs, identifies all cycles and their components
+ */
+template <dagir::concepts::read_only_dag_view View>
+cycle_info detect_cycles(const View& view) {
+  using H = typename View::handle;
+  using key_t = std::uint64_t;
+
+  cycle_info result;
+
+  // DFS state tracking
+  enum class State { Unvisited, Visiting, Visited };
+  std::unordered_map<key_t, State> state;
+  std::unordered_map<key_t, H> handle_of;
+
+  // Tarjan's algorithm state
+  std::unordered_map<key_t, std::size_t> dfs_num;
+  std::unordered_map<key_t, std::size_t> low_link;
+  std::vector<key_t> stack;
+  std::unordered_set<key_t> on_stack;
+  std::size_t counter = 0;
+
+  // Helper to extract child handle
+  auto extract_child = [](const auto& edge_like) -> H {
+    if constexpr (std::convertible_to<decltype(edge_like), H>) {
+      return static_cast<H>(edge_like);
+    } else {
+      return edge_like.target();
+    }
+  };
+
+  // Tarjan's DFS to find SCCs and back-edges
+  std::function<void(H)> tarjan_dfs = [&](H node) {
+    key_t k = node.stable_key();
+
+    state[k] = State::Visiting;
+    dfs_num[k] = low_link[k] = counter++;
+    stack.push_back(k);
+    on_stack.insert(k);
+    handle_of[k] = node;
+
+    for (auto const& edge_like : view.children(node)) {
+      H child = extract_child(edge_like);
+      key_t ck = child.stable_key();
+
+      handle_of.try_emplace(ck, child);
+
+      auto it = state.find(ck);
+      if (it == state.end() || it->second == State::Unvisited) {
+        // Tree edge - recurse
+        tarjan_dfs(child);
+        low_link[k] = std::min(low_link[k], low_link[ck]);
+      } else if (it->second == State::Visiting) {
+        // Back-edge - cycle detected
+        result.has_cycles = true;
+        result.back_edges[{k, ck}] = true;
+        low_link[k] = std::min(low_link[k], dfs_num[ck]);
+      }
+      // else: cross or forward edge in visited node
+    }
+
+    state[k] = State::Visited;
+
+    // Found SCC root?
+    if (low_link[k] == dfs_num[k]) {
+      std::size_t scc_id = result.num_sccs++;
+      key_t w;
+      do {
+        w = stack.back();
+        stack.pop_back();
+        on_stack.erase(w);
+        result.cycle_groups[w] = scc_id;
+      } while (w != k);
+    }
+  };
+
+  // Run DFS from all roots
+  for (auto const& r : view.roots()) {
+    H root = r;
+    key_t k = root.stable_key();
+    if (state.find(k) == state.end()) {
+      tarjan_dfs(root);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * @brief Detect cycles and compute DFS traversal order in a single pass.
+ *
+ * @tparam View A type modeling ::dagir::read_only_dag_view
+ * @param view The read-only DAG/DCG view
+ * @param out_order Output parameter for DFS traversal order
+ * @return cycle_info Structure containing cycle detection results
+ *
+ * This function combines cycle detection with DFS traversal to avoid
+ * traversing the graph twice. It's more efficient than calling
+ * detect_cycles() and dfs_traversal_order() separately when both
+ * results are needed.
+ *
+ * The traversal order is similar to dfs_traversal_order() - nodes are
+ * visited in DFS postorder and then reversed for topological-like ordering.
+ */
+template <dagir::concepts::read_only_dag_view View>
+cycle_info detect_cycles_with_traversal(const View& view,
+                                        std::vector<typename View::handle>& out_order) {
+  using H = typename View::handle;
+  using key_t = std::uint64_t;
+
+  cycle_info result;
+  out_order.clear();
+
+  // DFS state tracking
+  enum class State { Unvisited, Visiting, Visited };
+  std::unordered_map<key_t, State> state;
+  std::unordered_map<key_t, H> handle_of;
+
+  // Tarjan's algorithm state
+  std::unordered_map<key_t, std::size_t> dfs_num;
+  std::unordered_map<key_t, std::size_t> low_link;
+  std::vector<key_t> stack;
+  std::unordered_set<key_t> on_stack;
+  std::size_t counter = 0;
+
+  // Helper to extract child handle
+  auto extract_child = [](const auto& edge_like) -> H {
+    if constexpr (std::convertible_to<decltype(edge_like), H>) {
+      return static_cast<H>(edge_like);
+    } else {
+      return edge_like.target();
+    }
+  };
+
+  // Tarjan's DFS to find SCCs, back-edges, and traversal order
+  std::function<void(H)> tarjan_dfs = [&](H node) {
+    key_t k = node.stable_key();
+
+    state[k] = State::Visiting;
+    dfs_num[k] = low_link[k] = counter++;
+    stack.push_back(k);
+    on_stack.insert(k);
+    handle_of[k] = node;
+
+    // Optionally guard traversal for this node
+    if constexpr (requires(const View& v, H hh) { v.start_guard(hh); }) {
+      auto guard = view.start_guard(node);
+      (void)guard;
+    }
+
+    for (auto const& edge_like : view.children(node)) {
+      H child = extract_child(edge_like);
+      key_t ck = child.stable_key();
+
+      handle_of.try_emplace(ck, child);
+
+      auto it = state.find(ck);
+      if (it == state.end() || it->second == State::Unvisited) {
+        // Tree edge - recurse
+        tarjan_dfs(child);
+        low_link[k] = std::min(low_link[k], low_link[ck]);
+      } else if (it->second == State::Visiting) {
+        // Back-edge - cycle detected
+        result.has_cycles = true;
+        result.back_edges[{k, ck}] = true;
+        low_link[k] = std::min(low_link[k], dfs_num[ck]);
+      }
+      // else: cross or forward edge in visited node
+    }
+
+    state[k] = State::Visited;
+
+    // Add to traversal order in postorder
+    out_order.push_back(node);
+
+    // Found SCC root?
+    if (low_link[k] == dfs_num[k]) {
+      std::size_t scc_id = result.num_sccs++;
+      key_t w;
+      do {
+        w = stack.back();
+        stack.pop_back();
+        on_stack.erase(w);
+        result.cycle_groups[w] = scc_id;
+      } while (w != k);
+    }
+  };
+
+  // Run DFS from all roots
+  for (auto const& r : view.roots()) {
+    H root = r;
+    key_t k = root.stable_key();
+    if (state.find(k) == state.end()) {
+      tarjan_dfs(root);
+    }
+  }
+
+  // Reverse to get topological-like order
+  std::reverse(out_order.begin(), out_order.end());
+
+  return result;
+}
+
+/**
+ * @brief Compute a DFS-based traversal order that handles cycles.
+ *
+ * @tparam View A type modeling ::dagir::read_only_dag_view
+ * @param view The read-only DAG/DCG view
+ * @return std::vector<typename View::handle> A DFS traversal order
+ *
+ * This function performs a depth-first traversal that works for both
+ * DAGs and DCGs. Unlike kahn_topological_order, it does not throw on
+ * cycles. Nodes are visited in DFS postorder where possible, with
+ * cycle-creating edges handled gracefully.
+ *
+ * Notes:
+ *  - For DAGs, produces a valid topological order (reverse postorder)
+ *  - For DCGs, produces a traversal that visits all reachable nodes
+ *  - Nodes in cycles are visited according to DFS discovery order
+ */
+template <dagir::concepts::read_only_dag_view View>
+std::vector<typename View::handle> dfs_traversal_order(const View& view) {
+  using H = typename View::handle;
+  using key_t = std::uint64_t;
+
+  std::unordered_set<key_t> visited;
+  std::unordered_map<key_t, H> handle_of;
+  std::vector<H> order;
+
+  // Helper to extract child handle
+  auto extract_child = [](const auto& edge_like) -> H {
+    if constexpr (std::convertible_to<decltype(edge_like), H>) {
+      return static_cast<H>(edge_like);
+    } else {
+      return edge_like.target();
+    }
+  };
+
+  // DFS with postorder collection
+  std::function<void(H)> dfs = [&](H node) {
+    key_t k = node.stable_key();
+
+    if (!visited.insert(k).second) {
+      return;  // Already visited
+    }
+
+    handle_of[k] = node;
+
+    // Optionally guard traversal for this node
+    if constexpr (requires(const View& v, H hh) { v.start_guard(hh); }) {
+      auto guard = view.start_guard(node);
+      (void)guard;
+    }
+
+    // Visit children first (postorder)
+    for (auto const& edge_like : view.children(node)) {
+      H child = extract_child(edge_like);
+      key_t ck = child.stable_key();
+
+      if (!visited.count(ck)) {
+        dfs(child);
+      }
+    }
+
+    // Add node after visiting children
+    order.push_back(node);
+  };
+
+  // Start DFS from all roots
+  for (auto const& r : view.roots()) {
+    H root = r;
+    key_t k = root.stable_key();
+    if (!visited.count(k)) {
+      dfs(root);
+    }
+  }
+
+  // Reverse to get topological-like order for DAGs
+  std::reverse(order.begin(), order.end());
 
   return order;
 }

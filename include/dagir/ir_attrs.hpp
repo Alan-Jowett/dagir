@@ -191,5 +191,37 @@ inline constexpr std::string_view k_group{"group"};
  */
 inline constexpr std::string_view k_graph_label{"graph.label"};
 
+// Cycle-related keys (for DCG support)
+/**
+ * @brief Cycle group identifier for nodes in strongly connected components.
+ *
+ * Interpretation: nodes that are part of the same strongly connected component
+ * (SCC) in a directed cyclic graph will share the same cycle_group value.
+ * Backends may use this to visually cluster or highlight cyclic structures.
+ * Acyclic graphs will not have this attribute set.
+ */
+inline constexpr std::string_view k_cycle_group{"cycle_group"};
+
+/**
+ * @brief Flag indicating whether an edge is a back-edge creating a cycle.
+ *
+ * Interpretation: when set to "true", this edge attribute marks a back-edge
+ * that creates a cycle in the graph (pointing back to an ancestor in the DFS
+ * traversal tree). Backends should render these edges distinctly (e.g., with
+ * dashed lines or different colors) to highlight the cyclic dependency.
+ * Regular edges in acyclic graphs will not have this attribute.
+ */
+inline constexpr std::string_view k_is_cycle_back_edge{"is_cycle_back_edge"};
+
+/**
+ * @brief Graph-level flag indicating presence of cycles.
+ *
+ * Interpretation: when set to "true" in graph-level attributes, indicates
+ * that the graph contains one or more cycles (is a DCG). When "false" or
+ * absent, the graph is acyclic (DAG). Backends may use this to choose
+ * appropriate rendering strategies or layout algorithms.
+ */
+inline constexpr std::string_view k_has_cycles{"graph.has_cycles"};
+
 }  // namespace ir_attrs
 }  // namespace dagir
