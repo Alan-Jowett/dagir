@@ -343,7 +343,8 @@ if(DAGIR_BUILD_TESTS)
 
     # Ensure there is always at least one CTest entry for the test executable
     # (some CMake/Catch2 setups may not create entries in certain environments).
-    add_test(NAME dagir_tests COMMAND dagir_tests)
+    # Use $<TARGET_FILE:dagir_tests> to handle multi-config generators (Windows MSVC)
+    add_test(NAME dagir_tests COMMAND $<TARGET_FILE:dagir_tests>)
   else()
     message(WARNING "DAGIR_BUILD_TESTS=ON but no test sources were found under tests/")
   endif()
