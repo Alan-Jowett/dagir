@@ -18,7 +18,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <dagir/algorithms.hpp>
 #include <dagir/build_ir.hpp>
-#include <format>
+#include <sstream>
+#include <string>
 
 #include "mock_dag.hpp"
 
@@ -46,14 +47,14 @@ TEST_CASE("build_ir - custom node attributor and edge attributes", "[build_ir]")
 
   auto node_attrib = [](auto const& /*view*/, auto const& h) {
     std::unordered_map<std::string, std::string> m;
-    m.emplace(std::string(dagir::ir_attrs::k_label), std::format("N_{}", h.stable_key()));
+    m.emplace(std::string(dagir::ir_attrs::k_label), "N_" + std::to_string(h.stable_key()));
     return m;
   };
   auto edge_attr = [](auto const& parent, auto const& edge_like) {
     // edge_like is expected to provide target()
     auto child = edge_like.target();
     std::unordered_map<std::string, std::string> m;
-    m.emplace(std::string("rel"), std::format("{}->{}", parent.stable_key(), child.stable_key()));
+    m.emplace(std::string("rel"), std::to_string(parent.stable_key()) + "->" + std::to_string(child.stable_key()));
     return m;
   };
 
@@ -115,7 +116,7 @@ TEST_CASE("build_ir - cycle detection enabled handles simple cycle", "[build_ir]
   
   auto node_attr = [](auto const& /*view*/, auto const& h) {
     std::unordered_map<std::string, std::string> m;
-    m.emplace(std::string(dagir::ir_attrs::k_label), std::format("Node_{}", h.stable_key()));
+    m.emplace(std::string(dagir::ir_attrs::k_label), "Node_" + std::to_string(h.stable_key()));
     return m;
   };
   auto edge_attr = [](auto&&...) { return dagir::ir_attr_map{}; };
@@ -156,7 +157,7 @@ TEST_CASE("build_ir - cycle detection enabled with DAG shows no cycles", "[build
   
   auto node_attr = [](auto const& /*view*/, auto const& h) {
     std::unordered_map<std::string, std::string> m;
-    m.emplace(std::string(dagir::ir_attrs::k_label), std::format("Node_{}", h.stable_key()));
+    m.emplace(std::string(dagir::ir_attrs::k_label), "Node_" + std::to_string(h.stable_key()));
     return m;
   };
   auto edge_attr = [](auto&&...) { return dagir::ir_attr_map{}; };
@@ -182,7 +183,7 @@ TEST_CASE("build_ir - self-loop detected and marked", "[build_ir][cycles]") {
   
   auto node_attr = [](auto const& /*view*/, auto const& h) {
     std::unordered_map<std::string, std::string> m;
-    m.emplace(std::string(dagir::ir_attrs::k_label), std::format("Node_{}", h.stable_key()));
+    m.emplace(std::string(dagir::ir_attrs::k_label), "Node_" + std::to_string(h.stable_key()));
     return m;
   };
   auto edge_attr = [](auto&&...) { return dagir::ir_attr_map{}; };
@@ -206,7 +207,7 @@ TEST_CASE("build_ir - complex cycle with partial DAG", "[build_ir][cycles]") {
   
   auto node_attr = [](auto const& /*view*/, auto const& h) {
     std::unordered_map<std::string, std::string> m;
-    m.emplace(std::string(dagir::ir_attrs::k_label), std::format("Node_{}", h.stable_key()));
+    m.emplace(std::string(dagir::ir_attrs::k_label), "Node_" + std::to_string(h.stable_key()));
     return m;
   };
   auto edge_attr = [](auto&&...) { return dagir::ir_attr_map{}; };
