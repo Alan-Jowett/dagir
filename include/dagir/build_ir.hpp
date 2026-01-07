@@ -69,7 +69,6 @@ static H build_ir_extract_child(const E& e) {
  *           - `edge_attr(view, parent, child_handle)`
  *           - `edge_attr(parent, edge_like)`
  *           - `edge_attr(parent, child_handle)`
- * @param detect_cycles_flag If true, detect and mark cycles in the graph.
  *
  * @param view Read-only DAG view to traverse.
  * @param node_policy Node attributor policy (callable returning attributes).
@@ -94,10 +93,13 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
 
   ir_graph graph;
 
-  // Detect cycles if requested
+  // Detect cycles if requested and get traversal order
   dagir::cycle_info cycle_detection;
+  std::vector<H> topo;
+  
   if (detect_cycles_flag) {
-    cycle_detection = dagir::detect_cycles(view);
+    // Use combined function to detect cycles and get traversal in one pass
+    cycle_detection = dagir::detect_cycles_with_traversal(view, topo);
     
     // Add graph-level cycle flag
     if (cycle_detection.has_cycles) {
@@ -105,13 +107,8 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
       std::string_view val = graph.attr_cache.cache_view("true");
       graph.global_attrs[key] = val;
     }
-  }
-
-  // Get a deterministic traversal order. Use DFS for DCGs, Kahn's for DAGs.
-  std::vector<H> topo;
-  if (detect_cycles_flag && cycle_detection.has_cycles) {
-    topo = dagir::dfs_traversal_order(view);
   } else {
+    // Use Kahn's algorithm for backward compatibility (throws on cycles)
     topo = kahn_topological_order(view);
   }
 
