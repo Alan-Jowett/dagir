@@ -96,11 +96,11 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
   // Detect cycles if requested and get traversal order
   dagir::cycle_info cycle_detection;
   std::vector<H> topo;
-  
+
   if (detect_cycles_flag) {
     // Use combined function to detect cycles and get traversal in one pass
     cycle_detection = dagir::detect_cycles_with_traversal(view, topo);
-    
+
     // Add graph-level cycle flag
     if (cycle_detection.has_cycles) {
       std::string_view key = graph.attr_cache.cache_view(std::string(ir_attrs::k_has_cycles));
@@ -156,7 +156,7 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
       n.attributes[graph.attr_cache.cache_view(ir_attrs::k_label)] =
           graph.attr_cache.cache_view(label_val);
     }
-    
+
     // Add cycle group if node is part of an SCC
     if (detect_cycles_flag && cycle_detection.cycle_groups.count(k)) {
       std::size_t scc_id = cycle_detection.cycle_groups.at(k);
@@ -218,13 +218,13 @@ ir_graph build_ir(const View& view, NodePolicy&& node_policy, EdgePolicy&& edge_
         std::string_view vsv = graph.attr_cache.cache_view(val_copy);
         ie.attributes[ksv] = vsv;
       }
-      
+
       // Mark back-edges if cycle detection is enabled
       if (detect_cycles_flag && cycle_detection.has_cycles) {
         auto edge_key = std::make_pair(pk, ck);
-        if (cycle_detection.back_edges.count(edge_key) && 
-            cycle_detection.back_edges.at(edge_key)) {
-          std::string_view key = graph.attr_cache.cache_view(std::string(ir_attrs::k_is_cycle_back_edge));
+        if (cycle_detection.back_edges.count(edge_key) && cycle_detection.back_edges.at(edge_key)) {
+          std::string_view key =
+              graph.attr_cache.cache_view(std::string(ir_attrs::k_is_cycle_back_edge));
           std::string_view val = graph.attr_cache.cache_view("true");
           ie.attributes[key] = val;
         }
