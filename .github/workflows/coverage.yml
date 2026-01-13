@@ -59,7 +59,8 @@ jobs:
           gcovr \
           git \
           bc \
-          curl
+          curl \
+          jq
 
     - name: Create build directory
       run: cmake -E make_directory ${{github.workspace}}/build
@@ -137,8 +138,10 @@ jobs:
       if: github.event_name == 'pull_request'
       run: |
         # Extract current coverage percentage from lcov summary
-        # Matches both whole numbers (85) and decimals (85.5)
-        CURRENT_COVERAGE=$(lcov --summary build/coverage_filtered.info 2>&1 | grep "lines" | grep -oP '\d+(?:\.\d+)?(?=%)' || echo "")
+        # Look specifically for the "lines" coverage line and extract the percentage
+        CURRENT_COVERAGE=$(lcov --summary build/coverage_filtered.info 2>&1 | \
+          grep "^\s*lines\.*:" | \
+          grep -oP '\d+(?:\.\d+)?(?=%)' || echo "")
         
         # Validate current coverage was extracted
         if [ -z "$CURRENT_COVERAGE" ]; then
@@ -159,13 +162,16 @@ jobs:
         BASE_BRANCH="${{ github.base_ref }}"
         REPO_SLUG="${{ github.repository }}"
         
+        # URL encode the branch name and repository slug
+        BASE_BRANCH_ENCODED=$(printf %s "$BASE_BRANCH" | jq -sRr @uri)
+        
         # Fetch base branch coverage from Coveralls with proper error handling
         BASE_COVERAGE_RESPONSE=$(curl -s --fail-with-body --max-time 10 --retry 2 \
-          "https://coveralls.io/github/${REPO_SLUG}.json?branch=${BASE_BRANCH}" 2>/dev/null || echo "{}")
+          "https://coveralls.io/github/${REPO_SLUG}.json?branch=${BASE_BRANCH_ENCODED}" 2>/dev/null || echo "{}")
         
-        # Extract coverage percentage from JSON response using grep
-        # Note: This is a simple approach that works for the Coveralls API format
-        BASE_COVERAGE=$(echo "$BASE_COVERAGE_RESPONSE" | grep -oP '"covered_percent":\s*\K[\d.]+' | head -1 || echo "")
+        # Extract coverage percentage from JSON response using jq
+        # This is more reliable than grep for JSON parsing
+        BASE_COVERAGE=$(echo "$BASE_COVERAGE_RESPONSE" | jq -r '.covered_percent // empty' 2>/dev/null || echo "")
         
         # Validate base coverage is available and numeric
         if [ -z "$BASE_COVERAGE" ]; then
