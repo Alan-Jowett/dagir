@@ -158,7 +158,7 @@ jobs:
         echo "Current coverage: ${CURRENT_COVERAGE}%"
         
         # Special-case current coverage of 0% to catch likely misconfigurations
-        if [[ "$CURRENT_COVERAGE" =~ ^0+(\.0+)?$ ]]; then
+        if [[ "$CURRENT_COVERAGE" =~ ^0(\.0+)?$ ]]; then
           echo "⚠️  Warning: Current coverage is 0%. This may indicate a configuration issue (no tests ran or coverage was not captured). Skipping gate check."
           exit 0
         fi
@@ -173,8 +173,14 @@ jobs:
         REPO_SLUG_ENCODED=$(printf %s "$REPO_SLUG" | jq -sRr @uri)
         
         # Fetch base branch coverage from Coveralls with proper error handling
+        # Note: Errors are redirected to stderr for debugging, but don't break the pipeline
         BASE_COVERAGE_RESPONSE=$(curl -s --fail-with-body --max-time 10 --retry 2 \
-          "https://coveralls.io/github/${REPO_SLUG_ENCODED}.json?branch=${BASE_BRANCH_ENCODED}" 2>&1 | tee /dev/stderr || echo "{}")
+          "https://coveralls.io/github/${REPO_SLUG_ENCODED}.json?branch=${BASE_BRANCH_ENCODED}" 2>&1 || echo "{}")
+        
+        # Log curl errors if any (for debugging purposes)
+        if [ "$BASE_COVERAGE_RESPONSE" = "{}" ]; then
+          echo "⚠️  Note: Could not fetch coverage data from Coveralls API (network error or data not available)" >&2
+        fi
         
         # Extract coverage percentage from JSON response using jq
         # This is more reliable than grep for JSON parsing
