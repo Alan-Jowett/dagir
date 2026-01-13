@@ -124,11 +124,56 @@ jobs:
 
     - name: Upload coverage to Coveralls
       uses: coverallsapp/github-action@v2
+      id: coveralls
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         file: build/coverage_filtered.info
         format: lcov
         fail-on-error: false
+
+    - name: Check coverage threshold on PR
+      if: github.event_name == 'pull_request'
+      run: |
+        # Extract current coverage percentage from lcov summary
+        CURRENT_COVERAGE=$(lcov --summary build/coverage_filtered.info 2>&1 | grep "lines" | grep -oP '\d+\.\d+(?=%)')
+        echo "Current coverage: ${CURRENT_COVERAGE}%"
+        
+        # Get base branch coverage from Coveralls API
+        # Note: This requires the base branch to have coverage data already uploaded
+        BASE_BRANCH="${{ github.base_ref }}"
+        REPO_SLUG="${{ github.repository }}"
+        
+        # Fetch base branch coverage from Coveralls
+        BASE_COVERAGE_RESPONSE=$(curl -s "https://coveralls.io/github/${REPO_SLUG}.json?branch=${BASE_BRANCH}" || echo "{}")
+        
+        # Extract coverage percentage from JSON response
+        BASE_COVERAGE=$(echo "$BASE_COVERAGE_RESPONSE" | grep -oP '"covered_percent":\s*\K[\d.]+' | head -1 || echo "0")
+        
+        if [ -z "$BASE_COVERAGE" ] || [ "$BASE_COVERAGE" = "0" ]; then
+          echo "⚠️  Warning: Could not fetch base branch coverage from Coveralls. Skipping gate check."
+          echo "This is expected for the first PR or if base branch hasn't been analyzed yet."
+          exit 0
+        fi
+        
+        echo "Base coverage (${BASE_BRANCH}): ${BASE_COVERAGE}%"
+        
+        # Calculate coverage change
+        COVERAGE_CHANGE=$(echo "$CURRENT_COVERAGE - $BASE_COVERAGE" | bc)
+        echo "Coverage change: ${COVERAGE_CHANGE}%"
+        
+        # Check if coverage decreased by more than 2%
+        THRESHOLD=-2.0
+        if (( $(echo "$COVERAGE_CHANGE < $THRESHOLD" | bc -l) )); then
+          echo "❌ Coverage gate failed!"
+          echo "Coverage decreased by ${COVERAGE_CHANGE}% (threshold: ${THRESHOLD}%)"
+          echo "Current: ${CURRENT_COVERAGE}%, Base: ${BASE_COVERAGE}%"
+          echo ""
+          echo "Please add tests to ensure coverage does not decrease by more than 2%."
+          exit 1
+        else
+          echo "✅ Coverage gate passed!"
+          echo "Coverage change: ${COVERAGE_CHANGE}% (threshold: ${THRESHOLD}%)"
+        fi
 
     - name: Upload coverage reports as artifact
       uses: actions/upload-artifact@v6
