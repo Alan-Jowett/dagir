@@ -111,7 +111,7 @@ We maintain high code quality through comprehensive test coverage.
 
 ### How Coverage Works
 
-1. The `.github/workflows/coverage.yml` workflow runs on all PRs and pushes to main branches.
+1. The `.github/workflows/coverage.yml` workflow runs on all PRs and on pushes to the `main`, `master`, and `develop` branches.
 2. Coverage data is collected using `lcov` during test execution with `ENABLE_COVERAGE=ON`.
 3. Results are uploaded to Coveralls for tracking and badge generation.
 4. For pull requests, the workflow compares the PR's coverage against the base branch coverage.
@@ -125,6 +125,11 @@ We maintain high code quality through comprehensive test coverage.
   cmake -S . -B build -DENABLE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
   cmake --build build --config Debug --parallel
   ctest --test-dir build --output-on-failure
+  ```
+  Alternatively, you can run CTest from inside the build directory (as done in CI workflows):
+  ```bash
+  cd build
+  ctest --output-on-failure
   ```
 - **Review coverage reports**: Check the coverage HTML report in `build/coverage_html/` to identify untested code paths.
 - **Address coverage decreases**: If the coverage gate fails, add tests to cover the new or modified code.
@@ -149,7 +154,7 @@ xdg-open coverage_html/index.html
 open coverage_html/index.html
 
 # Open in browser (Windows)
-start coverage_html/index.html
+start coverage_html\index.html
 ```
 
 ## Areas to Contribute

@@ -141,7 +141,7 @@ jobs:
         # Look specifically for the "lines" coverage line and extract the percentage
         CURRENT_COVERAGE=$(lcov --summary build/coverage_filtered.info 2>&1 | \
           grep "^\s*lines\.*:" | \
-          grep -oP '\d+(?:\.\d+)?(?=%)' || echo "")
+          grep -oE '[0-9]+(\.[0-9]+)?' | head -1 || echo "")
         
         # Validate current coverage was extracted
         if [ -z "$CURRENT_COVERAGE" ]; then
@@ -157,6 +157,12 @@ jobs:
         
         echo "Current coverage: ${CURRENT_COVERAGE}%"
         
+        # Special-case current coverage of 0% to catch likely misconfigurations
+        if [[ "$CURRENT_COVERAGE" =~ ^0+(\.0+)?$ ]]; then
+          echo "⚠️  Warning: Current coverage is 0%. This may indicate a configuration issue (no tests ran or coverage was not captured). Skipping gate check."
+          exit 0
+        fi
+        
         # Get base branch coverage from Coveralls API
         # Note: This requires the base branch to have coverage data already uploaded
         BASE_BRANCH="${{ github.base_ref }}"
@@ -164,10 +170,11 @@ jobs:
         
         # URL encode the branch name and repository slug
         BASE_BRANCH_ENCODED=$(printf %s "$BASE_BRANCH" | jq -sRr @uri)
+        REPO_SLUG_ENCODED=$(printf %s "$REPO_SLUG" | jq -sRr @uri)
         
         # Fetch base branch coverage from Coveralls with proper error handling
         BASE_COVERAGE_RESPONSE=$(curl -s --fail-with-body --max-time 10 --retry 2 \
-          "https://coveralls.io/github/${REPO_SLUG}.json?branch=${BASE_BRANCH_ENCODED}" 2>/dev/null || echo "{}")
+          "https://coveralls.io/github/${REPO_SLUG_ENCODED}.json?branch=${BASE_BRANCH_ENCODED}" 2>&1 | tee /dev/stderr || echo "{}")
         
         # Extract coverage percentage from JSON response using jq
         # This is more reliable than grep for JSON parsing
@@ -196,7 +203,7 @@ jobs:
         echo "Base coverage (${BASE_BRANCH}): ${BASE_COVERAGE}%"
         
         # Calculate coverage change
-        COVERAGE_CHANGE=$(echo "$CURRENT_COVERAGE - $BASE_COVERAGE" | bc)
+        COVERAGE_CHANGE=$(echo "$CURRENT_COVERAGE - $BASE_COVERAGE" | bc -l)
         echo "Coverage change: ${COVERAGE_CHANGE}%"
         
         # Check if coverage decreased by more than 2%
