@@ -137,7 +137,8 @@ jobs:
       if: github.event_name == 'pull_request'
       run: |
         # Extract current coverage percentage from lcov summary
-        CURRENT_COVERAGE=$(lcov --summary build/coverage_filtered.info 2>&1 | grep "lines" | grep -oP '\d+\.\d+(?=%)' || echo "")
+        # Matches both whole numbers (85) and decimals (85.5)
+        CURRENT_COVERAGE=$(lcov --summary build/coverage_filtered.info 2>&1 | grep "lines" | grep -oP '\d+(?:\.\d+)?(?=%)' || echo "")
         
         # Validate current coverage was extracted
         if [ -z "$CURRENT_COVERAGE" ]; then
@@ -145,8 +146,8 @@ jobs:
           exit 0
         fi
         
-        # Validate current coverage is numeric
-        if ! [[ "$CURRENT_COVERAGE" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+        # Validate current coverage is numeric (whole number or proper decimal)
+        if ! [[ "$CURRENT_COVERAGE" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
           echo "⚠️  Warning: Invalid current coverage value: '${CURRENT_COVERAGE}'. Skipping gate check."
           exit 0
         fi
@@ -173,7 +174,8 @@ jobs:
           exit 0
         fi
         
-        if ! [[ "$BASE_COVERAGE" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+        # Validate base coverage is numeric (whole number or proper decimal)
+        if ! [[ "$BASE_COVERAGE" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
           echo "⚠️  Warning: Invalid base coverage value: '${BASE_COVERAGE}'. Skipping gate check."
           exit 0
         fi
