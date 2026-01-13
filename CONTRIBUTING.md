@@ -99,6 +99,64 @@ clang-format -i <file1> <file2>
 git add <file1> <file2>
 ```
 
+## Code Coverage Policy
+
+We maintain high code quality through comprehensive test coverage.
+
+### Coverage Requirements
+
+- **Coverage Badge**: The repository displays a coverage badge from [Coveralls](https://coveralls.io/github/Alan-Jowett/dagir?branch=main) on the README.
+- **Coverage Gate**: Pull requests are automatically checked to ensure they do not reduce overall coverage by more than **2%**.
+- **Coverage Reports**: Every push to `main` and every pull request generates a coverage report available as a workflow artifact.
+
+### How Coverage Works
+
+1. The `.github/workflows/coverage.yml` workflow runs on all PRs and on pushes to the `main`, `master`, and `develop` branches.
+2. Coverage data is collected using `lcov` during test execution with `ENABLE_COVERAGE=ON`.
+3. Results are uploaded to Coveralls for tracking and badge generation.
+4. For pull requests, the workflow compares the PR's coverage against the base branch coverage.
+5. If coverage decreases by more than 2%, the coverage gate fails and the PR cannot be merged.
+
+### Best Practices
+
+- **Add tests for new code**: Ensure all new features and bug fixes include appropriate unit tests.
+- **Run tests locally**: Before submitting a PR, build and run tests with coverage enabled:
+  ```bash
+  cmake -S . -B build -DENABLE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+  cmake --build build --config Debug --parallel
+  ctest --test-dir build --output-on-failure
+  ```
+  Alternatively, you can run CTest from inside the build directory (as done in CI workflows):
+  ```bash
+  cd build
+  ctest --output-on-failure
+  ```
+- **Review coverage reports**: Check the coverage HTML report in `build/coverage_html/` to identify untested code paths.
+- **Address coverage decreases**: If the coverage gate fails, add tests to cover the new or modified code.
+
+### Viewing Coverage Locally
+
+After building with coverage enabled and running tests:
+
+```bash
+# Generate coverage report
+cd build
+lcov --capture --directory . --output-file coverage.info
+lcov --remove coverage.info '/usr/*' '*/_deps/*' --output-file coverage_filtered.info
+
+# Generate HTML report
+genhtml coverage_filtered.info --output-directory coverage_html
+
+# Open in browser (Linux)
+xdg-open coverage_html/index.html
+
+# Open in browser (macOS)
+open coverage_html/index.html
+
+# Open in browser (Windows)
+start coverage_html\index.html
+```
+
 ## Areas to Contribute
 
 - Core algorithms: topo sort, postorder fold, cycle detection.
