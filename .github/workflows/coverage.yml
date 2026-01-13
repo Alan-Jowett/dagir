@@ -57,7 +57,9 @@ jobs:
           cmake \
           lcov \
           gcovr \
-          git
+          git \
+          bc \
+          curl
 
     - name: Create build directory
       run: cmake -E make_directory ${{github.workspace}}/build
