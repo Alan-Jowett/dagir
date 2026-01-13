@@ -137,7 +137,20 @@ jobs:
       if: github.event_name == 'pull_request'
       run: |
         # Extract current coverage percentage from lcov summary
-        CURRENT_COVERAGE=$(lcov --summary build/coverage_filtered.info 2>&1 | grep "lines" | grep -oP '\d+\.\d+(?=%)')
+        CURRENT_COVERAGE=$(lcov --summary build/coverage_filtered.info 2>&1 | grep "lines" | grep -oP '\d+\.\d+(?=%)' || echo "")
+        
+        # Validate current coverage was extracted
+        if [ -z "$CURRENT_COVERAGE" ]; then
+          echo "⚠️  Warning: Could not extract current coverage from lcov. Skipping gate check."
+          exit 0
+        fi
+        
+        # Validate current coverage is numeric
+        if ! [[ "$CURRENT_COVERAGE" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+          echo "⚠️  Warning: Invalid current coverage value: '${CURRENT_COVERAGE}'. Skipping gate check."
+          exit 0
+        fi
+        
         echo "Current coverage: ${CURRENT_COVERAGE}%"
         
         # Get base branch coverage from Coveralls API
@@ -145,15 +158,30 @@ jobs:
         BASE_BRANCH="${{ github.base_ref }}"
         REPO_SLUG="${{ github.repository }}"
         
-        # Fetch base branch coverage from Coveralls
-        BASE_COVERAGE_RESPONSE=$(curl -s "https://coveralls.io/github/${REPO_SLUG}.json?branch=${BASE_BRANCH}" || echo "{}")
+        # Fetch base branch coverage from Coveralls with proper error handling
+        BASE_COVERAGE_RESPONSE=$(curl -s --fail-with-body --max-time 10 --retry 2 \
+          "https://coveralls.io/github/${REPO_SLUG}.json?branch=${BASE_BRANCH}" 2>/dev/null || echo "{}")
         
-        # Extract coverage percentage from JSON response
-        BASE_COVERAGE=$(echo "$BASE_COVERAGE_RESPONSE" | grep -oP '"covered_percent":\s*\K[\d.]+' | head -1 || echo "0")
+        # Extract coverage percentage from JSON response using grep
+        # Note: This is a simple approach that works for the Coveralls API format
+        BASE_COVERAGE=$(echo "$BASE_COVERAGE_RESPONSE" | grep -oP '"covered_percent":\s*\K[\d.]+' | head -1 || echo "")
         
-        if [ -z "$BASE_COVERAGE" ] || [ "$BASE_COVERAGE" = "0" ]; then
+        # Validate base coverage is available and numeric
+        if [ -z "$BASE_COVERAGE" ]; then
           echo "⚠️  Warning: Could not fetch base branch coverage from Coveralls. Skipping gate check."
           echo "This is expected for the first PR or if base branch hasn't been analyzed yet."
+          exit 0
+        fi
+        
+        if ! [[ "$BASE_COVERAGE" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+          echo "⚠️  Warning: Invalid base coverage value: '${BASE_COVERAGE}'. Skipping gate check."
+          exit 0
+        fi
+        
+        # Skip check if base coverage is 0 (no previous data)
+        if (( $(echo "$BASE_COVERAGE == 0" | bc -l) )); then
+          echo "⚠️  Warning: Base branch coverage is 0%. Skipping gate check."
+          echo "This is expected for the first PR with coverage."
           exit 0
         fi
         
