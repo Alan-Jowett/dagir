@@ -1,0 +1,5 @@
+<map id="dagir::ir_graph" name="dagir::ir_graph">
+<area shape="rect" id="Node000001" title="Top&#45;level intermediate representation produced from a DAG view." alt="" coords="17,108,133,133"/>
+<area shape="rect" id="Node000002" href="$classdagir_1_1string__view__cache.html" title="A stable string storage/cache for obtaining std::string_view references that remain valid for the lif..." alt="" coords="5,5,144,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="77,59,77,108,72,108,72,59"/>
+</map>
