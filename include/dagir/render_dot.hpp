@@ -25,11 +25,14 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+
+#include "dagir/themes.hpp"
 
 namespace dagir {
 
@@ -92,12 +95,18 @@ inline std::string escape_dot(const std::string_view s) {
 
 // Writes a GraphViz DOT representation of `g` to `os`.
 // `graph_name` is used as the DOT graph identifier.
-inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view graph_name = "G") {
+inline void render_dot(
+    std::ostream& os, const ir_graph& g, std::string_view graph_name = "G",
+    const std::optional<std::reference_wrapper<const dot_options>>& opts = std::nullopt) {
   os << "digraph " << graph_name << " {\n";
 
   // Emit default rankdir only if the graph-level attributes do not provide one.
   if (!g.global_attrs.count(ir_attrs::k_rankdir)) {
-    os << "  rankdir=TB;\n";  // default top-to-bottom layout
+    if (opts && opts->get().rankdir) {
+      os << "  rankdir=" << *opts->get().rankdir << ";\n";
+    } else {
+      os << "  rankdir=TB;\n";  // default top-to-bottom layout
+    }
   }
 
   // First, emit global graph attributes (map known keys) in lexicographic order
@@ -114,6 +123,31 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
       } else {
         os << "  " << k << "=\"" << render_dot_detail::escape_dot(v) << "\";\n";
       }
+    }
+  }
+
+  // If options specify a bgcolor and the graph did not provide one, emit it.
+  if (opts && opts->get().bgcolor && !g.global_attrs.count("bgcolor")) {
+    os << "  bgcolor=\"" << *opts->get().bgcolor << "\";\n";
+  }
+
+  // If options specify edge defaults, emit them as an `edge [...]` block so
+  // GraphViz picks them up as defaults for all edges (useful for empty
+  // graphs in tests and to avoid repeating attributes on every edge).
+  if (opts && (opts->get().edge_color || opts->get().edge_penwidth)) {
+    std::vector<std::pair<std::string, std::string>> edge_defaults;
+    if (opts->get().edge_color) edge_defaults.emplace_back("color", *opts->get().edge_color);
+    if (opts->get().edge_penwidth)
+      edge_defaults.emplace_back("penwidth", *opts->get().edge_penwidth);
+    if (!edge_defaults.empty()) {
+      os << "  edge [";
+      bool first = true;
+      for (const auto& p : edge_defaults) {
+        if (!first) os << ", ";
+        first = false;
+        os << p.first << "=\"" << render_dot_detail::escape_dot(p.second) << "\"";
+      }
+      os << "];\n";
     }
   }
 
@@ -151,7 +185,27 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
     // const attribute map stored on the node.
     auto local = amap;
     if (!local.count(ir_attrs::k_style)) {
-      local[ir_attrs::k_style] = "filled";
+      if (opts && opts->get().node_style)
+        local[ir_attrs::k_style] = *opts->get().node_style;
+      else
+        local[ir_attrs::k_style] = "filled";
+    }
+
+    if (!local.count(ir_attrs::k_shape) && opts && opts->get().node_shape) {
+      local[ir_attrs::k_shape] = *opts->get().node_shape;
+    }
+    if (!local.count(ir_attrs::k_fill_color) && opts && opts->get().node_fill_color) {
+      local[ir_attrs::k_fill_color] = *opts->get().node_fill_color;
+    }
+    // (fontname/fontsize are intentionally not applied here to avoid
+    // altering node output unless explicitly requested by the node.)
+    // If the node explicitly provided a fill color (e.g. terminal 0/1 nodes)
+    // prefer the node's choice and do not override the font color from the
+    // theme. This avoids cases where a theme supplies a light font color
+    // but the node's fill is also light (making text unreadable).
+    if (!local.count("fontcolor") && !amap.count(ir_attrs::k_fill_color) && opts &&
+        opts->get().node_fontcolor) {
+      local["fontcolor"] = *opts->get().node_fontcolor;
     }
 
     // Emit node using the possibly-updated local map. Emit attributes in
@@ -188,17 +242,27 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
 
     const auto& amap = e.attributes;
 
+    // Work from a local copy so we can apply theme defaults when appropriate.
+    auto local_edge = amap;
+    if (!local_edge.count(ir_attrs::k_color) && opts && opts->get().edge_color) {
+      local_edge[ir_attrs::k_color] = *opts->get().edge_color;
+    }
+    if (!local_edge.count(ir_attrs::k_pen_width) && opts && opts->get().edge_penwidth) {
+      local_edge[ir_attrs::k_pen_width] = *opts->get().edge_penwidth;
+    }
+
     os << "  " << src << " -> " << dst;
-    if (!amap.empty()) {
+    if (!local_edge.empty()) {
       os << " [";
       bool first = true;
-      if (amap.count(ir_attrs::k_label)) {
-        os << "label = \"" << render_dot_detail::escape_dot(amap.at(ir_attrs::k_label)) << "\"";
+      if (local_edge.count(ir_attrs::k_label)) {
+        os << "label = \"" << render_dot_detail::escape_dot(local_edge.at(ir_attrs::k_label))
+           << "\"";
         first = false;
       }
       std::vector<std::string_view> keys;
-      keys.reserve(amap.size());
-      std::transform(amap.begin(), amap.end(), std::back_inserter(keys),
+      keys.reserve(local_edge.size());
+      std::transform(local_edge.begin(), local_edge.end(), std::back_inserter(keys),
                      [](auto const& p) { return p.first; });
       std::sort(keys.begin(), keys.end(),
                 [](std::string_view a, std::string_view b) { return a < b; });
@@ -206,7 +270,7 @@ inline void render_dot(std::ostream& os, const ir_graph& g, std::string_view gra
         if (k == ir_attrs::k_label) continue;
         if (!first) os << ", ";
         first = false;
-        os << k << " = \"" << render_dot_detail::escape_dot(amap.at(k)) << "\"";
+        os << k << " = \"" << render_dot_detail::escape_dot(local_edge.at(k)) << "\"";
       }
       os << "]";
     }

@@ -46,7 +46,11 @@
  * @param backend Target backend name: "dot", "json", or "mermaid".
  * @throws std::runtime_error If an unknown backend is requested.
  */
-static void emit_ir(dagir::ir_graph ir, const std::string& backend) {
+static void emit_ir(
+    dagir::ir_graph ir, const std::string& backend,
+    const std::optional<std::reference_wrapper<const dagir::dot_options>>& dot_opts = std::nullopt,
+    const std::optional<std::reference_wrapper<const dagir::mermaid_options>>& mermaid_opts =
+        std::nullopt) {
   auto node_print_name = [&](const dagir::ir_node& n) {
     auto it = n.attributes.find(dagir::ir_attrs::k_id);
     if (it != n.attributes.end()) return std::string(it->second);
@@ -141,12 +145,12 @@ static void emit_ir(dagir::ir_graph ir, const std::string& backend) {
       });
 
   if (backend == "dot") {
-    dagir::render_dot(std::cout, ir, "bdd");
+    dagir::render_dot(std::cout, ir, "bdd", dot_opts);
   } else if (backend == "json") {
     dagir::render_json(std::cout, ir);
   } else if (backend == "mermaid") {
     std::cout << "```mermaid\n";
-    dagir::render_mermaid(std::cout, ir, "bdd");
+    dagir::render_mermaid(std::cout, ir, "bdd", mermaid_opts);
     std::cout << "```\n";
   } else if (backend == "expr") {
     // Render BDD as an equivalent boolean expression
@@ -228,15 +232,19 @@ int main(int argc, char** argv) {
   using namespace dagir::utility;
 
   if (argc < 4) {
-    std::cerr << "Usage: " << argv[0] << " <expression_file> <library> <backend>\n";
+    std::cerr << "Usage: " << argv[0] << " <expression_file> <library> <backend> [theme]\n";
     std::cerr << "library: teddy | cudd\n";
     std::cerr << "backend: dot | json | mermaid\n";
+    std::cerr << "theme (optional): light | dark | diagnostics | data_flow\n";
     return 1;
   }
 
   const std::string filename = argv[1];
   const std::string library = argv[2];
   const std::string backend = argv[3];
+  // Optional theme name: light | dark | diagnostics | data_flow
+  std::string theme_name;
+  if (argc >= 5) theme_name = argv[4];
 
   try {
     my_expression_ptr expr = read_expression_from_file(filename);
@@ -245,6 +253,34 @@ int main(int argc, char** argv) {
     auto var_map = build_var_map(expr.get());
     // Build inverse map (index -> name) once and reuse for both libraries
     auto var_names = build_var_names(var_map);
+
+    // Build theme option objects according to `theme_name` if provided
+    std::optional<std::reference_wrapper<const dagir::dot_options>> dot_opts = std::nullopt;
+    std::optional<std::reference_wrapper<const dagir::mermaid_options>> mermaid_opts = std::nullopt;
+    // Small owned storage for selected options (if any)
+    std::optional<dagir::dot_options> owned_dot_opts;
+    std::optional<dagir::mermaid_options> owned_mermaid_opts;
+    if (!theme_name.empty()) {
+      if (theme_name == "light") {
+        owned_dot_opts = dagir::dot_theme::light();
+        owned_mermaid_opts = dagir::mermaid_theme::light();
+      } else if (theme_name == "dark") {
+        owned_dot_opts = dagir::dot_theme::dark();
+        owned_mermaid_opts = dagir::mermaid_theme::dark();
+      } else if (theme_name == "diagnostics") {
+        owned_dot_opts = dagir::dot_theme::diagnostics();
+        owned_mermaid_opts = dagir::mermaid_theme::diagnostics();
+      } else if (theme_name == "data_flow") {
+        owned_dot_opts = dagir::dot_theme::data_flow();
+        owned_mermaid_opts = dagir::mermaid_theme::data_flow();
+      }
+      if (owned_dot_opts) dot_opts = {std::cref(*owned_dot_opts)};
+      if (owned_mermaid_opts) mermaid_opts = {std::cref(*owned_mermaid_opts)};
+      if (!owned_dot_opts && !owned_mermaid_opts) {
+        std::cerr << "Warning: Unknown theme '" << theme_name
+                  << "' - proceeding without theme options\n";
+      }
+    }
 
     if (library == "teddy") {
       // Create a Teddy manager and convert expression to a diagram
@@ -261,7 +297,7 @@ int main(int argc, char** argv) {
       // Build IR using teddy policies and render deterministically
       dagir::ir_graph ir = dagir::build_ir(view, dagir::utility::teddy_node_attributor{},
                                            dagir::utility::teddy_edge_attributor{});
-      emit_ir(std::move(ir), backend);
+      emit_ir(std::move(ir), backend, dot_opts, mermaid_opts);
 
     } else if (library == "cudd") {
       // Initialize CUDD manager
@@ -279,7 +315,7 @@ int main(int argc, char** argv) {
       dagir::ir_graph ir = dagir::build_ir(view, dagir::utility::cudd_node_attributor{},
                                            dagir::utility::cudd_edge_attributor{});
       try {
-        emit_ir(std::move(ir), backend);
+        emit_ir(std::move(ir), backend, dot_opts, mermaid_opts);
       } catch (...) {
         Cudd_RecursiveDeref(mgr, diag);
         Cudd_Quit(mgr);

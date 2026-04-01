@@ -503,6 +503,30 @@ if(DAGIR_EXAMPLES AND DAGIR_BUILD_TESTS)
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run_and_capture.cmake)
             endforeach()
 
+            # Also support themed expected outputs: look for directories like
+            # tests/regression_tests/expression_bdd_dot_light/<name>.dot and
+            # register tests that pass the theme argument through.
+            set(THEMES light dark diagnostics data_flow)
+            foreach(_theme IN LISTS THEMES)
+              # construct expected path for this theme
+              set(_expected_theme "${CMAKE_CURRENT_SOURCE_DIR}/tests/regression_tests/expression_bdd_${_backend}_${_theme}/${_expr_name}.${_ext}")
+              if(EXISTS ${_expected_theme})
+                foreach(_bdd_impl IN LISTS _bdd_arg_list)
+                  set(_out_theme "${_sample_test_out_dir}/expression2bdd_${_expr_name}_${_backend}_${_bdd_impl}_${_theme}.${_ext}")
+                  add_test(NAME sample_expression2bdd_${_expr_name}_${_backend}_${_bdd_impl}_${_theme}
+                    COMMAND ${CMAKE_COMMAND}
+                      -DPROG=$<TARGET_FILE:expression2bdd>
+                      -DARG0=${CMAKE_CURRENT_SOURCE_DIR}/tests/regression_tests/expressions/${_expr_name}.expr
+                      -DARG1=${_bdd_impl}
+                      -DARG2=${_backend}
+                      -DARG3=${_theme}
+                        -DEXPECTED=${_expected_theme}
+                        -DBINARY_OUT=${_out_theme}
+                        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run_and_capture.cmake)
+                endforeach()
+              endif()
+            endforeach()
+
           endif()
         endforeach()
     endforeach()

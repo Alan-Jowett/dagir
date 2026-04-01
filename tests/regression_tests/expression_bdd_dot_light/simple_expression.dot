@@ -1,0 +1,19 @@
+digraph bdd {
+  rankdir=TB;
+  bgcolor="white";
+  edge [color="#000000"];
+  "node000" [label = "a", fillcolor = "#ffffff", fontcolor = "#000000", name = "node000", shape = "circle", style = "filled"];
+  "node001" [label = "b", fillcolor = "#ffffff", fontcolor = "#000000", name = "node001", shape = "circle", style = "filled"];
+  "node002" [label = "c", fillcolor = "#ffffff", fontcolor = "#000000", name = "node002", shape = "circle", style = "filled"];
+  "node003" [label = "d", fillcolor = "#ffffff", fontcolor = "#000000", name = "node003", shape = "circle", style = "filled"];
+  "node004" [label = "0", fillcolor = "lightgray", name = "node004", shape = "box", style = "filled"];
+  "node005" [label = "1", fillcolor = "lightgray", name = "node005", shape = "box", style = "filled"];
+  "node000" -> "node001" [color = "#000000", style = "solid"];
+  "node000" -> "node002" [color = "#000000", style = "dashed"];
+  "node001" -> "node002" [color = "#000000", style = "dashed"];
+  "node001" -> "node005" [color = "#000000", style = "solid"];
+  "node002" -> "node003" [color = "#000000", style = "solid"];
+  "node002" -> "node004" [color = "#000000", style = "dashed"];
+  "node003" -> "node004" [color = "#000000", style = "dashed"];
+  "node003" -> "node005" [color = "#000000", style = "solid"];
+}

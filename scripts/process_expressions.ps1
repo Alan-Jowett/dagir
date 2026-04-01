@@ -32,6 +32,8 @@ param(
     [string]$GraphvizPath = "",
     [ValidateSet('teddy','cudd')]
     [string]$Library = 'teddy',
+    [string[]]$Subset = @('simple_expression','or_chain','xor_mn'),
+    [string[]]$Themes = @('light','dark','diagnostics','data_flow'),
     [switch]$StripMermaidFences,
     [switch]$Verbose,
     [int]$MaxDotSizeKB = 200
@@ -133,7 +135,7 @@ function Run-And-Save {
     $cmd = @($exe.FullName) + ($arguments -ne $null ? $arguments : @())
     if ($Verbose) { Write-Host "Running: $($cmd -join ' ')" }
 
-    $proc = & $exe.FullName @arguments 2>&1
+    $proc = & $exe.FullName @arguments
     $exit = $LASTEXITCODE
 
     if ($exit -ne 0) {
@@ -157,28 +159,18 @@ function Run-And-Save {
 $exprFiles = Get-ChildItem -Path $exprDir -Filter '*.expr' -File | Sort-Object Name
 foreach ($f in $exprFiles) {
     $base = [System.IO.Path]::GetFileNameWithoutExtension($f.Name)
+    if ($Subset -and $Subset.Length -gt 0) {
+        if ($Subset -notcontains $base) { if ($Verbose) { Write-Host "Skipping $base (not in subset)" }; continue }
+    }
 
     # expression2tree outputs
     if ($treeExe) {
         $dotOut = Join-Path $out.tree_dot "$base.dot"
         Run-And-Save -exe $treeExe -arguments @($f.FullName,'dot') -outfile $dotOut
-        if ($dotExe -and (Test-Path $dotOut)) {
-            $pngOut = [System.IO.Path]::ChangeExtension($dotOut, '.png')
-            $dotInfo = Get-Item $dotOut
-            $sizeKB = [math]::Ceiling($dotInfo.Length / 1KB)
-            if ($sizeKB -gt $MaxDotSizeKB) {
-                if ($Verbose) { Write-Host "Skipping DOT->PNG for $dotOut (size ${sizeKB}KB > ${MaxDotSizeKB}KB)" }
-            } else {
-                if ($Verbose) { Write-Host "Converting DOT -> PNG: $dotOut -> $pngOut" }
-                $convOut = & $dotExe.FullName -Tpng -o $pngOut $dotOut 2>&1
-                $convExit = $LASTEXITCODE
-                if ($convExit -ne 0) {
-                    $msg = $convOut -join "`n"
-                    Write-Warning ("Graphviz conversion failed (exit {0}) for {1}: {2}" -f $convExit, $dotOut, $msg)
-                }
-                elseif ($Verbose) { Write-Host "Wrote: $pngOut" }
-            }
-        }
+        # Note: per-theme DOT->PNG conversion already happens inside the theme loop.
+        # The old code attempted to re-run conversion on the last-written $dotOut
+        # here which was redundant and could re-process a single theme. Skip
+        # duplicate conversion to avoid extra work and potential confusion.
 
         $jsonOut = Join-Path $out.tree_json "$base.json"
         Run-And-Save -exe $treeExe -arguments @($f.FullName,'json') -outfile $jsonOut
@@ -190,8 +182,40 @@ foreach ($f in $exprFiles) {
 
     # expression2bdd outputs (use provided Library)
     if ($bddExe) {
-        $dotOut = Join-Path $out.bdd_dot "$base.dot"
-        Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'dot') -outfile $dotOut
+        foreach ($theme in $Themes) {
+            $dotDir = Join-Path $repoRoot ("tests\regression_tests\expression_bdd_dot_{0}" -f $theme)
+            if (-not (Test-Path $dotDir)) { New-Item -ItemType Directory -Path $dotDir | Out-Null }
+            $dotOut = Join-Path $dotDir ("$base.dot")
+            Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'dot',$theme) -outfile $dotOut
+            if ($dotExe -and (Test-Path $dotOut)) {
+                $pngOut = [System.IO.Path]::ChangeExtension($dotOut, '.png')
+                $dotInfo = Get-Item $dotOut
+                $sizeKB = [math]::Ceiling($dotInfo.Length / 1KB)
+                if ($sizeKB -gt $MaxDotSizeKB) {
+                    if ($Verbose) { Write-Host "Skipping DOT->PNG for $dotOut (size ${sizeKB}KB > ${MaxDotSizeKB}KB)" }
+                } else {
+                    if ($Verbose) { Write-Host "Converting DOT -> PNG: $dotOut -> $pngOut" }
+                    $convOut = & $dotExe.FullName -Tpng -o $pngOut $dotOut 2>&1
+                    $convExit = $LASTEXITCODE
+                    if ($convExit -ne 0) {
+                        $msg = $convOut -join "`n"
+                        Write-Warning ("Graphviz conversion failed (exit {0}) for {1}: {2}" -f $convExit, $dotOut, $msg)
+                    }
+                    elseif ($Verbose) { Write-Host "Wrote: $pngOut" }
+                }
+            }
+
+            $jsonDir = Join-Path $repoRoot ("tests\regression_tests\expression_bdd_json_{0}" -f $theme)
+            if (-not (Test-Path $jsonDir)) { New-Item -ItemType Directory -Path $jsonDir | Out-Null }
+            $jsonOut = Join-Path $jsonDir ("$base.json")
+            Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'json',$theme) -outfile $jsonOut
+
+            $mmdExt = if ($StripMermaidFences) { '.mmd' } else { '.md' }
+            $mmdDir = Join-Path $repoRoot ("tests\regression_tests\expression_bdd_mermaid_{0}" -f $theme)
+            if (-not (Test-Path $mmdDir)) { New-Item -ItemType Directory -Path $mmdDir | Out-Null }
+            $mmdOut = Join-Path $mmdDir ("$base$mmdExt")
+            Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'mermaid',$theme) -outfile $mmdOut -stripMermaid:$StripMermaidFences
+        }
         if ($dotExe -and (Test-Path $dotOut)) {
             $pngOut = [System.IO.Path]::ChangeExtension($dotOut, '.png')
             $dotInfo = Get-Item $dotOut
@@ -210,14 +234,7 @@ foreach ($f in $exprFiles) {
             }
         }
 
-        $jsonOut = Join-Path $out.bdd_json "$base.json"
-        Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'json') -outfile $jsonOut
-
-        $mmdExt = if ($StripMermaidFences) { '.mmd' } else { '.md' }
-        $mmdOut = Join-Path $out.bdd_mermaid "$base$mmdExt"
-        Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'mermaid') -outfile $mmdOut -stripMermaid:$StripMermaidFences
-
-        # Produce plain expression backend output
+        # Produce plain expression backend output (single copy)
         $exprOut = Join-Path $out.bdd_expr "$base.expr"
         Run-And-Save -exe $bddExe -arguments @($f.FullName,$Library,'expr') -outfile $exprOut
     }
