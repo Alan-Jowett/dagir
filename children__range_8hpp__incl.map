@@ -1,0 +1,11 @@
+<map id="include/dagir/concepts/children_range.hpp" name="include/dagir/concepts/children_range.hpp">
+<area shape="rect" id="Node000001" title="Concept to detect ranges of child edge references." alt="" coords="133,5,301,45"/>
+<area shape="rect" id="Node000002" href="$edge__ref_8hpp.html" title="Concept to describe an edge reference type." alt="" coords="5,93,159,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,48,125,88,122,84,185,43"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="183,101,250,126"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="219,46,219,87,214,87,214,46"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="275,101,367,126"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="241,44,297,89,294,93,238,48"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="42,181,122,207"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="85,134,85,167,79,167,79,134"/>
+</map>

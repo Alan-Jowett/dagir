@@ -1,0 +1,5 @@
+<map id="dagir::utility::teddy_node_attributor" name="dagir::utility::teddy_node_attributor">
+<area shape="rect" id="Node000001" title="Node attributor for TeDDy nodes." alt="" coords="5,108,151,148"/>
+<area shape="rect" id="Node000002" href="$classdagir_1_1string__view__cache.html" title="A stable string storage/cache for obtaining std::string_view references that remain valid for the lif..." alt="" coords="9,5,147,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="81,59,81,108,75,108,75,59"/>
+</map>

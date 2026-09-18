@@ -1,0 +1,5 @@
+<map id="dagir::utility::teddy_read_only_dag_view::teddy_edge" name="dagir::utility::teddy_read_only_dag_view::teddy_edge">
+<area shape="rect" id="Node000001" title="Lightweight edge type carrying the child handle." alt="" coords="5,108,175,163"/>
+<area shape="rect" id="Node000002" href="$structdagir_1_1utility_1_1teddy__handle.html" title="Lightweight non&#45;owning handle to a TeDDy node." alt="" coords="17,5,163,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,59,93,108,87,108,87,59"/>
+</map>

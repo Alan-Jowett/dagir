@@ -1,0 +1,30 @@
+<map id="include/dagir/concepts/edge_ref.hpp" name="include/dagir/concepts/edge_ref.hpp">
+<area shape="rect" id="Node000001" title="Concept to describe an edge reference type." alt="" coords="447,5,615,45"/>
+<area shape="rect" id="Node000002" href="$children__range_8hpp.html" title="Concept to detect ranges of child edge references." alt="" coords="447,93,615,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="534,59,534,93,529,93,529,59"/>
+<area shape="rect" id="Node000003" href="$read__only__dag__view_8hpp.html" title="Read&#45;only DAG view concept and small helper types." alt="" coords="438,181,625,221"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="534,147,534,181,529,181,529,147"/>
+<area shape="rect" id="Node000004" href="$algorithms_8hpp.html" title="Graph algorithms operating on read_only_dag_view adapters." alt="" coords="199,284,407,309"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="474,229,332,286,330,281,472,224"/>
+<area shape="rect" id="Node000005" href="$build__ir_8hpp.html" title="Build a renderer&#45;neutral IR (nodes, edges, attributes) from a read_only_dag_view adapter." alt="" coords="5,379,148,419"/>
+<area shape="poly" id="edge7_Node000003_Node000005" title=" " alt="" coords="425,208,368,215,307,226,246,245,189,272,156,296,128,325,89,381,85,378,124,322,153,292,186,267,244,240,306,221,367,209,424,203"/>
+<area shape="rect" id="Node000008" href="$cudd__read__only__dag__view_8hpp.html" title="Read&#45;only DAG view for CUDD BDDs." alt="" coords="745,269,907,324"/>
+<area shape="poly" id="edge8_Node000003_Node000008" title=" " alt="" coords="605,223,745,267,743,272,603,228"/>
+<area shape="rect" id="Node000010" href="$expression__read__only__dag__view_8hpp.html" title="Read&#45;only DAG view for expression ASTs." alt="" coords="437,269,626,324"/>
+<area shape="poly" id="edge10_Node000003_Node000010" title=" " alt="" coords="534,235,534,269,529,269,529,235"/>
+<area shape="rect" id="Node000012" href="$teddy__read__only__dag__view_8hpp.html" title="Read&#45;only DAG view for TeDDy BDDs." alt="" coords="980,269,1155,324"/>
+<area shape="poly" id="edge14_Node000003_Node000012" title=" " alt="" coords="639,218,920,267,980,277,979,283,919,272,638,224"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="266,317,120,382,118,377,264,312"/>
+<area shape="rect" id="Node000006" href="$cudd__convert__expression_8hpp.html" title="Helpers to convert sample expression ASTs to CUDD BDD diagrams." alt="" coords="172,379,427,419"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="305,323,303,379,297,379,300,323"/>
+<area shape="rect" id="Node000007" href="$teddy__convert__expression_8hpp.html" title="Helpers to convert sample expression ASTs to TeDDy BDD diagrams." alt="" coords="451,372,611,427"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="343,312,473,369,471,374,341,317"/>
+<area shape="rect" id="Node000009" href="$cudd__policy_8hpp.html" title="Node and edge attribute policies for CUDD BDD." alt="" coords="839,379,1003,419"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="862,333,904,377,901,381,858,336"/>
+<area shape="poly" id="edge11_Node000010_Node000006" title=" " alt="" coords="459,332,344,382,342,377,457,327"/>
+<area shape="poly" id="edge13_Node000010_Node000007" title=" " alt="" coords="534,338,534,372,529,372,529,338"/>
+<area shape="rect" id="Node000011" href="$expression__policy_8hpp.html" title="Helper utility for parsing string binary expressions." alt="" coords="635,372,814,427"/>
+<area shape="poly" id="edge12_Node000010_Node000011" title=" " alt="" coords="595,328,676,370,673,374,592,333"/>
+<area shape="rect" id="Node000013" href="$teddy__policy_8hpp.html" title="Node and edge attribute policies for TeDDy BDD." alt="" coords="1027,379,1203,419"/>
+<area shape="poly" id="edge15_Node000012_Node000013" title=" " alt="" coords="1088,335,1109,378,1104,380,1083,338"/>
+</map>
